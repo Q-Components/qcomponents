@@ -11,7 +11,7 @@
 action = env.ref("sale.action_orders").read()[0]
 res = env.ref('sale.view_order_form', False)
 action['views'] = [(res and res.id or False, 'form')]
-action['context'] = {'default_order_line': [(0,0,{'product_id': r.id}) for r in records]}
+action['context'] = {'default_order_line': [(0,0,{'product_id': r.id, 'product_template_id': r.product_tmpl_id.id}) for r in records]}
             </field>
         </record>
     </data>
