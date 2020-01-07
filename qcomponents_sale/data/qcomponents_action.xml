@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_update_prod_attr_val" model="ir.actions.server">
+            <field name="name">Add to Sale Order</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="product.model_product_product"/>
+            <field name="binding_model_id" ref="product.model_product_product"/>
+            <field name="state">code</field>
+            <field name="code">
+action = env.ref("sale.action_orders").read()[0]
+res = env.ref('sale.view_order_form', False)
+action['views'] = [(res and res.id or False, 'form')]
+action['context'] = {'default_order_line': [(0,0,{'product_id': r.id, 'product_template_id': r.product_tmpl_id.id}) for r in records]}
+            </field>
+        </record>
+    </data>
+</odoo>
