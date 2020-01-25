@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        
+        <record id="product_return_form_view" model="ir.ui.view">
+            <field name="name">return.order.form.view</field>
+            <field name="model">return.order</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="return_confirm" type="object" string="Confirm" states="draft" class="btn-primary" groups="sales_team.group_sale_salesman"/>
+                        <button name="return_done" type="object" string="Return" states="approve" class="btn-primary" groups="base.group_user"/>
+                        <button name="return_approve" type="object" string="Approve" states="confirm,cancel"
+                            class="btn-primary" groups="sales_team.group_sale_manager" />
+                        <button name="return_cancel" type="object" string="Cancel" states="draft,confirm,approve"/>
+                        <button name="reset_draft" type="object" string="Reste to Draft" states="return,cancel" class="btn-primary"/>
+                        <field name="state" widget="statusbar" string="confirm" statusbar_visible="draft,confirm,approve,return"/>
+                    </header>
+                    <sheet>
+                    	<div class="oe_button_box" name="button_box">
+                    	<button class="oe_stat_button" name="action_view_incoming_delivery" type="object" icon="fa-truck" attrs="{'invisible': [('incoming_delivery_count', '=', 0)]}">
+	                        <field string="Return Picking" name="incoming_delivery_count" widget="statinfo" />
+	                    </button>
+	                    <button class="oe_stat_button" name="action_view_outgoing_delivery" type="object" icon="fa-truck" attrs="{'invisible': [('outgoing_delivery_count', '=', 0)]}">
+	                        <field string="Delivery Order" name="outgoing_delivery_count" widget="statinfo" />
+	                    </button>
+	                    </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="number" readonly="1"/>
+                                <br/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="partner_id" attrs="{'readonly' : [('state','!=','draft')]}"/>
+                                <field name="saleorder_id" attrs="{'readonly' : [('state','!=','draft')]}"/>
+                            </group>
+                            <group>
+                            	<field name="create_date" attrs="{'readonly' : [('state','!=','draft')]}"/>
+                            	<field name="order_partner_id"/>
+                                <field name="saleorderline_id"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="product_id" attrs="{'readonly' : [('state','!=','draft')]}"/>
+                            </group>
+                            <group>
+                                <label for="quantity" string="Return Quantity"/>
+                                <div class="o_row">
+                                    <field name="quantity" attrs="{'readonly' : [('state','!=','draft')]}"/>
+                                    <field name="uom_id" options="{'no_open':True,'no_create':True}" groups="product.group_uom" attrs="{'readonly' : [('state','!=','draft')]}"/>
+                                </div>
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="salesperson_id" attrs="{'readonly' : [('state','!=','draft')]}"/>
+                                <field name="company_id" attrs="{'readonly' : [('state','!=','draft')]}"/>
+                            </group>
+                            <group>
+                                <field name="team_id" attrs="{'readonly' : [('state','!=','draft')]}"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Reason of Return">
+                            	<field name="reason" attrs="{'readonly' : [('state','!=','draft')]}"/>
+                            </page>
+                            <page string="Delivery Orders">
+                                <field name="delivery_ids" attrs="{'readonly' : [('state','!=','draft')]}"/>
+                            </page>
+                            <page string="Return Picking">
+                            	<field name="incoming_delivery_ids" attrs="{'readonly' : [('state','!=','draft')]}"/>
+                            </page>
+                            <page string="Other Info">
+                                <group>
+                                    <group>
+                                        <field name="confirm_by"/>
+                                        <field name="approve_by"/>
+                                        <field name="return_by"/>
+                                    </group>
+                                    <group>
+                                        <field name="confirm_date"/>
+                                        <field name="approve_date"/>
+                                        <field name="return_date"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                        <field name="notes" placeholder="Internal Notes..." attrs="{'readonly' : [('state','==','return')]}"/>
+                    </sheet>
+                    
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        
+        <record id="product_return_form_view_tree_view" model="ir.ui.view">
+            <field name="name">return.order.view.tree</field>
+            <field name="model">return.order</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="number"/>
+                    <field name="saleorder_id"/>
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="quantity"/>
+                    <field name="uom_id"/>
+                    <field name="company_id"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+        
+        <record model="ir.ui.view" id="product_return_form_view_search_view">
+            <field name="name">return.order.search</field>
+            <field name="model">return.order</field>
+            <field name="arch" type="xml">
+                <search>
+                	<field name="number"/>
+                    <field name="partner_id"/>
+                    <field name="saleorder_id"/>
+                    <field name="product_id"/>
+                    <field name="salesperson_id"/>
+                    <field name="team_id"/>
+                    <field name="company_id"/>
+                    <field name="create_date"/>
+                    <field name="state"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Customer" context="{'group_by':'partner_id'}"/>
+                        <filter string="Sale Order" context="{'group_by':'saleorder_id'}"/>
+                        <filter string="Salesperson" context="{'group_by':'salesperson_id'}"/>
+                        <filter string="Sales Team" context="{'group_by':'team_id'}"/>
+                        <filter string="Product" context="{'group_by':'product_id'}"/>
+                        <filter string="State" context="{'group_by':'state'}"/>
+                        <filter string="Create Date" context="{'group_by':'create_date'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_return_rma">
+            <field name="name">Return Orders</field>
+            <field name="res_model">return.order</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_type">form</field>
+        </record>
+        
+        <menuitem id="main_menu_return_rma" name="Return Orders" parent="sale.sale_menu_root"/>
+        <menuitem id="sub_menu_return_rma" name="Return Orders" parent="main_menu_return_rma"
+            action="action_return_rma"/>
+        
+    </data>
+</odoo>
