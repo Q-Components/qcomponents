@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		
+		<report id="print_return_report" model="return.order" report_type="qweb-pdf" string="Print
+			Return Report" name="website_shop_return_rma.return_report" file="website_shop_return_rma.return_report"
+			/>
+		
+		<template id="return_report">
+			<t t-foreach="docs" t-as="doc">
+				<t t-call="report.external_layout">
+					<div class="page">
+						<div class="text-left">
+							<h3>
+								<strong>
+									Return Order #
+									<span t-field="doc.number"/>
+								</strong>
+							</h3>
+						</div>
+						<div class="row">
+							<div class="col-xs-6 text-left">
+								<!--strong></strong><span t-field="doc.name"/-->
+							</div>
+						</div>
+						<div class="row mt32 mb32">
+							<div t-if="doc.partner_id" class="col-xs-3">
+								<strong>Customer:</strong>
+								<p t-field="doc.partner_id.name"/>
+							</div>
+							<div t-if="doc.create_date"  class="col-xs-3">
+								<strong>Create Date:</strong>
+								<p t-field="doc.create_date"/>
+							</div>
+							<div t-if="doc.order_partner_id"  class="col-xs-3">
+								<strong>Order Customer:</strong>
+								<p t-field="doc.order_partner_id.name"/>
+							</div>
+							<div t-if="doc.saleorder_id"  class="col-xs-3">
+								<strong>Sale Order:</strong>
+								<p t-field="doc.saleorder_id.name"/>
+							</div>
+							<div t-if="doc.product_id"  class="col-xs-3">
+								<strong>Return Product:</strong>
+								<p t-field="doc.product_id.name"/>
+							</div>
+							<div t-if="doc.quantity"  class="col-xs-3">
+								<strong>Return Quantity:</strong>
+								<p t-field="doc.quantity"/>
+							</div>
+							<div t-if="doc.salesperson_id"  class="col-xs-3">
+								<strong>Salesperson:</strong>
+								<p t-field="doc.salesperson_id.name"/>
+							</div>
+							<div t-if="doc.team_id"  class="col-xs-3">
+								<strong>Sales Team:</strong>
+								<p t-field="doc.team_id.name"/>
+							</div>
+							<div t-if="doc.company_id"  class="col-xs-3">
+								<strong>Company:</strong>
+								<p t-field="doc.company_id.name"/>
+							</div>
+						</div>
+						<table class="table table-condensed">
+							<tr>
+								<td style="border-bottom: hidden; border-top: hidden;">
+									<strong>Reason :</strong>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="4">
+									<span t-field="doc.reason"/>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</t>
+			</t>
+		</template>
+		
+	</data>
+</odoo>

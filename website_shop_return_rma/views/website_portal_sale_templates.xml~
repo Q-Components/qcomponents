@@ -1,0 +1,230 @@
+<odoo>
+    
+    <template id="my_return_order" name="my return order: project menu entry" inherit_id="portal.portal_layout" priority="28">
+       <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'return' and 'active' or ''">
+                 <a t-attf-href="/my/returns?{{ keep_query() }}">Returns</a>
+            </li>
+        </xpath>
+    </template>
+    
+    <template id="portal_my_return" name="Portal My return: project entries" inherit_id="portal.portal_my_home" priority="28">
+        <xpath expr="//ul[hasclass('o_portal_docs')]" position="inside">
+            <li t-if="return_count" class="list-group-item">
+                <span class="badge" t-esc="return_count"/>
+                <a href="/my/returns">Your Returns
+                </a>
+            </li>
+        </xpath>
+<!--        <xpath expr="//div[contains(@class,'o_my_home_content')]" position="inside">-->
+<!--            <h3  class="page-header">-->
+<!--                <a href="/my/returns">Your Returns-->
+<!--                    <small class="ml8">-->
+<!--                      <t t-if="return_count">-->
+<!--                        <span class='badge'><t t-esc="return_count"/></span>-->
+<!--                    </t>-->
+<!--                    <t t-if =" not return_count">-->
+<!--                        There are currently no return for your account.-->
+<!--                    </t>-->
+<!--                    </small>-->
+<!--                </a>-->
+<!--            </h3>-->
+<!--        </xpath>-->
+    </template>
+    
+    <template id="display_returns" name="Display Returns">
+        <t t-call="portal.portal_layout">
+        <h3 class="page-header">Your Return Orders</h3>
+            <table class="table table-hover o_my_status_table">
+                <thead>
+                  <tr class="active">
+                    <th>Number</th>
+                    <th>Created Date</th>
+                    <th>Sale Order</th>
+                    <th>Stage</th>
+                  </tr>
+                </thead>
+                <t t-foreach="returns" t-as="ret">
+                    <tr>
+                        <td>
+                            <span t-field="ret.number"/>
+                        </td>
+                        <td>
+                            <span t-field="ret.create_date"/>
+                        </td>
+                        <td>
+                            <span t-field="ret.saleorder_id.name"/>
+                        </td>
+                         <td>
+                            <span t-field="ret.state"/>
+                        </td>
+                    </tr>
+                </t>
+            </table>
+             </t>
+    </template>
+	
+    <template id="orders_followup_return_product" name="Sale order product return" inherit_id="sale.portal_order_page"
+        priority="28">
+<!--        <xpath expr="//div[@class='panel-heading']//div[@class='col-md-12']//h4" position="attributes">-->
+<!--            <attribute name="class">col-md-11</attribute>-->
+<!--        </xpath>-->
+        <xpath expr="//div[@id='o_portal_order_actions']" position="inside">
+            <form action="/my/return" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <a t-if="order.state != 'sent'" id="add_to_cart" align="right" class="btn btn-md btn-primary pull-right mt4 mr8" data-placement="top"
+                    data-id = "ol" data-html="true" data-toggle="modal" data-target="#get_so" >Return</a>
+            </form>
+            <div class="modal fade" id="get_so" role="dialog" aria-hidden="true">
+                <div class="modal-dialog">
+                    <form action="/return/product" method="post" class="modal-content" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&amp;times;</button>
+                            <div align="center">
+                                <strong>
+                                    <h3 class="modal-title" aling="center">Return Product</h3>
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group  col-lg-6">
+                                        <label class="control-label" for="name">Customer</label>
+                                        <input type="text" class="form-control" readonly="True" name="partner_name" required="True"
+                                            t-attf-value="#{order.partner_id.name}"/>
+                                    </div>
+                                    <div class="form-group  col-lg-6">
+                                        <label class="control-label" for="name">Sale Order</label>
+                                        <input type="text" class="form-control" readonly="True" name="order" required="True"
+                                            t-attf-value="#{order.name}"/>
+                                    </div>
+                                    <div class="form-group col-lg-6" id="product">
+                                        <label class="control-label" for="name">Product to Return</label>
+                                        <div>
+                                            <select name="line_id" class="form-control" required="required">
+                                                <option value="">Select Product...</option>
+                                                <t t-foreach="order.order_line or []" t-as="line">
+                                                    <option t-att-value="line.id">
+                                                        <t t-esc="line.product_id.name" />
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group  col-lg-6">
+                                        <label class="control-label" for="name">Return Quantity</label>
+                                        <input type="number" class="form-control" name="quantity" required="True"/>
+                                    </div>
+                                    <div class="form-group  col-lg-12">
+                                        <label class="control-label" for="name">Return Reason</label>
+                                        <textarea class="form-control" rows="8" cols="66" name="reason" required="True"/>
+                                    </div>
+                                    <input type="hidden" name="partner_id" t-att-value="user_id.partner_id.id"/>
+                                    <input type="hidden" name="order_id" t-att-value="order.id"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-success">Submit</button>
+                            or
+                            <button type="button" class="btn btn-link" data-dismiss="modal" style="padding: 0">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </xpath>
+    </template>
+    
+    <template id="successful_return" name="Success Return">
+        <t t-call="website.layout">
+            <div class="row">
+                <div class="col-md-6">
+                    <h3>
+                        Your return order (<span t-esc="return_id.number"/>) request created successfully.
+                        <br/>
+                        We will get back to you soon.
+                        <br/>
+                        <br/>
+                        <h3>Thank You,</h3>
+                        <p>
+                            <h3>
+                                <t t-esc="company"/>
+                            </h3>
+                        </p>
+                    </h3>
+                    <p>
+                        <a class="btn btn-primary pull-left mb32" onclick="history.go(-1);" >
+                            <span class="hidden-xs">Go Back</span>
+                            <span class="fa fa-long-arrow-left"/>
+                        </a>
+                    </p>
+                </div>
+            </div>
+            
+        </t>
+    </template>
+    
+    <template id="higher_quantity" name="Higher Quantity" >
+        <t t-call="website.layout">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1>
+                        You enter higher quantity.
+                        <br/>
+                        <br/>
+                        <h3>Thank You,</h3>
+                        <p>
+                            <h1>
+                                <t t-esc="company"/>
+                            </h1>
+                        </p>
+                    </h1>
+                    <p>
+                        <a class="btn btn-primary pull-left mb32" onclick="history.go(-1);" >
+                            <span class="hidden-xs">Go Back</span>
+                            <span class="fa fa-long-arrow-left"/>
+                        </a>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <img width="200" height="200" src="/website_helpdesk_support_ticket/static/description/success.png"
+                        alt="show ticket" class="img-square" />
+                </div>
+            </div>
+            
+        </t>
+    </template>
+    
+    <template id="validity_expire" name="Validity Expire" >
+        <t t-call="website.layout">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1>
+                        Your validity is expire.
+                        <br/>
+                        <br/>
+                        <h1>Thank You,</h1>
+                        <p>
+                            <h1>
+                                <t t-esc="company"/>
+                            </h1>
+                        </p>
+                    </h1>
+                    <p>
+                        <a class="btn btn-primary pull-left mb32" onclick="history.go(-1);" >
+                            <span class="hidden-xs">Go Back</span>
+                            <span class="fa fa-long-arrow-left"/>
+                        </a>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <img width="200" height="200" src="/website_helpdesk_support_ticket/static/description/success.png"
+                        alt="show ticket" class="img-square" />
+                </div>
+            </div>
+            
+        </t>
+    </template>
+</odoo>

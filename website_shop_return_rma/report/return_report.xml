@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <report id="print_return_report" model="return.order" report_type="qweb-pdf" string="Print
+            Return Report" name="website_shop_return_rma.return_report" file="website_shop_return_rma.return_report"
+            />
+        
+        <template id="return_report">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <t t-call="web.html_container">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        <div class="text-left">
+                            <h3>
+                                <strong>
+                                    Return Order #
+                                    <span t-field="doc.number"/>
+                                </strong>
+                            </h3>
+                        </div>
+                        <div class="row mt32 mb32" id="informations">
+                            <div class="col-auto mw-100 mb-2">
+                                <strong>Customer:</strong>
+                                <t t-if="doc.partner_id">
+                                    <p class="m-0" t-field="doc.partner_id.name"/>
+                                </t>
+                                <t t-if="not doc.partner_id">
+                                    <center>-</center>
+                                </t>
+                            </div>
+                            <div class="col-auto mw-100 mb-2">
+                                <strong>Create Date:</strong>
+                                <t t-if="doc.create_date">
+                                    <p class="m-0" t-field="doc.create_date"/>
+                                </t>
+                                <t t-if="not doc.create_date">
+                                    <center>-</center>
+                                </t>
+                            </div>
+                            <div class="col-auto mw-100 mb-2">
+                                <strong>Order Customer:</strong>
+                                <t t-if="doc.order_partner_id">
+                                    <p class="m-0" t-field="doc.order_partner_id.name"/>
+                                </t>
+                                <t t-if="not doc.order_partner_id">
+                                    <center>-</center>
+                                </t>
+                            </div>
+                            <div class="col-auto mw-100 mb-2">
+                                <strong>Sale Order:</strong>
+                                <t t-if="doc.saleorder_id">
+                                    <p class="m-0" t-field="doc.saleorder_id.name"/>
+                                </t>
+                                <t t-if="not doc.saleorder_id">
+                                    <center>-</center>
+                                </t>
+                            </div>
+                        </div>
+                        <div class="row mt32 mb32" id="informations">
+                            <div class="col-auto mw-100 mb-2">
+                                <strong>Return Product:</strong>
+                                <t t-if="doc.product_id">
+                                    <p class="m-0" t-field="doc.product_id.name"/>
+                                </t>
+                                <t t-if="not doc.product_id">
+                                    <center>-</center>
+                                </t>
+                            </div>
+                            <div class="col-auto mw-100 mb-2">
+                                <strong>Return Quantity:</strong>
+                                <t t-if="doc.quantity">
+                                    <p class="m-0" t-field="doc.quantity"/>
+                                </t>
+                                <t t-if="not doc.quantity">
+                                    <center>-</center>
+                                </t>
+                            </div>
+                            <div class="col-auto mw-100 mb-2">
+                                <strong>Salesperson:</strong>
+                                <t t-if="doc.salesperson_id">
+                                    <p class="m-0" t-field="doc.salesperson_id.name"/>
+                                </t>
+                                <t t-if="not doc.salesperson_id">
+                                    <center>-</center>
+                                </t>
+                            </div>
+                            <div class="col-auto mw-100 mb-2">
+                                <strong>Sales Team:</strong>
+                                <t t-if="doc.team_id">
+                                    <p class="m-0" t-field="doc.team_id.name"/>
+                                </t>
+                                <t t-if="not doc.team_id">
+                                    <center>-</center>
+                                </t>
+                            </div>
+                        </div>
+                        <div class="row mt32 mb32" id="informations">
+                            <div class="col-auto mw-100 mb-2">
+                                <strong>Company:</strong>
+                                <t t-if="doc.company_id">
+                                    <p class="m-0" t-field="doc.company_id.name"/>
+                                </t>
+                                <t t-if="not doc.company_id">
+                                    <center>-</center>
+                                </t>
+                            </div>
+                        </div>
+                        <table class="table table-condensed">
+                            <tr>
+                                <td style="border-bottom: hidden; border-top: hidden;">
+                                    <strong>Reason :</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">
+                                    <span t-field="doc.reason"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+                </t>
+            </t>
+        </template>
+        
+    </data>
+</odoo>

@@ -1,0 +1,103 @@
+# -*- coding: utf-8 -*-
+
+from odoo import http, _
+from odoo.http import request
+from odoo import http, _, tools
+from odoo.addons.portal.controllers.portal import CustomerPortal as website_account
+from datetime import datetime, date
+from odoo import api, fields, models, _
+
+class website_account(website_account):
+
+    def _prepare_portal_layout_values(self): #odoo11
+        values = super(website_account, self)._prepare_portal_layout_values()
+        partner = request.env.user.partner_id
+        rma_order = request.env['return.order']
+        return_count = rma_order.sudo().search_count([
+        ('partner_id', 'child_of', [partner.commercial_partner_id.id])
+          ])
+        values.update({
+        'return_count': return_count,
+#        'page_name': 'return',
+        })
+        print ("=============",values)
+        return values
+
+#    @http.route()
+#    def account(self, **kw):
+#        """ Add return documents to main account page """
+#        response = super(website_account, self).account(**kw)
+#        partner = request.env.user.partner_id
+#        rma_order = request.env['return.order']
+#        return_count = rma_order.sudo().search_count([
+#        ('partner_id', 'child_of', [partner.commercial_partner_id.id])
+#          ])
+#        response.qcontext.update({
+#        'return_count': return_count,
+#        })
+#        return response
+
+    @http.route(['/return/product'], type='http', auth="user", website=True)
+    def portal_return(self, **kw):
+        sale_order = request.env['sale.order'].sudo().browse(int(kw['order_id']))
+        today_date = datetime.today().date()
+        values = {
+            'company': request.env.user.partner_id.company_id.name,
+        }
+        if str(today_date) <= sale_order.return_date:
+            sale_order_line = request.env['sale.order.line'].sudo().browse(int(kw['line_id']))
+            quantity_validate = sale_order_line.product_uom_qty - sale_order_line.return_quantity
+            float_value = 0.0
+            float_value = float(kw['quantity'])
+            if float_value <= quantity_validate and float_value != 0.0:
+                return_quantadd = float_value + sale_order_line.return_quantity
+                vals = {
+                        'partner_id' : int(kw['partner_id']),
+                        'saleorder_id':sale_order.id,
+                        'saleorderline_id':sale_order_line.id,
+                        'product_id':sale_order_line.product_id.id,
+                        'quantity' :float(kw['quantity']),
+                        'reason':tools.ustr(kw['reason']),
+                        'create_date' : fields.Date.today(),
+                        'company' : request.env.user.company_id.name,
+                        'return_by': request.env.user.id,
+                        'create_date' : fields.Date.today(),
+                    }
+                rec = request.env['return.order'].sudo().create(vals)
+                updateline = sale_order_line.write({'return_quantity' : return_quantadd,'return_rma_ids' : [(4, rec.id)]})
+                values.update({
+                    'return_id': rec,
+                })
+                return request.render("website_shop_return_rma.successful_return", values)
+            else:
+                return request.render("website_shop_return_rma.higher_quantity", values)
+        else:
+            return request.render("website_shop_return_rma.validity_expire", values)
+            
+    @http.route(['/my/returns'], type='http', auth="user", website=True)
+    def portal_display_return(self, page=1, **kw):
+        response = super(website_account, self)
+        values = self._prepare_portal_layout_values()
+        partner = request.env.user.partner_id
+        return_obj = http.request.env['return.order']
+        domain = [
+            ('partner_id', 'child_of', [partner.commercial_partner_id.id])
+        ]
+        # count for pager
+        return_count = return_obj.sudo().search_count(domain)
+        # pager
+        pager = request.website.pager(
+            url="/my/returns",
+            total=return_count,
+            page=page,
+            step=self._items_per_page
+        )
+        # content according to pager and archive selected
+        returns = return_obj.sudo().search(domain, limit=self._items_per_page, offset=pager['offset'])
+        values.update({
+            'returns': returns,
+            'page_name': 'return',
+            'pager': pager,
+            'default_url': '/my/returns',
+        })
+        return request.render("website_shop_return_rma.display_returns", values)
