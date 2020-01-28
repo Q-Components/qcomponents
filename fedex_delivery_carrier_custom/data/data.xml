@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+      <!-- Copyright (c) 2018-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+      <!-- See LICENSE URL <https://store.webkul.com/license.html/> for full copyright and licensing details. -->
+        <record forcecreate= "True" id= "FIRST_OVERNIGHT" model= "delivery.carrier.fedex.service">
+             <field name= "name">First Overnight</field>
+            <field name= "code">FIRST_OVERNIGHT</field>
+        </record>
+        <record forcecreate= "True" id= "PRIORITY_OVERNIGHT" model= "delivery.carrier.fedex.service">
+             <field name= "name">Priority Overnight</field>
+            <field name= "code">PRIORITY_OVERNIGHT</field>
+        </record>
+        <record forcecreate= "True" id= "STANDARD_OVERNIGHT" model= "delivery.carrier.fedex.service">
+            <field name= "name">Standard Overnight</field>
+            <field name= "code">STANDARD_OVERNIGHT</field>
+        </record>
+        <record forcecreate= "True" id= "FEDEX_2_DAY_AM" model= "delivery.carrier.fedex.service">
+             <field name= "name">Fedex 2 Day AM </field>
+            <field name= "code">FEDEX_2_DAY_AM</field>
+        </record>
+        <record forcecreate= "True" id= "FEDEX_2_DAY" model= "delivery.carrier.fedex.service">
+           <field name= "name">Fedex 2 Day</field>
+            <field name= "code">FEDEX_2_DAY</field>
+        </record>
+        <record forcecreate= "True" id= "FEDEX_EXPRESS_SAVER" model= "delivery.carrier.fedex.service">
+            <field name= "name">FEDEX EXPRESS SAVER </field>
+            <field name= "code">FEDEX_EXPRESS_SAVER</field>
+        </record>
+        <record forcecreate= "True" id= "GROUND_HOME_DELIVERY" model= "delivery.carrier.fedex.service">
+            <field name= "name">GROUND HOME DELIVERY</field>
+            <field name= "code">GROUND_HOME_DELIVERY</field>
+        </record>
+
+        <record forcecreate= "True" id= "FEDEX_GROUND" model= "delivery.carrier.fedex.service">
+            <field name= "name">FEDEX GROUND</field>
+            <field name= "code">FEDEX_GROUND</field>
+        </record>
+        <record forcecreate= "True" id= "INTERNATIONAL_ECONOMY" model= "delivery.carrier.fedex.service">
+            <field name= "name">INTERNATIONAL ECONOMY</field>
+            <field name= "code">INTERNATIONAL_ECONOMY</field>
+        </record>
+        <record forcecreate= "True" id= "INTERNATIONAL_PRIORITY" model= "delivery.carrier.fedex.service">
+            <field name= "name">INTERNATIONAL PRIORITY</field>
+            <field name= "code">INTERNATIONAL_PRIORITY</field>
+        </record>
+
+
+
+         <record forcecreate= "True" id= "REGULAR_PICKUP" model= "delivery.carrier.fedex.dropofftype">
+            <field name= "name">Regular Pickup</field>
+            <field name= "code">REGULAR_PICKUP</field>
+        </record>
+         <record forcecreate= "True" id= "REQUEST_COURIER" model= "delivery.carrier.fedex.dropofftype">
+            <field name= "name">Request Courier</field>
+            <field name= "code">REQUEST_COURIER</field>
+        </record>
+         <record forcecreate= "True" id= "DROP_BOX" model= "delivery.carrier.fedex.dropofftype">
+            <field name= "name">Drop Box</field>
+            <field name= "code">DROP_BOX</field>
+        </record>
+         <record forcecreate= "True" id= "BUSINESS_SERVICE_CENTER" model= "delivery.carrier.fedex.dropofftype">
+            <field name= "name">Business Service Center</field>
+            <field name= "code">BUSINESS_SERVICE_CENTER</field>
+        </record>
+         <record forcecreate= "True" id= "STATION" model= "delivery.carrier.fedex.dropofftype">
+            <field name= "name">Station</field>
+            <field name= "code">STATION</field>
+        </record>
+
+
+    </data>
+</odoo>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <odoo>
+   <!-- Copyright (c) 2018-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+   <!-- See LICENSE URL <https://store.webkul.com/license.html/> for full copyright and licensing details. -->
+    <record id="shipping_fedex_form" model="ir.ui.view">
+        <field name="name">shipping.fedex.form</field>
+        <field name="model">delivery.carrier</field>
+        <field name="type">form</field>
+            <field name="inherit_id"
+                ref="odoo_shipping_service_apps.view_delivery_carrier_form_inherit_wk_shipping" />
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='Delivery Setting']" position="after">
+                <group
+                    string="FedEx Shipping Infomation "
+                    attrs="{'invisible':[('delivery_type', '!=', 'fedex')]}">
+                            <field
+                                name="fedex_servicetype"
+                                attrs="{'required':[('delivery_type','==','fedex')]}" />
+                            <field
+                                name="fedex_dropofftype"
+                                attrs="{'required':[('delivery_type','==','fedex')]}" />
+                            <field
+                                name="fedex_label_stock_type"
+                                attrs="{'required':[('delivery_type', '==', 'fedex')]}"/>
+                            <field
+                                name="fedex_trackingid_type" attrs="{'required':[('delivery_type','==','fedex')]}"/>
+                            <field name="fedex_paymentyype"
+                                attrs="{'required':[('delivery_type', '==', 'fedex')]}"/>
+                </group>
+            </xpath>
+            <xpath expr="//notebook" position='inside'>
+                <page string="FedEx Credentials" attrs="{'invisible': [('delivery_type', '!=', 'fedex')]}">
+                  <group>
+                      <group>
+                        <field name="fedex_account_no" attrs="{'required': [('delivery_type', '=', 'fedex')]}"/>
+                        <field name="fedex_meter_no" attrs="{'required': [('delivery_type', '=', 'fedex')]}"/>
+                        <field name="fedex_integration_id" />
+                        
+                      
+                      
+                      </group>
+                      <group>
+                        <field name="fedex_key" attrs="{'required': [('delivery_type', '=', 'fedex')]}"/>
+                        <field name="fedex_password"  password ='1' attrs="{'required': [('delivery_type', '=', 'fedex')]}"/>
+                      
+                      </group>
+                  </group>
+              </page>
+          </xpath>
+
+        </field>
+    </record>
+
+    <record id="delivery_carrier_fedex_dropofftype_form" model="ir.ui.view">
+        <field name="name">delivery.carrier.fedex.dropofftype.form</field>
+        <field name="model">delivery.carrier.fedex.dropofftype</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+     <record id="delivery_carrier_fedex_dropofftype_tree" model="ir.ui.view">
+        <field name="name">delivery.carrier.fedex.dropofftype.tree</field>
+        <field name="model">delivery.carrier.fedex.dropofftype</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree string="Dropofftype">
+                <field name="name"/>
+               <field name="code"/>
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_delivery_carrier_fedex_dropofftype">
+            <field name="name">Drop-off Type</field>
+            <field name="res_model">delivery.carrier.fedex.dropofftype</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id"
+                ref="delivery_carrier_fedex_dropofftype_tree"/>
+    </record>
+
+    <record id="delivery_carrier_fedex_service_form" model="ir.ui.view">
+        <field name="name">delivery.carrier.fedex.service.form</field>
+        <field name="model">delivery.carrier.fedex.service</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+     <record id="delivery_carrier_fedex_service_tree" model="ir.ui.view">
+        <field name="name">delivery.carrier.fedex.service.tree</field>
+        <field name="model">delivery.carrier.fedex.service</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree string="Service type">
+                <field name="name"/>
+               <field name="code"/>
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_delivery_carrier_fedex_service">
+            <field name="name">Service List</field>
+            <field name="res_model">delivery.carrier.fedex.service</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id"
+                ref="delivery_carrier_fedex_service_tree"/>
+    </record>
+
+    <menuitem
+        id="menu_shipping_fedex"
+        name="Fedex Services"
+        parent="delivery.menu_delivery"
+        string="Fedex" />
+        <menuitem
+            id="menu_shipping_fedex_dropofftype"
+            name="Fedex Dropoff Type"
+            parent="menu_shipping_fedex"
+            string="Dropofftype"
+            action="action_delivery_carrier_fedex_dropofftype"/>
+        <menuitem
+            id="menu_shipping_fedex_service"
+            name="Fedex Service Type"
+            parent="menu_shipping_fedex"
+            string="ServiceType"
+            action="action_delivery_carrier_fedex_service"/>
+</odoo>

@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_fedex_service_users,delivery.carrier.fedex.service,model_delivery_carrier_fedex_service,,1,0,0,0
+access_fedex_service_admin,delivery.carrier.fedex.service,model_delivery_carrier_fedex_service,stock.group_stock_manager,1,1,1,1
+access_fedex_dropofftype_users,delivery.carrier.fedex.dropofftype,model_delivery_carrier_fedex_dropofftype,,1,0,0,0
+access_fedex_dropofftype_admin,delivery.carrier.fedex.dropofftype,model_delivery_carrier_fedex_dropofftype,stock.group_stock_manager,1,1,1,1
+
+
+
+
+
+

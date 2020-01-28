@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+      <record id="base.user_root" model="res.users">
+            <field name="groups_id" eval="[
+            (4, ref('base.group_multi_currency')),
+            (4, ref('stock.group_tracking_lot')),
+            (4, ref('stock.group_stock_manager')),
+            (4, ref('product.group_stock_packaging')),
+            (4, ref('product.group_sale_pricelist')),
+            ]"/>
+        </record>
+        <record id="base.group_user" model="res.groups">
+            <field name="name">Packaging</field>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+            <field name="implied_ids" eval="[(4, ref('stock.group_tracking_lot'))]"></field>
+        </record>
+        <record id="product.list0" model="product.pricelist">
+            <field name="currency_id" model="res.currency" search="[('name','=','USD')]"/>
+        </record>
+        
+        <record id="stock.res_company_1" model="res.company">
+            <field name="name">My Company, Chicago</field>
+            <field name="phone">+13123493030</field>
+            <field name="email">xyz@webkul.com</field>
+            <field name="street">90 Streets Avenue</field>
+            <field name="city">Chicago</field>
+            <field name="state_id" model="res.country.state" search="[('name','=','Texas')]" ></field>
+            <field name="zip">73344</field>
+            <field name="currency_id" model="res.currency" search="[('name','=','USD')]"/>
+            <field model="res.country" name="country_id" search="[('code','ilike','us')]"/>
+        </record>    
+        <record id="base.main_company" model="res.company">
+            <field name="name">Your Company</field>
+            <field name="phone">+13123493030</field>
+            <field name="email">xyz@webkul.com</field>
+            <field name="street">90 Streets Avenue</field>
+            <field name="city">Chicago</field>
+            <field name="state_id" model="res.country.state" search="[('name','=','Texas')]" ></field>
+            <field name="zip">73344</field>
+            <field name="currency_id" model="res.currency" search="[('name','=','USD')]"/>
+            <field model="res.country" name="country_id" search="[('code','ilike','us')]"/>
+        </record>
+       <!-- Domestic Customer -->
+        <record id="fedex_delivery_demo_customer" model="res.partner">
+            <field name="name">FedEx Delivery Demo customer</field>
+            <field name="type">delivery</field>
+            <field name="phone">+13123493030</field>
+            <field name="email">xyz@webkul.com</field>
+            <field name="street">90 Streets Avenue</field>
+            <field name="city">Chicago</field>
+            <field name="zip">73344</field>
+            <field name="state_id" model="res.country.state" search="[('name','=','Texas')]" ></field>
+            <field model="res.country" name="country_id" search="[('code','ilike','us')]"/>
+        </record>
+        <record forcecreate="True" id="base.user_admin_res_partner" model="res.partner">
+            <field name="child_ids" eval="[(6,0,[ref('fedex_delivery_carrier.fedex_delivery_demo_customer')])]"/>
+        </record>
+        
+    </data>
+</odoo>
