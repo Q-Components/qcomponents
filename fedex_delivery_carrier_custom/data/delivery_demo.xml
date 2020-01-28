@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+      <!-- Copyright (c) 2018-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+      <!-- See LICENSE URL <https://store.webkul.com/license.html/> for full copyright and licensing details. -->
+
+         <record forcecreate= "True" id= "YOUR_PACKAGING" model= "product.packaging">
+            <field name='package_carrier_type'>fedex</field>
+            <field name= "name">Your Packaging</field>
+            <field name= "qty">10</field>
+            <field name= "shipper_package_code">YOUR_PACKAGING</field>
+            <field name= "max_weight">65</field>
+            <field name= "height">10</field>
+            <field name= "width">10</field>
+            <field name="cover_amount">10</field>
+            <field name="max_weight">100</field>
+            <field name= "length">10</field>
+
+        </record>
+        <record forcecreate= "True" id="product_product_delivery_fedex" model="product.product">
+            <field name="name">Delivery by Fedex </field>
+            <field name="default_code">Delivery</field>
+            <field name="type">service</field>
+            <field name="standard_price">10.0</field>
+            <field name="list_price">10.0</field>
+
+        </record>
+
+        <!-- enviroment, genrate_label, normal_price, partner_id -->
+
+        <record forcecreate = "True" id="fedex_delivery_carrier" model="delivery.carrier">
+            <field name="name">FedEx Delivery</field>
+            <field name="delivery_type">fedex</field>
+            <field name="product_id" ref="product_product_delivery_fedex"></field>
+            <field name="fedex_dropofftype" ref="REGULAR_PICKUP"/>
+            <field name="packaging_id" ref="YOUR_PACKAGING"></field>
+            <field name="fedex_servicetype" ref="PRIORITY_OVERNIGHT"></field>
+            <field name="fedex_paymentyype">SENDER</field>
+            <field name="extra_service_price">10</field>
+            <field name="void_shipment">True</field>
+            <field name="uom_id" ref='uom.product_uom_lb'/>
+            <field name="delivery_uom">LB</field>
+            <field name="image" type="base64" file="fedex_delivery_carrier/static/src/img/logo-fedex.png"/>
+        </record>
+
+    </data>
+</odoo>

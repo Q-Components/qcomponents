@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <odoo>
+   <!-- Copyright (c) 2018-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+   <!-- See LICENSE URL <https://store.webkul.com/license.html/> for full copyright and licensing details. -->
+    <record id="fedex_picking_cod_inherit_from" model="ir.ui.view">
+        <field name="name">stock.picking.cod.inherit.form</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="delivery.view_picking_withcarrier_out_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='carrier_data']/field[@name='carrier_id']" position="before">
+                <field name="is_cod" />
+                <field name="collection_type" attrs="{'invisible': [('is_cod', '=', False)]}" />
+            </xpath>
+        </field>
+    </record>
+
+    <record id="fedex_res_partner_inherit_view" model="ir.ui.view">
+        <field name="name">res.partner.cod.inherit.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='vat']" position="after">
+                <field name="tin_type"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

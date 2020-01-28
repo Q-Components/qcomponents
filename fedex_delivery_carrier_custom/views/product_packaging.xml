@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <odoo>
+   <!-- Copyright (c) 2018-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+   <!-- See LICENSE URL <https://store.webkul.com/license.html/> for full copyright and licensing details. -->
+ 	<record model="ir.ui.view" id="product_packaging_delivery_form">
+    <field name="name">product.packaging.form.fedex</field>
+    <field name="model">product.packaging</field>
+    <field name="inherit_id" ref="odoo_shipping_service_apps.product_packaging_delivery_form"/>
+    <field name="arch" type="xml">
+         <xpath expr="//notebook" position="inside">
+            <page name='fedex' string='Fedex Carrier'
+                attrs="{'invisible':[('package_carrier_type', '!=', 'fedex')]}" >
+                <group>
+                    <group>
+                         <field
+                            name="fedex_signature_option"
+                            attrs="{'required':[('package_carrier_type','in', ['fedex'])]}"/>
+                        <field
+                            name="fedex_edt_request_type"
+                            attrs="{'required':[('package_carrier_type','in', ['fedex'])]}"/>
+                          <field
+                            name="fedex_priority_alert"
+                            attrs="{'required':[('package_carrier_type','in', ['fedex'])]}"/>
+                    </group>
+                    <group>
+                          <field
+                            name="fedex_priority_content"
+                            attrs="{'invisible':[('fedex_priority_alert', '!=', 'yes')],'required':[('fedex_priority_alert','in', ['yes'])]}"/>
+
+
+                    </group>
+                </group>
+            </page>
+         </xpath>
+    </field>
+    </record>
+
+    <record id="view_picking_shipping_search" model="ir.ui.view">
+        <field name="name">stock.picking.fedex.shipping.search</field>
+        <field name="model">stock.picking</field>
+         <field name="inherit_id"
+            ref="odoo_shipping_service_apps.view_picking_shipping_search"/>
+        <field name="arch" type="xml">
+            <filter  name="draft"  position='after'>
+                <filter
+                    name="FedEx"
+                    string="FedEx"
+                    domain="[('delivery_type','=','fedex')]"
+                    help="Picking For which FedEx Shipment is assign "/>
+            </filter>
+          </field>
+    </record>
+</odoo>
