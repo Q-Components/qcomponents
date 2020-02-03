@@ -170,8 +170,11 @@ class FedexDeliveryCarrier(models.Model):
         # tin_type.PaymentType = 'RECIPIENT'
         fedex_obj.RequestedShipment.Recipient.Tins.append(tin_type)
         fedex_obj.RequestedShipment.EdtRequestType = packaging_id.fedex_edt_request_type
-        fedex_obj.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = config[
-            "fedex_account_no"]
+        if self.fedex_paymentyype == 'RECIPIENT':
+            fedex_obj.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = recipient.fedex_account_number
+            _logger.info("Hello----------------------------------------%r "%recipient.fedex_account_number)
+        else:
+            fedex_obj.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = config["fedex_account_no"]
         fedex_obj.RequestedShipment.ShippingChargesPayment.PaymentType = self.fedex_paymentyype
 
         return fedex_obj
@@ -341,7 +344,7 @@ class FedexDeliveryCarrier(models.Model):
                             shipment, packaging_id, pickings=pickings,package_id=package_id)
                         weight = obj._get_api_weight(package_id.shipping_weight)
                         weight = weight and weight  or obj.default_product_weight
-                        if pickings.is_cod:
+                        if obj.fedex_is_cod:
                             shipment = obj.get_cod_details(shipment=shipment, currency_id=currency_id, pickings=pickings)
                             
                         ################################################33    COD
@@ -379,6 +382,9 @@ class FedexDeliveryCarrier(models.Model):
 
                         result['attachments'].append(
                             ('FedEx' + str(TrackingNumber) + '.png', binascii.a2b_base64(str(image))))
+                        if obj.fedex_is_cod and shipment.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Type == 'COD_RETURN_LABEL':
+                            cod_return = shipment.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[0].Image
+                            result['attachments'].append(('FedEx_COD_return' + str(TrackingNumber) + '.png', binascii.a2b_base64(str(cod_return))))
                         result['tracking_number'] += ',' + TrackingNumber
                         result['weight'] += weight
 
