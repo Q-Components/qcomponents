@@ -1,0 +1,618 @@
+<html>
+ <body>
+  <section class="oe_container oe_dark lead">
+   <section class="oe_container oe_dark lead">
+    <h2>
+     <font>
+      <p class=" text-center">
+       <b>
+        Odoo FedEx Shipping Integration
+       </b>
+       <br/>
+       Odoo E-Commerce Extension Providing In Depth Integration With FedEx
+      </p>
+     </font>
+    </h2>
+    <div class="oe_row">
+    <p>
+     <b>
+      While using the module please ensure these things:
+     </b>
+    </p>
+    <ul>
+     <li>
+      Valid Credentials.
+     </li>
+     <li>
+      None-Zero Amount Of Weight.
+     </li>
+     <li>
+      Valid Address For User/Partner [Street, City, Zip, State Code, Country Code, Phone ].
+     </li>
+     <li>
+      Valid Address For Warehouse [Street, City, Zip, State Code, Country Code, Phone ].
+     </li>
+    </ul>
+    </div>
+    <div class="oe_row">
+     <div class="oe_span12">
+      <div class="panel panel-primary" id="wkid0">
+       <div class="panel-heading">
+        <h3 class="panel-title" style="font-size: 25px;">
+         <i class="fa fa-mail-forward ">
+         </i>
+         <b>
+          This Extension Allows
+         </b>
+        </h3>
+       </div>
+       <div class="panel-body">
+        <ul class="list-unstyled">
+         <li>
+          <i class="fa fa-check">
+          </i>
+          Real-time Shipping Rate Calculation [From BackEnd as well Website Also].
+         </li>
+         <li>
+          <i class="fa fa-check">
+          </i>
+          Automatic  Packaging Options [Optimal Solution].
+         </li>
+         <li>
+          <i class="fa fa-check">
+          </i>
+          Manual  Packaging Options .
+         </li>
+         <li>
+          <i class="fa fa-check">
+          </i>
+          Shipping Label Generation.
+         </li>
+         <li>
+          <i class="fa fa-check">
+          </i>
+          Multi Package Shipment.
+         </li>
+         <li>
+          <i class="fa fa-check">
+          </i>
+          Shipping Label Cancellation.
+         </li>
+         <li>
+          <i class="fa fa-check">
+          </i>
+          Live Shipment Tracking Number .
+         </li>
+         <li>
+          <i class="fa fa-check">
+          </i>
+          Return label generation for Return Shipment.
+         </li>
+         <li>
+          <i class="fa fa-check">
+          </i>
+          Compatible With All Version Of Odoo.
+         </li>
+         <li>
+          <span class="">
+           <b>
+            Full Admin Control
+           </b>
+          </span>
+          <ul class="list-unstyled">
+           <li class="">
+            <i class="fa fa-hand-o-right ">
+            </i>
+            Admin can
+            <b>
+             Define/Update New Service
+            </b>
+            as per their preferences .
+           </li>
+           <li class="">
+            <i class="fa fa-hand-o-right">
+            </i>
+            Admin can
+            <b>
+             Define/Update Packaging Type and Drop Off Type
+            </b>
+            for  FedEx shipping.
+           </li>
+           <li class="">
+            <i class="fa fa-hand-o-right">
+            </i>
+            Admin can
+            <b>
+             Define/Update Allowed  Shipping Methods and Unit of Weight
+            </b>
+            for FedEx shipping.
+           </li>
+          </ul>
+         </li>
+        </ul>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="oe_container oe_dark lead">
+    <div class="oe_row">
+     <div class="oe_span12">
+      <div class="panel panel-success" id="wkid2">
+       <div class="panel-heading">
+        <h3 class="panel-title" style="font-size: 25px;">
+         <i class="fa fa-wrench ">
+         </i>
+         <b>
+          Setup &amp; Configure
+         </b>
+        </h3>
+       </div>
+       <div class="panel-body">
+        <!-- ############################################################################################## -->
+        <div class="alert alert-success" style="padding:8px;font-weight: 300; font-size: 20px;">
+         <i class="fa fa-cog">
+         </i>
+         <b>
+          Installation
+         </b>
+        </div>
+        <p>
+          This module required the extension of
+                           BackBone Shipping Module.
+        </p>
+        <p>
+         <a href="backbone.png">
+          <img alt="Odoo-Shipping-Api-FedEx-USPS-UPS-DHL-Integration|BackBone" class="oe_picture oe_screenshot" src="backbone.png"/>
+         </a>
+        </p>
+        <p>
+        </p>
+        <p>
+          After the successful installation of
+                       the BackBone Shipping Module module you will have to
+                        click the  FedEx Shipping  Module Link  under
+                        Setting -&gt;General Settings -&gt;Shipping Service.
+        </p>
+        <a href="1.png">
+         <img  class="oe_picture oe_screenshot" src="1.png"/>
+        </a>
+        <p>
+        </p>
+      
+        
+      
+      
+      
+        <!-- ############################################################################################## -->
+        <div class="alert alert-success" style="padding:8px;font-weight: 300; font-size: 20px;">
+         <i class="fa fa-cog">
+         </i>
+         <b>
+          Shipping Configuration .
+         </b>
+        </div>
+        <p>
+          After the successful installation of
+                      the FedEx Shipping Module module you will have to
+                       click the  Delivery Methods menu  under
+                       Inventory -&gt;Delivery-&gt;Delivery Methods.
+        </p>
+        <p>
+         <a href="2.jpg">
+          <img class="oe_picture oe_screenshot" src="2.jpg"/>
+         </a>
+        </p>
+        <p>
+          <ul>
+          <li>
+           We have set up the most frequently used values
+           <b>
+            But  please  look all of them and change according to your needs
+           </b>
+           .
+          </li>
+          <li>
+              Check <b>Generate Return Label</b> to enable return label generation for this carrier.
+          </li>
+          <li>
+            Check <b>Return Label Accessible from Customer Portal</b> to accessible generated return label from customer portal.
+          </li>
+          </ul>
+         </p> 
+        <p style="margin-top:30px;">
+         <a href="3.png">
+          <img class="oe_picture oe_screenshot" src="3.png"/>
+         </a>
+        </p>
+        
+        <p>
+         <b>
+          Fill these FedEx Credentials
+         </b>
+        </p>
+        <ul>
+         <li>
+          Key.
+         </li>
+         <li>
+          Password.
+         </li>
+         <li>
+          Account Number.
+         </li>
+         <li>
+          Meter Number.
+         </li>
+         <li>
+          Integration Id.
+         </li>
+        </ul>
+        <p>
+         Environment - Select Testing  Shipping while testing the module flow.
+                        Turn into Production, when you go live and ready to create real billable labels.
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="oe_container oe_dark lead">
+    <div class="oe_row">
+     <div class="oe_span12">
+      <div class="panel" id="wkid3">
+       <div class="panel-heading">
+        <h3 class="panel-title" style="font-size: 25px;">
+         <i class="fa fa-pencil-square-o ">
+         </i>
+         <b>
+          Work-flow
+         </b>
+        </h3>
+       </div>
+       <div class="panel-body">
+        <div class="alert alert-info" style="padding:8px;font-weight: 300; font-size: 20px;">
+         <i class="fa fa-desktop">
+         </i>
+         <b>
+          FedEx Price Calculator [On BackEnd By Admin]
+         </b>
+        </div>
+        <p>
+          After configuring the FedEx Shipping
+                   Module  module you will be able to see the FedEx Delivery in
+                    Delivery Method List Of Sale Order Option [Sale --&gt; Sale Order-&gt;Create].
+        </p>
+        <p>
+         <a href="4.jpg">
+          <img class="oe_picture oe_screenshot" src="4.jpg"/>
+         </a>
+        </p>
+        <h4>
+        </h4>
+        <p>
+         <b>
+          Now:
+         </b>
+        </p>
+        <ul>
+         <li>
+          Select A customer .
+         </li>
+         <li>
+          Add product in sale oder line .
+         </li>
+         <li>
+          Click Add Shipping to select the shipping carrier.
+        </li>
+         <li>
+          Select
+          <b>
+           FedEx Delivery
+          </b>
+          as  delivery method for this sale order .
+         </li>
+         <li>
+          Click on Get rate and 
+          <b>
+           then ADD
+          </b>
+          it will list you the delivery charges.
+         </li>
+          <li>
+            You can also recompute delivery charges by clicking on Update Shipping Cost.
+          </li>
+        </ul>
+        <p>Wizard for Compute Delivery Rate. Get Rate and Add to Order.</p>
+        <p>
+          <a href="5.1.jpg">
+            <img class="oe_picture oe_screenshot" src="5.1.jpg"/>
+          </a>
+        </p>
+        <p>Update shipping cost.</p>
+        <p>
+          <a href="5.2.jpg">
+            <img class="oe_picture oe_screenshot" src="5.2.jpg"/>
+          </a>
+        </p>
+        <!-- ############### -->
+        <div class="alert alert-info" style="padding:8px;font-weight: 300; font-size: 20px;">
+         <i class="fa fa-desktop">
+         </i>
+         <b>
+          FedEx Price Calculator  [On FrontEnd By Site User]
+         </b>
+        </div>
+        <p>
+          This module also support the feature of
+          <b>
+           Price Calculation From  Website
+          </b>
+          .
+        </p>
+        <p>
+          On the odoo website user can  see the FedEx delivery  option in
+                            delivery method List in their cart before making final payment .
+        </p>
+        <div class="col-md-12">
+         <p>
+          <a href="6.png">
+           <img class="oe_picture oe_screenshot" src="6.png"/>
+          </a>
+         </p>
+        </div>
+        <p class="text-danger">
+         <b>
+          NOTE:
+         </b>
+         <br/>
+         This delivery charge is combination of actual delivery charges and percentage/fixed amount set in FedEx delivery configuration .
+        </p>
+        <p>
+         <!-- ############### -->
+        </p>
+        <div class="alert alert-info" style="padding:8px;font-weight: 300; font-size: 20px;">
+         <i class="fa fa-arrow-circle-o-right">
+         </i>
+         <b>
+          FedEx Label Generator
+         </b>
+        </div>
+        <p class="text-danger">
+         <b>
+          NOTE:
+         </b>
+         <br/>
+        </p>
+        <p class="text-danger">
+         Prior to label generation enable packaging option and assign access of packaging.
+        </p>
+        <p>
+        </p>
+        <p>
+         <a href="8.png">
+          <img class="oe_picture oe_screenshot" src="7.png"/>
+         </a>
+        </p>
+        <p>
+         <a href="9.png">
+          <img class="oe_picture oe_screenshot" src="8.png"/>
+         </a>
+        </p>
+        <p class="text-danger">
+         <b>
+          NOTE:
+         </b>
+         Firstly you will have to create package of picking
+         <b>
+          before clicking the validate.
+         </b>
+        </p>
+        <p>
+          Now create package by selecting those picking line which  you want to put in
+          <b>
+           single package
+          </b>
+          then click on
+          <b>
+           put in pack
+          </b>
+          .
+        </p>
+        <p>
+         <a href="10.png">
+          <img class="oe_picture oe_screenshot" src="10.png"/>
+         </a>
+        </p>
+        <p>
+          In side the wizard  select the
+          <b>
+           FedEx Package Type
+          </b>
+          you want to use for this package.
+        </p>
+        <p>
+          Here you can also modify the package
+          <b>
+           Shipping  Weight
+          </b>
+          and also add the cover amount and description of package for future reference.
+        </p>
+        <p>
+         <a href="11.jpg">
+          <img class="oe_picture oe_screenshot" src="11.jpg"/>
+         </a>
+        </p>
+        <p>
+         <a href="12.jpg">
+          <img class="oe_picture oe_screenshot" src="12.jpg"/>
+         </a>
+        </p>
+        <p>
+         Finally After package generation click on validate/send to shipper.
+        </p>
+        <p>
+         Now down load the label from the  message box.
+        </p>
+        <div class="row">
+         <a href="FedEx794644397216.png">
+          <img alt="FedEx-Odoo-Shipping-Api-FedEx-USPS-UPS-DHL-Integration|FedEx-Label" class="col-md-12" src="FedEx794644397216.png"/>
+         </a>
+        </div>
+        <!-- ########################## -->
+        <div class="alert alert-info" style="padding:8px;font-weight: 300; font-size: 20px;">
+         <i class="fa fa-arrow-circle-o-right">
+         </i>
+         <b>
+          Void Shipment
+         </b>
+        </div>
+        <p>
+          This module also provide  the feature of void shipment .
+          <br/>
+          thus after generating the label if
+                          you don't want  to ship now then just click on cancellation link to void shipment .
+        </p>
+        <p>
+         <a href="13.jpg">
+          <img class="oe_picture oe_screenshot" src="13.jpg "/>
+         </a>
+        </p>
+       </div>
+       <div class="alert alert-info" style="padding:8px;font-weight: 300; font-size: 20px;">
+        <i class="fa fa-arrow-circle-o-right">
+        </i>
+        <b>
+         Return Label Generation
+        </b>
+       </div>
+       <p>
+         This module also provide  the feature of return label generation.
+         <br/>
+         Thus after receiving shipment if customer want to return its shipment then he/she can download the return label from Customer portal after filing return to attach label on the package and deliver back to Warehouse.
+       </p>
+       <p>
+        <ul>
+          <li>
+            <p>
+              Generate return from validated shipment.
+            </p>
+            <p>
+              <a href="14.jpg">
+                <img class="oe_picture oe_screenshot" src="14.jpg "/>
+              </a>
+            </p>
+          </li>
+          <li>
+            <p>
+              Select the quantities to be return among the delivered quantities.
+            </p>
+            <p>
+              <a href="15.jpg">
+                <img class="oe_picture oe_screenshot" src="15.jpg">
+              </a>
+            </p>
+          </li>
+          <li>
+            <p>
+              Select FedEx delivery as carrier for this return shipment.
+            </p>
+            <p>
+                <a href="16.jpg">
+                  <img class="oe_picture oe_screenshot" src="16.jpg">
+                </a>
+            </p>
+          </li>
+          <li>
+              <p>
+                Now create package by clicking <b>Put in pack</b> and then click <b>Print Return Label</b> to generate return label. 
+              </p>
+              <p>
+                  <a href="17.jpg">
+                    <img class="oe_picture oe_screenshot" src="17.jpg">
+                  </a>
+              </p>
+              <p class="text-danger">
+                Note: You can generate return label only for one package. Do not create more than one package for generation of return label.
+              </p>
+          </li>
+        </ul>
+      </p>
+
+      <p>
+        Return label can be downloaded from the message box.
+      </p>
+      <p>
+        <a href="18.jpg">
+          <img class="oe_picture oe_screenshot" src="18.jpg">
+        </a>
+      </p>
+      <p>
+        After generation of return label customer can download this return label fromcustomer portal if <b>Return Label Accessible from Customer Portal</b> field is checked in delivery carrier configuration.
+      </p>
+      <p>
+      <p>
+        <a href="19.jpg">
+          <img class="oe_picture oe_screenshot" src="19.jpg">
+        </a>
+      </p>
+
+      <p>
+        Preview of Return Label
+      </p>
+      <p class="display-flex" style="display:flex; justify-content: center;">
+          <a href="20.jpg">
+            <img class="oe_picture oe_screenshot" src="20.jpg">
+          </a>
+      </p>
+
+      </div>
+     </div>
+    </div>
+   </section>
+  </section>
+  <section class="oe_container lead">
+    <div>
+     <div class="oe_span12 text-center">
+      <h2 class="oe_slogan">
+       Complimentary Support
+      </h2>
+      <p>
+       You will get 90 days free support for any doubt, queries, and bug fixing (excluding data recovery) or any type of issue related to this module.
+      </p>
+     </div>
+    </div>
+   <div class="oe_span12 text-center">
+    <div class="oe_span12 text-center">
+     <h2 class="text-center oe_slogan">
+      Help and Support
+     </h2>
+    </div>
+    <div class="oe_slogan oe_spaced text-center">
+     <a href="https://webkul.uvdesk.com/en/customer/create-ticket/" onmouseout="this.style.color='#7c7bad'" onmouseover="this.style.color='#AC1EE0'" style="color:#7c7bad;" title="Get Instant Help !">
+      <i class="fa fa-life-ring">
+      </i>
+      Help
+     </a>
+     <a href="https://webkul.uvdesk.com/en/customer/create-ticket/" onmouseout="this.style.color='#7c7bad'" onmouseover="this.style.color='#AC1EE0'" style="color:#7c7bad;" title="Get Instant Support!">
+      <i class="fa fa-ticket">
+      </i>
+      Support
+     </a>
+     <a href="https://webkul.uvdesk.com/en/customer/create-ticket/" onmouseout="this.style.color='#7c7bad'" onmouseover="this.style.color='#AC1EE0'" style="color:#7c7bad;" title="Request Features now !">
+      <i class="fa fa-check-circle">
+      </i>
+      Request new Features
+     </a>
+    </div>
+   </div>
+  </section>
+  <section class="oe_container">
+   <div class="oe_span12">
+    <!-- Piwik Image Tracker-->
+    <img alt="" src="http://odooimg.webkul.com/analytics/piwik/piwik.php?idsite=3&amp;rec=1&amp;action_name=FEDEX-SHIPPING-INTEGRATION&amp;url=https://apps.openerp.com/apps/modules/13.0/fedex_delivery_carrier&amp;uid=fedex_delivery_carrier" style="border:0"/>
+    <!-- End Piwik -->
+   </div>
+  </section>
+ </body>
+</html>
