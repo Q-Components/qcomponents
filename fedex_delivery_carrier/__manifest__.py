@@ -17,7 +17,7 @@
   "name"                 :  "Custom - FedEx Shipping Integration",
   "summary"              :  """Integrate Fedex shipping functionality directly within Odoo ERP applications to deliver increased logistical efficiencies.""",
   "category"             :  "Website",
-  "version"              :  "1.0.2",
+  "version"              :  "1.0.1",
   "author"               :  "Webkul Software Pvt. Ltd.",
   "license"              :  "Other proprietary",
   "website"              :  "https://store.webkul.com/Odoo-Website-Fedex-Shipping-Integration.html",
