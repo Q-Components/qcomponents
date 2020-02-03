@@ -170,10 +170,8 @@ class FedexDeliveryCarrier(models.Model):
         # tin_type.PaymentType = 'RECIPIENT'
         fedex_obj.RequestedShipment.Recipient.Tins.append(tin_type)
         fedex_obj.RequestedShipment.EdtRequestType = packaging_id.fedex_edt_request_type
-        if self.fedex_paymentyype == 'RECIPIENT':
-            fedex_obj.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = recipient.fedex_account_number
-        else:
-            fedex_obj.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = config["fedex_account_no"]
+        fedex_obj.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = config[
+            "fedex_account_no"]
         fedex_obj.RequestedShipment.ShippingChargesPayment.PaymentType = self.fedex_paymentyype
 
         return fedex_obj
@@ -203,8 +201,7 @@ class FedexDeliveryCarrier(models.Model):
                 for wk_packaging_id in wk_packaging_ids:
                     weight = int(round(self._get_api_weight(
                         wk_packaging_id.get('weight'))))
-                    if self.fedex_is_cod:
-                        rate_request = self.get_cod_details(shipment=rate_request, currency_id=currency_id, order=order)
+
                     package = self.get_fedex_package(
                         rate_request, weight, wk_packaging_id.get(
                             'length'), wk_packaging_id.get('width'),
@@ -254,29 +251,22 @@ class FedexDeliveryCarrier(models.Model):
 
 
     @api.model
-    def get_cod_details(self, shipment=None, currency_id=None, pickings=None, order=None):
-        if pickings and pickings.origin:
+    def get_cod_details(self, shipment=None, currency_id=None, pickings=None):
+        if pickings.origin:
             sale_order = self.env['sale.order'].sudo().search([('name','=', str(pickings.origin))])
             amount_total = None
             if sale_order.exists():
                 amount_total = sale_order.amount_total
-                for line in sale_order.order_line:
-                    if line.product_id == self.product_id:
-                        amount_total -= 15.5
-        if order:
-            amount_total = order.amount_total
-            recipient = order.partner_shipping_id if order.partner_shipping_id else order.partner_id
-        else:
-            recipient = pickings.partner_id
-        if pickings:
-            warehouse = pickings.picking_type_id.warehouse_id.partner_id
+        recipient = pickings.partner_id
+        warehouse = pickings.picking_type_id.warehouse_id.partner_id
         shipment.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes="COD"
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = currency_id.name
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = amount_total
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.RateTypeBasis = 'ACCOUNT'
-        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.ChargeBasis = 'COD_SURCHARGE'
-        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.ChargeBasisLevel = 'CURRENT_PACKAGE'
-        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = self.fedex_collection_type
+        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.ChargeBasis = 'NET_FREIGHT'
+        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.ChargeBasisLevel = 'SUM_OF_PACKAGES'
+
+        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = pickings.collection_type
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PersonName = recipient.name
         if recipient.is_company:
             shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.CompanyName = recipient.parent_id and recipient.parent_id.name or recipient.name
@@ -351,7 +341,7 @@ class FedexDeliveryCarrier(models.Model):
                             shipment, packaging_id, pickings=pickings,package_id=package_id)
                         weight = obj._get_api_weight(package_id.shipping_weight)
                         weight = weight and weight  or obj.default_product_weight
-                        if obj.fedex_is_cod:
+                        if pickings.is_cod:
                             shipment = obj.get_cod_details(shipment=shipment, currency_id=currency_id, pickings=pickings)
                             
                         ################################################33    COD
@@ -380,16 +370,15 @@ class FedexDeliveryCarrier(models.Model):
                                     packaging_id)
                             shipment.add_package(package)
                             shipment.send_request()
+
                             CompletedPackageDetails = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[
                                 0]
                         TrackingNumber = CompletedPackageDetails.TrackingIds[
                             0].TrackingNumber
                         image = CompletedPackageDetails.Label.Parts[0].Image
+
                         result['attachments'].append(
                             ('FedEx' + str(TrackingNumber) + '.png', binascii.a2b_base64(str(image))))
-                        if obj.fedex_is_cod and shipment.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Type == 'COD_RETURN_LABEL':
-                            cod_return = shipment.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[0].Image
-                            result['attachments'].append(('FedEx_COD_return' + str(TrackingNumber) + '.png', binascii.a2b_base64(str(cod_return))))
                         result['tracking_number'] += ',' + TrackingNumber
                         result['weight'] += weight
 
