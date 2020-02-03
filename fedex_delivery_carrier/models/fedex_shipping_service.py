@@ -244,16 +244,6 @@ class ShippingFedex(models.Model):
     fedex_integration_id=fields.Char(
         string='Integration ID',
     )
-    fedex_is_cod = fields.Boolean(string="Is COD")
-    fedex_collection_type = fields.Selection(selection=Collectiontype, string="Collection Type", default="ANY")
-
-    @api.onchange('fedex_is_cod')
-    def check_payment_type(self):
-        for obj in self:
-            if obj.fedex_is_cod:
-                obj.fedex_paymentyype = 'SENDER'
-
-
     
     @api.model
     def _get_config(self,key):
