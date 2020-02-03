@@ -263,9 +263,10 @@ class FedexDeliveryCarrier(models.Model):
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = currency_id.name
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = amount_total
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.RateTypeBasis = 'ACCOUNT'
-        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.ChargeBasis = 'COD_SURCHARGE'
-        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.ChargeBasisLevel = 'CURRENT_PACKAGE'
-        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = self.fedex_collection_type
+        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.ChargeBasis = 'NET_FREIGHT'
+        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.ChargeBasisLevel = 'SUM_OF_PACKAGES'
+
+        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = pickings.collection_type
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PersonName = recipient.name
         if recipient.is_company:
             shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.CompanyName = recipient.parent_id and recipient.parent_id.name or recipient.name
@@ -340,7 +341,7 @@ class FedexDeliveryCarrier(models.Model):
                             shipment, packaging_id, pickings=pickings,package_id=package_id)
                         weight = obj._get_api_weight(package_id.shipping_weight)
                         weight = weight and weight  or obj.default_product_weight
-                        if obj.fedex_is_cod:
+                        if pickings.is_cod:
                             shipment = obj.get_cod_details(shipment=shipment, currency_id=currency_id, pickings=pickings)
                             
                         ################################################33    COD
