@@ -290,18 +290,6 @@ class ShippingFedexServiceType(models.Model):
         required=1
     )
 
-class CODShippingServices(models.Model):
-    _inherit = 'stock.picking'
-    is_cod = fields.Boolean(string="C.O.D")
-    collection_type = fields.Selection(selection=CollectionType, string="Collection Type", default="ANY")
-
-    @api.onchange('is_cod')
-    def check_payment_type(self):
-        for obj in self:
-            if obj.is_cod:
-                obj.carrier_id.fedex_paymentyype = 'SENDER'
-
-
 
 class BillingDetailsPartner(models.Model):
     _inherit = 'res.partner'
