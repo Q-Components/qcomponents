@@ -47,10 +47,6 @@
                   </group>
               </page>
           </xpath>
-          <xpath expr="//field[@name='integration_level']" position="after">
-            <field name="fedex_is_cod" />
-            <field name="fedex_collection_type" attrs="{'invisible':[('fedex_is_cod', '=', False)]}" />
-          </xpath>
 
         </field>
     </record>

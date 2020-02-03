@@ -31,9 +31,9 @@
                             ],
   "data"                 :  [
                              'security/ir.model.access.csv',
-                            #  'views/fedex_delivery_carrier.xml',
+                             'views/fedex_delivery_carrier.xml',
                              'views/product_packaging.xml',
-                            #  'views/cod_details_view.xml',
+                             'views/cod_details_view.xml',
                              'data/data.xml',
                              'data/delivery_demo.xml',
                             ],
