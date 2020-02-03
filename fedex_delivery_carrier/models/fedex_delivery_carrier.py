@@ -261,8 +261,16 @@ class FedexDeliveryCarrier(models.Model):
             amount_total = None
             if sale_order.exists():
                 amount_total = sale_order.amount_total
-        recipient = pickings.partner_id
-        warehouse = pickings.picking_type_id.warehouse_id.partner_id
+                for line in sale_order.order_line:
+                    if line.product_id == self.product_id:
+                        amount_total -= 15.5
+        if order:
+            amount_total = order.amount_total
+            recipient = order.partner_shipping_id if order.partner_shipping_id else order.partner_id
+        else:
+            recipient = pickings.partner_id
+        if pickings:
+            warehouse = pickings.picking_type_id.warehouse_id.partner_id
         shipment.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes="COD"
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = currency_id.name
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = amount_total
@@ -373,13 +381,11 @@ class FedexDeliveryCarrier(models.Model):
                                     packaging_id)
                             shipment.add_package(package)
                             shipment.send_request()
-
                             CompletedPackageDetails = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[
                                 0]
                         TrackingNumber = CompletedPackageDetails.TrackingIds[
                             0].TrackingNumber
                         image = CompletedPackageDetails.Label.Parts[0].Image
-
                         result['attachments'].append(
                             ('FedEx' + str(TrackingNumber) + '.png', binascii.a2b_base64(str(image))))
                         if obj.fedex_is_cod and shipment.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Type == 'COD_RETURN_LABEL':
