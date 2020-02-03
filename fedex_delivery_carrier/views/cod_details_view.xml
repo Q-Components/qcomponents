@@ -10,7 +10,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='vat']" position="after">
                 <field name="tin_type"/>
-                <field name="fedex_account_number" />
+                <!-- <field name="fedex_account_number" /> -->
             </xpath>
         </field>
     </record>
