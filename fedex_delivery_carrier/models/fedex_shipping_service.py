@@ -295,4 +295,4 @@ class BillingDetailsPartner(models.Model):
     _inherit = 'res.partner'
     
     tin_type = fields.Selection(selection=TinType, string="Tin Type", default='BUSINESS_NATIONAL')
-    # fedex_account_number = fields.Char(string="Account Number")
+    fedex_account_number = fields.Char(string="Account Number")
