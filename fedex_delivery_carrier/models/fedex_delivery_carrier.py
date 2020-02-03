@@ -204,7 +204,8 @@ class FedexDeliveryCarrier(models.Model):
                 for wk_packaging_id in wk_packaging_ids:
                     weight = int(round(self._get_api_weight(
                         wk_packaging_id.get('weight'))))
-
+                    if self.fedex_is_cod:
+                        rate_request = self.get_cod_details(shipment=rate_request, currency_id=currency_id, order=order)
                     package = self.get_fedex_package(
                         rate_request, weight, wk_packaging_id.get(
                             'length'), wk_packaging_id.get('width'),
@@ -254,8 +255,8 @@ class FedexDeliveryCarrier(models.Model):
 
 
     @api.model
-    def get_cod_details(self, shipment=None, currency_id=None, pickings=None):
-        if pickings.origin:
+    def get_cod_details(self, shipment=None, currency_id=None, pickings=None, order=None):
+        if pickings and pickings.origin:
             sale_order = self.env['sale.order'].sudo().search([('name','=', str(pickings.origin))])
             amount_total = None
             if sale_order.exists():
@@ -266,10 +267,9 @@ class FedexDeliveryCarrier(models.Model):
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = currency_id.name
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = amount_total
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.RateTypeBasis = 'ACCOUNT'
-        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.ChargeBasis = 'NET_FREIGHT'
-        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.ChargeBasisLevel = 'SUM_OF_PACKAGES'
-
-        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = pickings.collection_type
+        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.ChargeBasis = 'COD_SURCHARGE'
+        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.AddTransportationChargesDetail.ChargeBasisLevel = 'CURRENT_PACKAGE'
+        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = self.fedex_collection_type
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PersonName = recipient.name
         if recipient.is_company:
             shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.CompanyName = recipient.parent_id and recipient.parent_id.name or recipient.name
