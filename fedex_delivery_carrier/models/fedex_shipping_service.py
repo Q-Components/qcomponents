@@ -244,6 +244,16 @@ class ShippingFedex(models.Model):
     fedex_integration_id=fields.Char(
         string='Integration ID',
     )
+    fedex_is_cod = fields.Boolean(string="Is COD")
+    fedex_collection_type = fields.Selection(selection=CollectionType, string="Collection Type", default="ANY")
+
+    @api.onchange('fedex_is_cod')
+    def check_payment_type(self):
+        for obj in self:
+            if obj.fedex_is_cod:
+                obj.fedex_paymentyype = 'SENDER'
+
+
     
     @api.model
     def _get_config(self,key):
@@ -280,20 +290,9 @@ class ShippingFedexServiceType(models.Model):
         required=1
     )
 
-class CODShippingServices(models.Model):
-    _inherit = 'stock.picking'
-    is_cod = fields.Boolean(string="C.O.D")
-    collection_type = fields.Selection(selection=CollectionType, string="Collection Type", default="ANY")
-
-    @api.onchange('is_cod')
-    def check_payment_type(self):
-        for obj in self:
-            if obj.is_cod:
-                obj.carrier_id.fedex_paymentyype = 'SENDER'
-
-
 
 class BillingDetailsPartner(models.Model):
     _inherit = 'res.partner'
     
     tin_type = fields.Selection(selection=TinType, string="Tin Type", default='BUSINESS_NATIONAL')
+    # fedex_account_number = fields.Char(string="Account Number")
