@@ -14,10 +14,10 @@
 # If not, see <https://store.webkul.com/license.html/>
 #################################################################################
 {
-  "name"                 :  "FedEx Shipping Integration",
+  "name"                 :  "Custom - FedEx Shipping Integration",
   "summary"              :  """Integrate Fedex shipping functionality directly within Odoo ERP applications to deliver increased logistical efficiencies.""",
   "category"             :  "Website",
-  "version"              :  "1.0.1",
+  "version"              :  "1.0.2",
   "author"               :  "Webkul Software Pvt. Ltd.",
   "license"              :  "Other proprietary",
   "website"              :  "https://store.webkul.com/Odoo-Website-Fedex-Shipping-Integration.html",
