@@ -119,7 +119,7 @@ Boolean = [
     ('no', 'NO'),
 ]
 
-CollectionType = [
+Collectiontype = [
     ('ANY', 'Any Payment Type'),
     ('CASH', 'Currency'),
     ('COMPANY_CHECK', 'Company Cheque'),
@@ -245,7 +245,7 @@ class ShippingFedex(models.Model):
         string='Integration ID',
     )
     fedex_is_cod = fields.Boolean(string="Is COD")
-    fedex_collection_type = fields.Selection(selection=CollectionType, string="Collection Type", default="ANY")
+    fedex_collection_type = fields.Selection(selection=Collectiontype, string="Collection Type", default="ANY")
 
     @api.onchange('fedex_is_cod')
     def check_payment_type(self):
@@ -295,4 +295,4 @@ class BillingDetailsPartner(models.Model):
     _inherit = 'res.partner'
     
     tin_type = fields.Selection(selection=TinType, string="Tin Type", default='BUSINESS_NATIONAL')
-    fedex_account_number = fields.Char(string="Account Number")
+    # fedex_account_number = fields.Char(string="Account Number")
