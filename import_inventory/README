@@ -1,4 +1,12 @@
 
-v 13.0.0.0
+v 13.0.0.1
+
+-> Customize module as per client requirement, create product if not exits,
+if product exits create inventory and validate inventory with values for 
+csv and xlsx options
 
 
+v 13.0.0.2
+
+-> Add lot option for import csv and xlsx. 
+-> When lot given while creating or updating product enable tracking by lots.
