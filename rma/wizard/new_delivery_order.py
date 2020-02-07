@@ -83,7 +83,7 @@ class NewDeliveryOrderWizard(models.TransientModel):
 			if picktype.default_location_src_id:
 				self.source_location_id = picktype.default_location_src_id.id
 
-	# @api.multi
+	@api.multi
 	def apply(self):
 		self.ensure_one()
 

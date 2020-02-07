@@ -59,7 +59,7 @@ class PurchaseOrderWizard(models.TransientModel):
     product_id = fields.Many2one(
         'product.product', "Product", default=_get_product, required=True)
     partner_id = fields.Many2one('res.partner', 'Supplier', domain=[
-                                 ('supplier_rank', '>', 0)], required=True)
+                                 ('supplier', '=', True)], required=True)
     pricelist_id = fields.Many2one('product.pricelist', 'Pricelist', required=True,
                                    help="The pricelist sets the currency used for this purchase order. It also computes the supplier price for the selected products/quantities.")
     location_id = fields.Many2one(
@@ -79,7 +79,7 @@ class PurchaseOrderWizard(models.TransientModel):
             if picktype.default_location_dest_id:
                 self.location_id = picktype.default_location_dest_id.id
 
-    # @api.multi
+    @api.multi
     def apply_and_view(self):
         order_id = self.apply()
         if order_id:
@@ -96,7 +96,7 @@ class PurchaseOrderWizard(models.TransientModel):
                 'res_id': order_id.id,
             }
 
-    # @api.multi
+    @api.multi
     def apply(self):
         self.ensure_one()
         vals = {

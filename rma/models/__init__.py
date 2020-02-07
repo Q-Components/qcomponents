@@ -17,4 +17,3 @@
 from . import rma
 from . import sale_order_line
 from . import res_config
-from . import repair_order

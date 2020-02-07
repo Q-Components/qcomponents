@@ -31,7 +31,7 @@
             <field name="name">New Delivery Order</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">new.delivery.order.wizard</field>
-            <!-- <field name="view_type">form</field> -->
+            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="view_id" ref="rma_new_delivery_order_wizard_id"/>
             <field name="target">new</field>

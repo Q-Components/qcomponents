@@ -81,7 +81,7 @@ class NewMrpRepairWizard(models.TransientModel):
         default="none",  string="Invoice Method", help='Selecting \'Before Repair\' or \'After Repair\' will allow you to generate invoice before or after the repair is done respectively. \'No invoice\' means you don\'t want to generate invoice for this repair order.')
     rma_id = fields.Many2one("rma.rma", string="RMA ID", default=_get_rma_id)
 
-    # @api.multi
+    @api.multi
     def apply(self):
         self.ensure_one()
         repair_vals = {"rma_id": self.rma_id.id, 'partner_id': self.partner_id.id,

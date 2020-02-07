@@ -73,7 +73,7 @@ class rma_wizard(models.TransientModel):
                 body=_("%s Generated Successfully" % rma.name), subtype="mt_comment")
             return rma
 
-    # @api.multi
+    @api.multi
     def create_rma_button(self):
         self.ensure_one()
         rma = self.create_method()
@@ -92,14 +92,14 @@ class rma_wizard(models.TransientModel):
             'context': self.env.context
         }
 
-    # @api.multi
+    @api.multi
     def create_and_view_rma_button(self):
         self.ensure_one()
         rma = self.create_method()
         if rma:
             return self.open_rma(rma.id)
 
-    # @api.multi
+    @api.multi
     def open_rma(self, rma_id):
         ir_model_data = self.env['ir.model.data']
         form_res = ir_model_data.get_object_reference('rma', 'rma_form_id')

@@ -106,7 +106,7 @@ class ProductReturnWizard(models.TransientModel):
             if picktype.default_location_dest_id:
                 self.des_location_id = picktype.default_location_dest_id.id
 
-    # @api.multi
+    @api.multi
     def apply(self):
         self.ensure_one()
         # Create new picking for returned products

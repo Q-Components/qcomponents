@@ -8,8 +8,7 @@
 			<field name="name">rma.rma.tree</field>
 			<field name="model">rma.rma</field>
 			<field name="arch" type="xml">
-				<!-- <tree colors="blue:state == 'new';#B71C1C:state == 'verification';#64B5F6:state == 'negotiation';#1b5e20:state == 'resolved';" string="RMA"> -->
-				<tree decoration-info="state=='new'" decoration-danger="state=='verification'" decoration-primary="state=='negotiation'"  decoration-success="state=='resolved'" string="RMA">
+				<tree colors="blue:state == 'new';#B71C1C:state == 'verification';#64B5F6:state == 'negotiation';#1b5e20:state == 'resolved';" string="RMA">
 					<field name="name"/>
 					<field name="order_id"/>
 					<field name="create_date" string="Date"/>
@@ -23,10 +22,10 @@
 
     	<record id="action_rma_account_invoice_refund" model="ir.actions.act_window">
             <field name="name">Refund Invoice</field>
-            <field name="res_model">account.move.reversal</field>
-            <!-- <field name="view_type">form</field> -->
+            <field name="res_model">account.invoice.refund</field>
+            <field name="view_type">form</field>
             <field name="view_mode">form</field>
-            <field name="view_id" ref="account.view_account_move_reversal"/>
+            <field name="view_id" ref="account.view_account_invoice_refund"/>
             <field name="target">new</field>
         </record>
 
@@ -36,7 +35,7 @@
 	        <field name="arch" type="xml">
 		        <form string="RMA" version="7.0">
 		        	<header>
-                <button class="fa fa-reply-all oe_highlight" name="%(rma.action_rma_product_return_wizard_id)d" string="Receive Products" type="action" icon="" attrs="{'invisible':['|','|',('state','not in',['agreement']), ('product_received','=',True)]}"/>
+                        <button class="fa fa-reply-all oe_highlight" name="%(rma.action_rma_product_return_wizard_id)d" string="Receive Products" type="action" icon="" attrs="{'invisible':['|','|',('state','not in',['agreement']), ('product_received','=',True)]}"/>
 
 		        		<button class="fa fa-shopping-cart oe_highlight" name="create_purchase_order" string="New Purchase Order" type="object" attrs="{'invisible':['|','|','|',('state','not in',['agreement']),('return_request_type','not in',['exchange']),('purchase_order_id','!=',False), ('product_received','!=',True)]}"/>
 
@@ -45,15 +44,15 @@
 		        		<button class="fa fa-file-text-o oe_highlight" name="open_refund_invoice_wizrad" type='object' string='Refund Invoice'  icon="" attrs="{'invisible':['|', '|', '|', ('state','not in',['agreement']), ('return_request_type','not in',['refund']), ('refund_invoice_id','!=',False), ('product_received','!=',True)]}"/>
 
 
-                <button class="fa fa-file-text-o oe_highlight" name="view_refund_invoice" string="View Refund Invoice" type="object" attrs="{'invisible':[('refund_invoice_id','=',False)]}"/>
+                        <button class="fa fa-file-text-o oe_highlight" name="view_refund_invoice" string="View Refund Invoice" type="object" attrs="{'invisible':[('refund_invoice_id','=',False)]}"/>
 
-                <button class="fa fa-truck oe_highlight" name="%(action_rma_new_delivery_order_wizard_id)d" string="Create Delivery Order" type="action" icon="" attrs="{'invisible':['|', '|', '|', ('state','not in',['agreement']),('return_request_type','not in',['exchange']),('new_do_picking_id','!=',False), ('product_received','!=',True)]}"/>
+                        <button class="fa fa-truck oe_highlight" name="%(action_rma_new_delivery_order_wizard_id)d" string="Create Delivery Order" type="action" icon="" attrs="{'invisible':['|', '|', '|', ('state','not in',['agreement']),('return_request_type','not in',['exchange']),('new_do_picking_id','!=',False), ('product_received','!=',True)]}"/>
 
-                <button class="fa fa-truck" name="view_new_delivery_order" string="View Delivery Order" type="object" attrs="{'invisible':[('new_do_picking_id','=',False)]}"/>
+                        <button class="fa fa-truck" name="view_new_delivery_order" string="View Delivery Order" type="object" attrs="{'invisible':[('new_do_picking_id','=',False)]}"/>
 
-                <button class="fa fa-gavel oe_highlight" name="%(action_rma_create_repair_wizard_id)d" string="Create Repair Job" type="action" icon="" attrs="{'invisible':['|',('is_repair_install','=',False), '|',('state','not in',['agreement']),'|',('product_received','!=',True), '|',('return_request_type','not in',['repair']),('mrp_repair_id','!=',False)]}"/>
+                        <button class="fa fa-gavel oe_highlight" name="%(action_rma_create_repair_wizard_id)d" string="Create Repair Job" type="action" icon="" attrs="{'invisible':['|',('is_repair_install','=',False), '|',('state','not in',['agreement']),'|',('product_received','!=',True), '|',('return_request_type','not in',['repair']),('mrp_repair_id','!=',False)]}"/>
 
-              	<button class="fa fa-gavel oe_highlight" name="view_repair_job" string="View Repair Job" type="object" icon="" attrs="{'invisible':['|',('mrp_repair_id','=',False),('is_repair_install','=',False)]}"/>
+                    	<button class="fa fa-gavel oe_highlight" name="view_repair_job" string="View Repair Job" type="object" icon="" attrs="{'invisible':['|',('mrp_repair_id','=',False),('is_repair_install','=',False)]}"/>
 
 		        		<field name="state" widget="statusbar" statusbar_visible="new,verification,negotiation,resolved" statusbar_colors='{"approved":"blue"}'/>
 		        	</header>
@@ -117,7 +116,7 @@
 						   	<field name="reason_id" required="1" attrs="{'readonly':[('state','not in',['new'])]}"/>
 		        			<field name="resolve_date" attrs="{'readonly':[('state','not in',['new'])]}"/>
 		        		</group>
-
+						
 						<separator string="Additional Information"/>
 		        		<group>
 			        		<group>
@@ -202,7 +201,7 @@
 	    <record id="action_rma_id" model="ir.actions.act_window">
 	        <field name="name">RMA</field>
 	        <field name="res_model">rma.rma</field>
-	        <!-- <field name="view_type">form</field> -->
+	        <field name="view_type">form</field>
 	        <field name="view_mode">tree,form</field>
 	        <field name="view_id" ref="rma_tree_id"/>
 	        <!-- <field name="Search_view_id" ref="rma_rma_search_id"/> -->
@@ -246,7 +245,7 @@
 	    <record id="action_rma_stages_id" model="ir.actions.act_window">
 	        <field name="name">RMA stages</field>
 	        <field name="res_model">rma.stages</field>
-	        <!-- <field name="view_type">form</field> -->
+	        <field name="view_type">form</field>
 	        <field name="view_mode">tree,form</field>
 	        <field name="view_id" ref="rma_congig_tree_id"/>
 	    </record>
@@ -254,7 +253,7 @@
 	    <record id="action_rma_reasons_id" model="ir.actions.act_window">
 	        <field name="name">RMA Reasons</field>
 	        <field name="res_model">rma.reasons</field>
-	        <!-- <field name="view_type">form</field> -->
+	        <field name="view_type">form</field>
 	        <field name="view_mode">tree,form</field>
 	    </record>
 

@@ -42,7 +42,7 @@ class SaleOrderWizard(models.TransientModel):
     product_qty = fields.Float(
         'Quantity Return', default=_get_qty, required=True)
 
-    # @api.multi
+    @api.multi
     def apply(self):
         self.ensure_one()
         vals = {

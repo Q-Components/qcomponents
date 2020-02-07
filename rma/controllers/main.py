@@ -26,6 +26,7 @@ from odoo.addons.portal.controllers.portal import CustomerPortal
 from odoo.tools.translate import _
 from odoo.http import Controller, request, route
 from odoo.exceptions import AccessError
+from odoo.addons.web.controllers.main import binary_content
 from odoo.addons.mail.controllers.main import MailController
 import odoo
 
@@ -40,11 +41,10 @@ class MailController(MailController):
         content = 'R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='  # default image is one white pixel
         if res_model in request.env:
             try:
+                # if the current user has access to the document, get the partner avatar as sudo()
                 request.env[res_model].browse(res_id).check_access_rule('read')
                 if partner_id in request.env[res_model].browse(res_id).sudo().exists().message_ids.mapped('author_id').ids:
-                    status, headers, content = request.env['ir.http'].binary_content(
-                        model='res.partner', id=partner_id, field='image_medium',
-                        default_mimetype='image/png', env=request.env(user=odoo.SUPERUSER_ID))
+                    status, headers, content = binary_content(model='res.partner', id=partner_id, field='image_medium', default_mimetype='image/png', env=request.env(user=odoo.SUPERUSER_ID))
                     if not content:
                         content = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAAAAACPAi4CAAAACXZwQWcAAABAAAAAQADq8/hgAAAEWklEQVRYw9WX6XKjRhCAef8HiySQvGt5vfZuEselOUAcEpe4GdI9MAgQOjb5k3SVyzY1801PX9OtNf9StP80QJR5miRpXtb/AFCnvmMySgmhlJn2Mal+BSBSj1NCGeNSGAMOd0/iQYCI95TAXnm+FCr/I2ZYPwJILEJhPaGm7flBFIW+Z5sUvwEivguovG7pMR0cV2e+BbYArF3cBqQclKfEvryvSB2KaHa6BYhgDSP7ZN7gmUNQCf86wCdgcBaKq04/cTzAuwbA/czKb8VdZYMSI8IAEOJ+XjTiFkF4SDjOARIIHLiBK+4E/xHOIdEloMSAAwZx7hEOBKIquwA4lFPbR/3uEhzCqSUmgBiwrGgeIlQm5b0zO0CN3yKw34QgQC4JKZqrGAFC0MpWvuwJ3V6hWD3BI5wchoDaBAumzYQgmsrd7ewZx5bosHIAAAtQp4+nXUuA+2yXy9Xyi4OsIorjauBLZQWtd0Gqrt3EvCXQlb4BMZYfsPP7cr0gvS4FaNw6Qus0ovtez8DZcYyHt8Wmk9XWdF+Mjf570Ke4q46UgAgUCtX55mKl/wSbsD83hrEE0VGJ1RrEWHz2aaXuIAEe7b3SNG/601oSzL/W20/T2r2uDNACARvjWelZQTTaCiCg2vSR1bzrsFgSQMk8SbPi8FWX+0GFbX2OXMarDoAmOGfo+wpXt7cwj4Hv+1n+rSMYW3HOfS4TAgHZIDIVYG38wNzchyB+kj4ZUwB4npw6ABokmgA2qz9kfbIkoWDLzQSQ0tbw2gA20kA/nmyqCHG8nmqQd2prbSKQZAIwnk5B5PSE/EWfACCUZGFSgHQKeE6DsCcExfc5wKEDRLMaJHBwTwA/zFzhOLBBPGODoCfEyYUb0XVBB1AGHXvho/SVDsSjF15QrtMG1xlpsDbCrCewj7UxAWAJSjsAlJOuHI0AX9Mi8IMgsJnMC2MMOJA2f7RhXI8AG/2LVxZZVlQWmKElnAFiT5nMH62L67Mb3lTmbIzVK3Uc9r6GvJAEyMa6d0KXP1oXliqbRPPzN0NvBcrBAmSpr37wlrB8GeRS6zkJECZVNRKeuLfty1C+wc/zp7TD9jVQN7DUDq2vkUEzfAymIl9uZ5iL1B0U1Rw7surmc4SE/sUBE3KaDB8Wd1QS7hJQga4Kayow2aAsXiV0L458HE/jx9UbPi33CIf+ITwDSnxM/IcIcAGIrHzaH+BX8Ky4awdq41nBZYsjG4/kEQLjg9Q5A9A1jJ7u3CJEa1OzmuvSKgubwPA24IT7WT7fJ5YmEtwbASWO2AkP94871WpPOCc8vmYHaORhv5lf75VrV3bD+9nZIrUJamhXN9v9kMlu3wonYVlGe9msU1/cGTgKpx0YmO2fsrKq66rMk8Bh7dd99sDIk+xxxsE5icqhqfsLflkz1pkbukSCBzI5bqG0EGrPGvfK2FeGDseRi1I5eVFuB8WvDp51FvsH13Fcz4+y6n86Oz8kfwPMD02INEiadQAAAABJRU5ErkJggg=="
                     if status == 304:
@@ -79,8 +79,10 @@ class CustomerPortal(CustomerPortal):
         ]
         rma_obj = request.env['rma.rma'].sudo().search(domain)
         attachment_ids = request.env['ir.attachment'].sudo().search([('res_model', '=', 'rma.rma'), ('res_id', '=', rma_obj.id)])
+        # attachment_objs = request.env['ir.attachment'].browse(attachment_ids.ids)
         return request.render("rma.rma_followup", {
             'rma_record': rma_obj.sudo(),
+            # 'token': access_token,
             "attachment_objs" : attachment_ids,
             "report_type": "html",
             'page_name': 'rma',
@@ -102,11 +104,14 @@ class CustomerPortal(CustomerPortal):
             'name': {'label': _('Reference'), 'order': 'name asc'},
             'stage': {'label': _('Stage'), 'order': 'state'},
         }
+        # default sortby order
         if not sortby:
             sortby = 'create_date'
         sort_order = searchbar_sortings[sortby]['order']
 
+        # count for pager
         rma_count = Rma.search_count(domain)
+        # pager
         pager = request.website.pager(
             url="/my/rma",
             url_args={'date_begin': date_begin, 'date_end': date_end, 'sortby': sortby},
@@ -114,6 +119,7 @@ class CustomerPortal(CustomerPortal):
             page=page,
             step=self._items_per_page
         )
+        # content according to pager and archive selected
         rma = Rma.search(domain, order=sort_order, limit=self._items_per_page, offset=pager['offset'])
 
         values.update({
@@ -220,6 +226,7 @@ class CustomerPortal(CustomerPortal):
                     attachment_value = {
                         'name': file.field_name if custom_field else file.filename,
                         'datas': base64.encodestring(file.read()),
+                        'datas_fname': file.filename,
                         'res_model': 'rma.rma',
                         'res_id': rma_obj.id,
                     }
