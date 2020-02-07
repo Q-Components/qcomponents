@@ -262,9 +262,23 @@ class FedexDeliveryCarrier(models.Model):
         return response
 
 
+    
+    @api.model
+    def check_cod_price(self, pickings=None, currency_id=None):
+        amount = 0
+        for line in pickings.move_line_ids_without_package:
+            product = line.product_id
+            amount += int(product.lst_price)*int(line.qty_done)
+            for tax_id in line.product_id.taxes_id:             
+                taxes = tax_id.compute_all(amount, currency_id,line.qty_done , product=product, partner=pickings.partner_id)
+                amount += sum(t.get('amount', 0.0) for t in taxes.get('taxes', []))                
+        return amount
+
+    
+    
     @api.model
     def get_cod_details_ground(self, obj=None, currency_id=None, pickings=None, order=None):
-        if pickings and pickings.origin:
+        if pickings:
             sale_order = self.env['sale.order'].sudo().search([('name','=', str(pickings.origin))])
             amount_total = None
             if sale_order.exists():
@@ -272,6 +286,8 @@ class FedexDeliveryCarrier(models.Model):
                 for line in sale_order.order_line:
                     if line.product_id == self.product_id:
                         amount_total -= 15.5
+            else:
+                amount_total = self.check_cod_price(pickings=pickings, currency_id=currency_id)
         if order:
             amount_total = order.amount_total
             recipient = order.partner_shipping_id if order.partner_shipping_id else order.partner_id
@@ -305,7 +321,7 @@ class FedexDeliveryCarrier(models.Model):
     
     @api.model
     def get_cod_details(self, obj=None, currency_id=None, pickings=None, order=None):
-        if pickings and pickings.origin:
+        if pickings:
             sale_order = self.env['sale.order'].sudo().search([('name','=', str(pickings.origin))])
             amount_total = None
             if sale_order.exists():
@@ -313,6 +329,8 @@ class FedexDeliveryCarrier(models.Model):
                 for line in sale_order.order_line:
                     if line.product_id == self.product_id:
                         amount_total -= 15.5
+            else:
+                amount_total = self.check_cod_price(pickings=pickings, currency_id=currency_id)
         if order:
             amount_total = order.amount_total
             recipient = order.partner_shipping_id if order.partner_shipping_id else order.partner_id
