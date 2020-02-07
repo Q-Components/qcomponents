@@ -17,19 +17,21 @@
 
 from odoo import models, fields, api, _
 from odoo.exceptions import except_orm, Warning, RedirectWarning
+import odoo.osv.osv as osv
+
 import datetime
 import logging
 _logger = logging.getLogger(__name__)
 
 
 class AccountInvoiceRefund(models.TransientModel):
-    _inherit = "account.invoice.refund"
+    _inherit = "account.move.reversal"
 
-    @api.multi
-    def invoice_refund(self):
+    def reverse_moves(self):
         context = dict(self._context or {})
         if context.get("active_model") == "rma.rma":
-            rma_obj = self.env["rma.rma"].browse(context.get("params", {}).get("id", False))
+            rma_obj = self.env["rma.rma"].browse(context.get("params", {}).get("id", False) or context.get("id", False))
+
             if rma_obj:
                 if not rma_obj.order_id.invoice_ids :
                     raise Warning('Invoice can not be refund because Order "' + rma_obj.order_id.name+ '" has no invoice.')
@@ -40,10 +42,11 @@ class AccountInvoiceRefund(models.TransientModel):
                 only_out_invoice_ids.sort()
                 context["active_id"] = only_out_invoice_ids[0]
                 context["active_ids"] = only_out_invoice_ids
-                context["active_model"] = "account.invoice"
                 context["rma_id"] = rma_obj.id
+
+        context["active_model"] = "account.move"
 
         if not context.get("active_id"):
             raise osv.except_osv(_('Warning!'), _('Order %s has no invoice to refund.'(
                 self.env["rma.rma"].browse(context.get("rma_id", False)))))
-        return super(AccountInvoiceRefund, self.with_context(context)).invoice_refund()
+        return super(AccountInvoiceRefund, self.with_context(context)).reverse_moves()

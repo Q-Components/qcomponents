@@ -24,14 +24,7 @@
         <field name="implied_ids" eval="[(4, ref('rma_ownership_user'))]"/>
         <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
     </record>
-<!-- #############################   rule ################################### -->
-    <!-- <record id="rma_view_personal_rule" model="ir.rule">
-        <field name="name">RMA</field>
-        <field ref="model_rma_rma" name="model_id"/>
-        <field name="global" eval="True"/>
-        <field name="domain_force">[('message_follower_ids','child_of',[user.commercial_partner_id.id])]</field>
-        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
-    </record> -->
+
 
 </data>
 </odoo>

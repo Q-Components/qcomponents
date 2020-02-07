@@ -14,7 +14,12 @@
 # You should have received a copy of the License along with this program.
 # If not, see <https://store.webkul.com/license.html/>
 #################################################################################
-from . import rma
-from . import sale_order_line
-from . import res_config
-from . import repair_order
+from odoo import models, fields, api
+import logging
+_logger = logging.getLogger(__name__)
+
+class RepairOrder(models.Model):
+    _inherit = "repair.order"
+
+    rma_id = fields.Many2one("rma.rma", string="RMA ID")
+    location_dest_id = fields.Many2one('stock.location', 'Delivery Location')

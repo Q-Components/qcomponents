@@ -31,7 +31,6 @@
 
                     <h2>
                         <span>RMA # </span>
-                        <!-- <span t-if="doc.state in ['draft','sent']">Quotation # </span> -->
                         <span t-field="doc.name"/>
                     </h2>
 
@@ -61,7 +60,6 @@
                                     </td>
                                     <td class="text-right">
                                         <span t-field="doc.refund_qty"/>
-                                        <!-- <span t-field="l.product_uom"/> -->
                                     </td>
                                     <td class="text-right">
                                         <span t-field="l.price_unit"/>

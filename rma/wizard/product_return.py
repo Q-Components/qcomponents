@@ -18,6 +18,8 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import except_orm, Warning, RedirectWarning
 from odoo.addons.stock.models.stock_move import PROCUREMENT_PRIORITIES
+import odoo.osv.osv as osv
+
 import datetime
 import logging
 _logger = logging.getLogger(__name__)
@@ -106,7 +108,7 @@ class ProductReturnWizard(models.TransientModel):
             if picktype.default_location_dest_id:
                 self.des_location_id = picktype.default_location_dest_id.id
 
-    @api.multi
+    # @api.multi
     def apply(self):
         self.ensure_one()
         # Create new picking for returned products

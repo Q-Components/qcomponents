@@ -17,7 +17,7 @@
   "name"                 :  "Return Merchandise Authorization (RMA)",
   "summary"              :  "Odoo Website RMA. The module allows Odoo users to process product returns or product exchanges in Odoo.",
   "category"             :  "Website",
-  "version"              :  "1.0.11",
+  "version"              :  "1.0.10",
   "sequence"             :  1,
   "author"               :  "Webkul Software Pvt. Ltd.",
   "license"              :  "Other proprietary",
@@ -43,8 +43,8 @@ Order Return in Website""",
                              'website_sale',
                              'purchase',
                              'website_mail',
-                             'document',
                              'website_sale',
+                             'repair'
                             ],
   "data"                 :  [
                              'data/rma_config_setting_data.xml',

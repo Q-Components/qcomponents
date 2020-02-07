@@ -23,13 +23,7 @@ _logger = logging.getLogger(__name__)
 
 
 class RmaConfigSettings(models.TransientModel):
-    # _name = 'res.config.settings'
     _inherit = 'res.config.settings'
-
-    # selection = [
-    #     ('all', 'All'),
-    #     ('done', 'Only Done'),
-    # ]
 
     allow_quote_cancellation = fields.Boolean(
         string="Allow cancellation of order quote.", help="Customer can cancel quotation order.")
@@ -48,7 +42,6 @@ class RmaConfigSettings(models.TransientModel):
         'stock.location', 'Repair Location')
     show_rma_stage = fields.Boolean(string="Show RMA stage to customer.")
 
-    @api.one
     def set_values(self):
         super(RmaConfigSettings, self).set_values()
         ir_default = self.env['ir.default'].sudo()
@@ -84,9 +77,3 @@ class RmaConfigSettings(models.TransientModel):
             "show_rma_stage": show_rma_stage,
         })
         return res
-
-    # @api.onchange('days_for_rma')
-    # def on_change_like(self):
-    #     if self.days_for_rma < 0:
-    #         raise UserError(('Number of days can not be negative.'))
-    #         self.days_for_rma = 0

@@ -71,9 +71,7 @@ class RmaRma(models.Model):
             rma_term_condition = res.get("rma_term_condition", False)
         return rma_term_condition
 
-# Advance Features
 
-    @api.multi
     def _set_product_received(self):
         """ """
         for obj in self:
@@ -82,7 +80,6 @@ class RmaRma(models.Model):
             else:
                 obj.product_received = False
 
-    @api.multi
     def _set_po_created(self):
         """ """
         for obj in self:
@@ -91,7 +88,6 @@ class RmaRma(models.Model):
             else:
                 obj.po_created = False
 
-    @api.multi
     def _set_do_created(self):
         """ """
         for obj in self:
@@ -100,7 +96,6 @@ class RmaRma(models.Model):
             else:
                 obj.do_created = False
 
-    @api.multi
     def _set_inv_created(self):
         """ """
         for obj in self:
@@ -109,7 +104,6 @@ class RmaRma(models.Model):
             else:
                 obj.inv_created = False
 
-    @api.multi
     def _get_attachment_count(self):
         for record in self:
             x = self.env['ir.attachment'].search([('res_model', '=', 'rma.rma'), ('res_id', '=', record.id)])
@@ -138,11 +132,12 @@ class RmaRma(models.Model):
                 })
 
             else:
-                rma_obj.update({
-                    'amount_untaxed': rma_obj.order_id.pricelist_id.currency_id.round(amount_untaxed),
-                    'amount_tax': rma_obj.order_id.pricelist_id.currency_id.round(amount_tax),
-                    'amount_total': amount_untaxed + amount_tax,
-                })
+                if rma_obj.order_id:
+                    rma_obj.update({
+                        'amount_untaxed': rma_obj.order_id.pricelist_id.currency_id.round(amount_untaxed),
+                        'amount_tax': rma_obj.order_id.pricelist_id.currency_id.round(amount_tax),
+                        'amount_total': amount_untaxed + amount_tax,
+                    })
 
     @api.model
     def get_request_type(self):
@@ -154,7 +149,6 @@ class RmaRma(models.Model):
             request_type.append(("repair", "Repair"))
         return request_type
 
-    @api.multi
     def _set_mrp_install(self):
         """ """
         for obj in self:
@@ -193,7 +187,6 @@ class RmaRma(models.Model):
     attachment_count = fields.Integer(
         compute='_get_attachment_count', string="Number of Attachments")
 
-# Advance Fields
 
     return_request_type = fields.Selection(
         'get_request_type', string="Return Request Type", default="refund")
@@ -202,7 +195,7 @@ class RmaRma(models.Model):
         "purchase.order", string="Purchase Order")
     picking_id = fields.Many2one("stock.picking", "Return Pickings")
     refund_invoice_id = fields.Many2one(
-        "account.invoice", string="Refund Invoice")
+        "account.move", string="Refund Invoice")
     new_do_picking_id = fields.Many2one("stock.picking", "New Delivery Order")
 
     product_received = fields.Boolean(
@@ -232,7 +225,6 @@ class RmaRma(models.Model):
     is_repair_install = fields.Boolean(
         compute='_set_mrp_install', string="MRP Repair Installed")
 
-    @api.multi
     def view_repair_job(self):
         self.ensure_one()
         view_id = self.env.ref('repair.view_repair_order_form').id
@@ -251,7 +243,6 @@ class RmaRma(models.Model):
             'res_id': mrp_repair_id.id if mrp_repair_id else False,
         }
 
-    @api.multi
     def attachment_tree_view_action(self):
         attachment_action = self.env.ref('base.action_attachment')
         action = attachment_action.read()[0]
@@ -290,7 +281,6 @@ class RmaRma(models.Model):
                 ('id', 'in', orderline_ids)]}
             return result
 
-    @api.one
     def write(self, vals):
         if self:
             if vals.get('stage_id', False):
@@ -331,15 +321,12 @@ class RmaRma(models.Model):
                 ('RMA has already been Generated for this Order!!'))
 
         if net_refund_qty > line_qty:
-            # if line_qty - rma_refund_qty == 0:
-            #     raise UserError(_("No item available for RMA."))
             raise UserError(('You cannot generate an RMA with quantity greater than %s ') % (
                 line_qty - rma_refund_qty))
 
         rma_obj = super(RmaRma, self).create(vals)
         return rma_obj
 
-    @api.multi
     def create_purchase_order(self):
         self.ensure_one()
         action = self.env.ref('rma.action_rma_purchase_order_wizard_id')
@@ -350,25 +337,21 @@ class RmaRma(models.Model):
             'help': action.help,
             'type': action.type,
             'views': [[form_view_id, 'form']],
-            'view_type': action.view_type,
+            # 'view_type': action.view_type,
             'view_mode': action.view_mode,
             'target': action.target,
             'res_model': action.res_model,
         }
 
-    @api.multi
     def customer_refund_inv(self):
         raise Warning("Create Customer Refund Invoice")
 
-    @api.multi
     def new_delivery_order(self):
         raise Warning("Create New Delivery Order")
 
-    @api.multi
     def return_product(self):
         raise Warning("Return Product by Customer")
 
-    @api.multi
     def view_purchase_order(self):
         self.ensure_one()
         view_id = self.env.ref('purchase.purchase_order_form').id
@@ -384,23 +367,21 @@ class RmaRma(models.Model):
             'res_id': self.purchase_order_id.id,
         }
 
-    @api.multi
     def view_refund_invoice(self):
         self.ensure_one()
-        view_id = self.env.ref('account.invoice_form').id
+        view_id = self.env.ref('account.view_move_form').id
         context = self._context.copy()
         return {
             'name': 'Refund Invoice',
             'view_type': 'form',
             'view_mode': 'form',
             'views': [(view_id, 'form')],
-            'res_model': 'account.invoice',
+            'res_model': 'account.move',
             'view_id': view_id,
             'type': 'ir.actions.act_window',
             'res_id': self.refund_invoice_id.id,
         }
 
-    @api.multi
     def view_new_delivery_order(self):
         self.ensure_one()
         view_id = self.env.ref('stock.view_picking_form').id
@@ -416,7 +397,6 @@ class RmaRma(models.Model):
             'res_id': self.new_do_picking_id.id,
         }
 
-    @api.multi
     def view_return_delivery_order(self):
         self.ensure_one()
         view_id = self.env.ref('stock.view_picking_form').id
@@ -432,35 +412,25 @@ class RmaRma(models.Model):
             'res_id': self.picking_id.id,
         }
 
-    @api.multi
     def open_refund_invoice_wizrad(self):
         self.ensure_one()
         if not self.order_id.invoice_ids:
             raise UserError(
                 ('There is no invoice to refund for order "%s".') % (self.order_id.name))
-
-        view_id = self.env.ref('account.view_account_invoice_refund').id
         context = self._context.copy()
         if context.get("params"):
-            context["params"]["model"] = "account.invoice"
+            context["params"]["model"] = "account.move"
             context["params"]["id"] = self.id
         else:
-            context["model"] = "account.invoice"
+            context["model"] = "account.move"
             context["id"] = self.id
         context["active_id"] = self.order_id.invoice_ids[0].id
         context["active_ids"] = [self.order_id.invoice_ids[0].id]
-        
-        return {
-            'name': 'Refund Invoice',
-            'view_type': 'form',
-            'view_mode': 'form',
-            'views': [(view_id, 'form')],
-            'res_model': 'account.invoice.refund',
-            'view_id': view_id,
-            'type': 'ir.actions.act_window',
-            'target': 'new',
-            'context': context,
-        }
+
+        action = self.env.ref('account.action_view_account_move_reversal').read()[0]
+        action['name'] = _('Credit Note')
+        action['context'] = context
+        return action
 
     def get_show_rma_stage_value(self):
         res = self.env['res.config.settings'].get_values()
@@ -470,39 +440,17 @@ class RmaRma(models.Model):
             return False
 
 
-class AccountInvoice(models.Model):
-    _inherit = "account.invoice"
+class AccountMove(models.Model):
+    _inherit = "account.move"
 
-    @api.model
-    def _refund_cleanup_lines(self, lines):
-        if "account.invoice.line" in str(type(lines)):
-            if self._context.get("rma_id"):
-                inv_id = self.env["rma.rma"].browse(
-                    self._context.get("rma_id")).order_id.invoice_ids
-                for inv in inv_id:
-                    for line in inv.invoice_line_ids:
-                        if line.product_id.id == self.env["rma.rma"].browse(self._context.get("rma_id")).product_id.id:
-                            lines = [line]
-        return super(AccountInvoice, self)._refund_cleanup_lines(lines)
-
-    @api.model
-    def _prepare_refund(self, invoice, date_invoice=None, date=None, description=None, journal_id=None):
-        vals = super(AccountInvoice, self)._prepare_refund(
-            invoice, date_invoice, date, description, journal_id)
-        if self._context.get("rma_id"):
-            vals["invoice_line_ids"][0][2]["quantity"] = float(
-                self.env["rma.rma"].browse(self._context.get("rma_id")).refund_qty)
-        return vals
-
-    @api.multi
-    @api.returns('self')
-    def refund(self, date=None, period_id=None, description=None, journal_id=None):
-        res = super(AccountInvoice, self).refund(
-            date, period_id, description, journal_id)
-        if self._context.get("rma_id"):
-            self.env["rma.rma"].browse(self._context.get(
-                "rma_id")).write({"refund_invoice_id": res.id})
-        return res
+    def _reverse_moves(self, default_values_list=None, cancel=False):
+        for inv in self:
+            res = super(AccountMove, inv)._reverse_moves(
+                default_values_list, cancel)
+            if inv._context.get("rma_id"):
+                inv.env["rma.rma"].browse(inv._context.get(
+                    "rma_id")).write({"refund_invoice_id": res.id})
+            return res
 
 
 class RmaReasons(models.Model):

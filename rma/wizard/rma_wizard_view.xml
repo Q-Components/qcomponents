@@ -31,7 +31,7 @@
             <field name="name">Return Order</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">rma.wizard</field>
-            <field name="view_type">form</field>
+            <!-- <field name="view_type">form</field> -->
             <field name="view_mode">form</field>
             <field name="view_id" ref="rma_wizard_id"/>
             <field name="target">new</field>
@@ -57,7 +57,7 @@
 		<record id="actionstock_notify_mail_send" model="ir.actions.act_window">
 			<field name="name">RMA Created Message</field>
 			<field name="res_model">rma.message.successful</field>
-			<field name="view_type">form</field>
+			<!-- <field name="view_type">form</field> -->
 			<field name="view_mode">form</field>
 			<field name="view_id" ref="rma_created_sucessfully_message_id"/>
 			<field name="target">new</field>
