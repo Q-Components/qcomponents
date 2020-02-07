@@ -27,6 +27,7 @@ _logger = logging.getLogger(__name__)
 class AccountInvoiceRefund(models.TransientModel):
     _inherit = "account.move.reversal"
 
+    # @api.multi
     def reverse_moves(self):
         context = dict(self._context or {})
         if context.get("active_model") == "rma.rma":
