@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="product_product_template_form_import_inv" model="ir.ui.view">
+            <field name="name">import.product.template.product.view</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='categ_id']" position="after">
+                    <field name="x_studio_manufacturer" string="Manufacturer"/>
+                    <field name="x_studio_date_code_1" string="Date Code"/>
+                    <field name="x_studio_condition_1" string="Condition"/>
+                    <field name="x_studio_package" string="Mfg Packaging"/>
+                    <field name="x_studio_origin_code" string="Origin Code"/>
+                    <field invisible="1" name="x_studio_file_attachment_filename"/>
+                </xpath>
+                <xpath expr="//field[@name='active']" position="before">
+                    <field name="x_studio_alternate_number" string="Alternate Number"/>
+                </xpath>
+                <xpath expr="//field[@name='active']" position="after">
+                    <field name="x_studio_category" string="Internal Category"/>
+                    <xpath expr="//field[@name='barcode']" position="move"/>
+                    <field name="x_studio_rohs" string="RoHs"/>
+                </xpath>
+                <xpath expr="//field[@name='default_code']" position="after">
+                    <field filename="x_studio_file_attachment_filename" name="x_studio_file_attachment" string="Data Sheet"/>
+                    <field name="x_studio_field_sUWfQ" string="ItemNo"/>
+                </xpath>
+
+                <!-- <xpath expr="//page[@name='general_information']/group[1]" position="after">
+                    <field name="website_description"/>
+                </xpath> -->
+
+                <xpath expr="//page[@name='general_information']/group[2]/field[@name='description']" position="after">
+                    <field name="create_date"/>
+                    <field name="write_date"/>
+                    <field name="write_uid"/>
+                </xpath>
+
+                <xpath expr="//field[@name='description_sale']" position="after">
+                    <field name="x_studio_country_of_origin" string="Country of Origin"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

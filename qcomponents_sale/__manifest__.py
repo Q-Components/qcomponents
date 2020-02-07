@@ -31,4 +31,6 @@
     'data': [
         'data/qcomponents_action.xml',
     ],
+    'license': 'OEEL-1',
+
 }

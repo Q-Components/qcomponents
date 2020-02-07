@@ -3,20 +3,20 @@
 
 {
     'name': 'Import Stock Inventory from Excel/CSV File',
-    'version': '13.0.0.0',
+    'version': '13.0.0.2',
     'sequence': 4,
     'summary': 'This app helps to import stock inventory adjustment from csv/excel file',
     "price": 22,
     "currency": 'EUR',
     'category' : 'Warehouse',
     'description': """
-	BrowseInfo developed a new odoo/OpenERP module apps.
-	This module is useful for import inventory adjustment from Excel and CSV file.
+    BrowseInfo developed a new odoo/OpenERP module apps.
+    This module is useful for import inventory adjustment from Excel and CSV file.
         Its also usefull for import opening stock balance from XLS or CSV file.
-	-Import Stock from CSV and Excel file.
+    -Import Stock from CSV and Excel file.
         -Import Stock inventory from CSV and Excel file.
-	-Import inventory adjustment, import stock balance
-	-Import opening stock balance from CSV and Excel file.
+    -Import inventory adjustment, import stock balance
+    -Import opening stock balance from CSV and Excel file.
         Import stock with Serial number import
     Import stock with lot number import
     import lot number with stock import
@@ -26,10 +26,10 @@
     import orders lines import
     import so lines import
     imporr po lines import
-	-Inventory import from CSV, stock import from CSV, Inventory adjustment import, Opening stock import. Import warehouse stock, Import product stock.Manage Inventory
+    -Inventory import from CSV, stock import from CSV, Inventory adjustment import, Opening stock import. Import warehouse stock, Import product stock.Manage Inventory
     -import inventory data, import stock data, import opening stock.
-	-Import inventory lines, inventory import, stock import from excel, warehouse data import, import stock data, stock balance import. excel import
-	-Stock import from CSV, easy stock import, import stock easy, inventory adjustment import from excel
+    -Import inventory lines, inventory import, stock import from excel, warehouse data import, import stock data, stock balance import. excel import
+    -Stock import from CSV, easy stock import, import stock easy, inventory adjustment import from excel
  Odoo import transfer import stock transfer import receipt import odoo import stock transfers import tranfers
 Este módulo é útil para importar o ajuste do inventário a partir do arquivo Excel e CSV. Também é útil para importar o saldo do estoque de abertura do arquivo XLS ou CSV.-Importar estoque do arquivo CSV e Excel. - Inventário de inventário de estoque do arquivo CSV e Excel.- Ajuste de estoque de importação, saldo de estoque de importação- Importe o saldo do estoque inicial do arquivo CSV e Excel.- Importação de inventário de CSV, importação de estoque de CSV, importação de ajuste de estoque, importação de estoque de abertura. Estoque de armazém de importação, estoque de produtos de importação. Inventário de armazenamento - importar dados de inventário, importar dados de estoque, importar estoque de abertura.- Importação de linhas de inventário, importação de estoque, importação de estoque de excel, importação de dados de armazém, importação de dados de estoque, importação de saldo de estoque. importação de excel-Stock importação de CSV, importação de estoque fácil, estoque de importação fácil, importação de ajuste de inventário de excel
 
@@ -73,13 +73,12 @@ Ce module est utile pour l'ajustement de l'inventaire d'importation à partir de
     'live_test_url':'https://youtu.be/LjkXeaXjwAQ',
     'depends': ['base','stock'],
     'data': [
-            "security/ir.model.access.csv",
-            "security/excess_right.xml",
-            "views/stock_view.xml",
-
-             ],
-	'qweb': [
-		],
+        "security/ir.model.access.csv",
+        "security/excess_right.xml",
+        "views/stock_view.xml",
+        # "views/product_fields.xml",
+    ],
+    'qweb': [],
     'demo': [],
     'test': [],
     'installable': True,

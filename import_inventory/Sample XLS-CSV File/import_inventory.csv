@@ -1,2 +1,3 @@
-CODE,QUANTITY,LOCATION
-BBB,40,Stock
+Product Name,Alternate Number,Manufacturer,Date Code,Qty,Location Name,Parent Location,Origin Code,Condition,Mfg Packaging,Sales Description,Internal Description,Country of Origin,Product Type,Product Category,Internal Category,Sales Price,Barcode,Rohs,Cost,URL/file pic 1,URL/file 2,URL/file 3,Visible on current website,Lot
+Test Product 10,5674,Self,22-03-96,12,104,Stock,PO22,Test,PLC controller,Test,Test,Asia,product,Saleable,Internal,245,F1629,100 ppm,140,https://cdn.pixabay.com/photo/2015/12/01/20/28/fall-1072821_960_720.jpg,https://images.pexels.com/photos/414612/pexels-photo-414612.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500,https://apps.odoo.com/apps/modules/13.0/bi_product_low_stock_notification/v1.png,TRUE,827
+Test Product 11,5674,Self,22-03-96,24,B105,Stock,PO22,Test,PLC controller,Test,Test,Asia,product,Saleable,Internal,245,F1339,124 ppm,140,https://cdn.pixabay.com/photo/2015/12/01/20/28/fall-1072821_960_720.jpg,https://images.pexels.com/photos/414612/pexels-photo-414612.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500,https://apps.odoo.com/apps/modules/13.0/bi_product_low_stock_notification/v1.png,TRUE,845
