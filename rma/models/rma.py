@@ -216,11 +216,11 @@ class RmaRma(models.Model):
     currency_id = fields.Many2one(
         "res.currency", related='order_id.currency_id', string="Currency", readonly=True, required=True)
     amount_untaxed = fields.Monetary(
-        string='Untaxed Amount', readonly=True, compute='_amount_all', track_visibility='always', store=True)
+        string='Untaxed Amount', readonly=True, compute='_amount_all', track_visibility='always')
     amount_tax = fields.Monetary(
-        string='Taxes', readonly=True, compute='_amount_all', track_visibility='always', store=True)
+        string='Taxes', readonly=True, compute='_amount_all', track_visibility='always')
     amount_total = fields.Monetary(
-        string='Total Refund', readonly=True, compute='_amount_all', track_visibility='always', store=True)
+        string='Total Refund', readonly=True, compute='_amount_all', track_visibility='always')
     mrp_repair_id = fields.Char(string="Repair Reference")
     is_repair_install = fields.Boolean(
         compute='_set_mrp_install', string="MRP Repair Installed")
