@@ -29,6 +29,7 @@ class AccountInvoiceRefund(models.TransientModel):
 
     # @api.multi
     def reverse_moves(self):
+        _logger.info("----------------################--------------")
         context = dict(self._context or {})
         if context.get("active_model") == "rma.rma":
             rma_obj = self.env["rma.rma"].browse(context.get("params", {}).get("id", False) or context.get("id", False))
