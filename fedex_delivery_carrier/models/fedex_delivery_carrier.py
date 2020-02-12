@@ -208,8 +208,8 @@ class FedexDeliveryCarrier(models.Model):
                     rate_request, packaging_id, order=order)
                 for wk_packaging_id in wk_packaging_ids:
                     _logger.info("Package-----------------------------%r"%wk_packaging_id)
-                    weight = int(round(self._get_api_weight(
-                        wk_packaging_id.get('weight'))))
+                    weight = self._get_api_weight(
+                        wk_packaging_id.get('weight'))
                     if self.fedex_is_cod and self.fedex_servicetype.code != 'FEDEX_GROUND':
                         if self.fedex_servicetype.code == 'GROUND_HOME_DELIVERY':
                             raise Warning("FEDEX DOEST NOT PROVIDE COD FOR GROUND_HOME_DELIVERY")
