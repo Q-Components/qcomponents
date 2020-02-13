@@ -102,11 +102,17 @@ class ProductReturnWizard(models.TransientModel):
 
     @api.onchange('picking_type_id')
     def onchange_picking_type_id(self):
-        if self.picking_type_id:
+        des_location_id = None
+        if self.rma_id and self.rma_id.return_request_type == 'repair':
+            repair_location_id = self.env['ir.default'].sudo().get('res.config.settings', 'repair_location_id')
+            if repair_location_id:
+                des_location_id = repair_location_id
+        elif self.picking_type_id:
             picktype = self.env["stock.picking.type"].browse(
                 self.picking_type_id.id)
             if picktype.default_location_dest_id:
-                self.des_location_id = picktype.default_location_dest_id.id
+                des_location_id = picktype.default_location_dest_id.id
+        self.des_location_id = des_location_id
 
     # @api.multi
     def apply(self):

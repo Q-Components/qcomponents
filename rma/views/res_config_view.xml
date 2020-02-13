@@ -80,7 +80,7 @@
         </record>
 
         <record id="action_rma_config_settings_id" model="ir.actions.act_window">
-            <field name="name">Configure RMA</field>
+            <field name="name">Settings</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">res.config.settings</field>
             <field name="view_id" ref="res_config_settings_view_form"/>

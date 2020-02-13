@@ -44,18 +44,19 @@
 
 		        		<button class="fa fa-file-text-o oe_highlight" name="open_refund_invoice_wizrad" type='object' string='Refund Invoice'  icon="" attrs="{'invisible':['|', '|', '|', ('state','not in',['agreement']), ('return_request_type','not in',['refund']), ('refund_invoice_id','!=',False), ('product_received','!=',True)]}"/>
 
+                        <button class="fa fa-file-text-o oe_highlight" name="view_refund_invoice" string="View Refund Invoice" type="object" attrs="{'invisible':[('refund_invoice_id','=',False)]}"/>
 
-                <button class="fa fa-file-text-o oe_highlight" name="view_refund_invoice" string="View Refund Invoice" type="object" attrs="{'invisible':[('refund_invoice_id','=',False)]}"/>
+                        <button class="fa fa-truck oe_highlight" name="%(action_rma_new_delivery_order_wizard_id)d" string="Create Delivery Order" type="action" icon="" attrs="{'invisible':['|', '|', '|', ('state','not in',['agreement']),('return_request_type','not in',['exchange']),('new_do_picking_id','!=',False), ('product_received','!=',True)]}"/>
 
-                <button class="fa fa-truck oe_highlight" name="%(action_rma_new_delivery_order_wizard_id)d" string="Create Delivery Order" type="action" icon="" attrs="{'invisible':['|', '|', '|', ('state','not in',['agreement']),('return_request_type','not in',['exchange']),('new_do_picking_id','!=',False), ('product_received','!=',True)]}"/>
+                        <button class="fa fa-truck" name="view_new_delivery_order" string="View Delivery Order" type="object" attrs="{'invisible':[('new_do_picking_id','=',False)]}"/>
 
-                <button class="fa fa-truck" name="view_new_delivery_order" string="View Delivery Order" type="object" attrs="{'invisible':[('new_do_picking_id','=',False)]}"/>
+                        <button class="fa fa-gavel oe_highlight" name="%(action_rma_create_repair_wizard_id)d" string="Create Repair Job" type="action" icon="" attrs="{'invisible':['|',('is_repair_install','=',False), '|',('state','not in',['agreement']),'|',('product_received','!=',True), '|',('return_request_type','not in',['repair']),('mrp_repair_id','!=',False)]}"/>
 
-                <button class="fa fa-gavel oe_highlight" name="%(action_rma_create_repair_wizard_id)d" string="Create Repair Job" type="action" icon="" attrs="{'invisible':['|',('is_repair_install','=',False), '|',('state','not in',['agreement']),'|',('product_received','!=',True), '|',('return_request_type','not in',['repair']),('mrp_repair_id','!=',False)]}"/>
+                      	<button class="fa fa-gavel oe_highlight" name="view_repair_job" string="View Repair Job" type="object" icon="" attrs="{'invisible':['|',('mrp_repair_id','=',False),('is_repair_install','=',False)]}"/>
 
-              	<button class="fa fa-gavel oe_highlight" name="view_repair_job" string="View Repair Job" type="object" icon="" attrs="{'invisible':['|',('mrp_repair_id','=',False),('is_repair_install','=',False)]}"/>
+                        <button class="fa fa-truck oe_highlight" name="create_repaired_delivery" string=" Create Delivery Order" type="object" icon="" attrs="{'invisible':['|','|',('mrp_repair_id','=',False),('is_repair_install','=',False),('new_do_picking_id','!=',False)]}"/>
 
-		        		<field name="state" widget="statusbar" statusbar_visible="new,verification,negotiation,resolved" statusbar_colors='{"approved":"blue"}'/>
+    	        		<field name="state" widget="statusbar" statusbar_visible="new,verification,negotiation,resolved" statusbar_colors='{"approved":"blue"}'/>
 		        	</header>
 		        	<sheet>
 						<field name="id" invisible="1"/>

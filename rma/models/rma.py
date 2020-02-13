@@ -243,6 +243,17 @@ class RmaRma(models.Model):
             'res_id': mrp_repair_id.id if mrp_repair_id else False,
         }
 
+    def create_repaired_delivery(self):
+        if not self.mrp_repair_id:
+            raise UserError(('Create a repair job then you can proceed.'))
+        repair_obj = self.env["repair.order"].browse(int(self.mrp_repair_id))
+        if repair_obj.state == 'done':
+            delivery_action = self.env.ref('rma.action_rma_new_delivery_order_wizard_id')
+            action = delivery_action.read()[0]
+            return action
+        else:
+            raise UserError(('Repair job still under process. Please complete the repair job then you can deliver the product to customer.'))
+
     def attachment_tree_view_action(self):
         attachment_action = self.env.ref('base.action_attachment')
         action = attachment_action.read()[0]
