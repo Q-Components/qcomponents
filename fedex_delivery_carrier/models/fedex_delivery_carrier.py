@@ -250,6 +250,7 @@ class FedexDeliveryCarrier(models.Model):
 
     @api.model
     def fedex_rate_shipment(self, order):
+        _logger.info("*******************************")
         response = self.fedex_set_shipping_price(order)
         # _logger.info("##########   Not    a    case   ===%r====",(response))
         if not response.get('error_message'):response['error_message'] = None
