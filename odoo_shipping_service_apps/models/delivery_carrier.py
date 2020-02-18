@@ -151,7 +151,9 @@ class DeliveryCarrier(models.Model):
     def _get_default_uom(self):
         IrDefault = self.env['ir.default'].sudo()
         defaul_uom = IrDefault.get('res.config.settings', 'product.weight_in_lbs')
-        raise Warning(defaul_uom)
+        get_param = self.env['ir.config_parameter'].sudo().get_param
+        product_weight_in_lbs_param = get_param('product.weight_in_lbs')
+        raise Warning(product_weight_in_lbs_param)
         uom_categ_id = self.env.ref('uom.product_uom_categ_kgm').id
         return self.env['uom.uom'].search([('category_id', '=', uom_categ_id), ('factor', '=', 1)], limit=1)
 
