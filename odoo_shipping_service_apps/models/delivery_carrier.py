@@ -149,13 +149,12 @@ class DeliveryCarrier(models.Model):
 
     @api.model
     def _get_default_uom(self):
-        IrDefault = self.env['ir.default'].sudo()
-        defaul_uom = IrDefault.get('res.config.settings', 'product.weight_in_lbs')
         get_param = self.env['ir.config_parameter'].sudo().get_param
         product_weight_in_lbs_param = get_param('product.weight_in_lbs')
-        raise Warning(product_weight_in_lbs_param)
-        uom_categ_id = self.env.ref('uom.product_uom_categ_kgm').id
-        return self.env['uom.uom'].search([('category_id', '=', uom_categ_id), ('factor', '=', 1)], limit=1)
+        if product_weight_in_lbs_param == '1':
+            return self.env.ref('uom.product_uom_lb')
+        else:
+            return self.env.ref('uom.product_uom_kgm')
 
     @api.model
     def wk_group_by(self, group_by, items):
@@ -383,6 +382,7 @@ class DeliveryCarrier(models.Model):
 
     @api.model
     def _get_api_weight(self, shipping_weight):
+        raise Warning( self._get_default_uom().name)
         q = self._get_default_uom()._compute_quantity(
             1, self.uom_id)
         weight = (shipping_weight or 0.0) * q
