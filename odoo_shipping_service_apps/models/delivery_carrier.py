@@ -382,7 +382,6 @@ class DeliveryCarrier(models.Model):
 
     @api.model
     def _get_api_weight(self, shipping_weight):
-        raise Warning( self._get_default_uom().name)
         q = self._get_default_uom()._compute_quantity(
             1, self.uom_id)
         weight = (shipping_weight or 0.0) * q
