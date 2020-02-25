@@ -176,7 +176,10 @@ class FedexDeliveryCarrier(models.Model):
         fedex_obj.RequestedShipment.Recipient.Tins.append(tin_type)
         fedex_obj.RequestedShipment.EdtRequestType = packaging_id.fedex_edt_request_type
         if self.fedex_paymentyype == 'RECIPIENT':
-            fedex_obj.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = recipient.fedex_account_number
+            if recipient.fedex_account_number:
+                fedex_obj.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = recipient.fedex_account_number
+            else:
+                raise Warning("Recipient Account Number Missing: Please Enter recipient Account Number.")
             _logger.info("Hello----------------------------------------%r "%recipient.fedex_account_number)
         else:
             fedex_obj.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = config["fedex_account_no"]
