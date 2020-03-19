@@ -67,7 +67,8 @@ class WebHook(http.Controller):
         try:
             response = request(method="GET", url=url, headers=headers)
             response = response.json()
-            if response.get('data') and response.get('data').get('status') and response.get('data').get('status').get('new_status_id') in [2,3,10]:
+            _logger.warning('Get Product Shipped QTY %s' % (response))
+            if inventory_data.get('data') and inventory_data.get('data').get('status') and inventory_data.get('data').get('status').get('new_status_id') in [2,3,10]:
                 for response in response:
                     product_ids = []
                     domain = []
