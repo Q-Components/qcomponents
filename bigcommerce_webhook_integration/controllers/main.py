@@ -63,7 +63,7 @@ class WebHook(http.Controller):
                    "Content-Type": "application/json"}
 
         url = "%s%s/v2/orders/%s/products" % (
-        bigcommerce_store_id.bigcommerce_api_url, bigcommerce_store_hash, inventory_data.get('id'))
+        bigcommerce_store_id.bigcommerce_api_url, bigcommerce_store_hash, inventory_data.get('data') and inventory_data.get('data').inventory_data.get('id'))
         try:
             response = request(method="GET", url=url, headers=headers)
             response = response.json()
