@@ -418,8 +418,8 @@ class SaleOrderVts(models.Model):
             _logger.info("Export Order Response {}".format(response.content))
             raise ValidationError(e)
         if response.status_code not in [200,201]:
-            raise ValidationError("Getting Some Error {}".format(response))
-            process_message = "Getting Some Error {}".format(response)
+            raise ValidationError("Getting Some Error {}".format(response.content))
+            process_message = "Getting Some Error {}".format(response.content)
             self.create_bigcommerce_operation_detail('order', 'export', req_data, response_data,
                                                      operation_id, self.warehouse_id, False,
                                                      process_message)
