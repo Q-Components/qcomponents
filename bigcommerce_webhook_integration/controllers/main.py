@@ -172,7 +172,7 @@ class WebHook(http.Controller):
                 'company_id': warehouse_id.company_id and warehouse_id.company_id.id or False,
                 'filter': 'partial'
             }
-            inventory_id = request.env['stock.inventory'].sudo().create(inventory_vals)
+            inventory_id = http.request.env['stock.inventory'].sudo().create(inventory_vals)
             _logger.info("Successfull Create Inventory")
             product_product = http.request.env['product.product']
             product_id = product_product.sudo().search([('bigcommerce_product_id', '=', product)])
@@ -183,7 +183,6 @@ class WebHook(http.Controller):
                                                             'product_qty': product_qty,
                                                             'product_uom_id': product_id.uom_id and product_id.uom_id.id,
                                                             })
-                inventory_process_message = "%s : Product Inventory Imported!" % (product_id.name)
                 _logger.info("Successfully Product Qty Update By Product Id")
             else:
                 _logger.info("Product Not Found !!!")
