@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="ups_view_stock_quant_package_details" model="ir.ui.view">
+            <field name="name">Bigcommerce Webhook Configuration</field>
+            <field name="model">bigcommerce.store.configuration</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="bigcommerce_odoo_integration.bigcommerce_store_configuration_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[last()]" position="after">
+                    <page string="Bigcommerce Webhook Configurations">
+                        <field name="bigcommerce_webhook_ids" mode="tree" >
+                            <tree editable="bottom">
+                                <field name="bigcommerce_webhook_version"/>
+                                <field name="bigcommerce_webhook_url"/>
+                                <field name="bigcommerce_webhook_scope"/>
+                                <button type="object" name="create_bigcommerce_wegbhook"
+                            string="Create Webhook"  class="oe_highlight"/>
+                            </tree>
+                        </field>
+                    </page>
+
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
