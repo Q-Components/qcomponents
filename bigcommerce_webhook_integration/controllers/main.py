@@ -123,7 +123,6 @@ class WebHook(http.Controller):
             inventory_name = "BigCommerce_Inventory_%s" % (str(datetime.now().date()))
             inventory_vals = {
                 'name': inventory_name,
-                'is_inventory_report': True,
                 'location_ids': [(6, 0, warehouse_id.lot_stock_id.ids)],
                 'date': time.strftime("%Y-%m-%d %H:%M:%S"),
                 'company_id': warehouse_id.company_id and warehouse_id.company_id.id or False,
@@ -166,7 +165,6 @@ class WebHook(http.Controller):
             inventory_name = "BigCommerce_Inventory_%s" % (str(datetime.now().date()))
             inventory_vals = {
                 'name': inventory_name,
-                'is_inventory_report': True,
                 'location_ids': [(6, 0, warehouse_id.lot_stock_id.ids)],
                 'date': time.strftime("%Y-%m-%d %H:%M:%S"),
                 'company_id': warehouse_id.company_id and warehouse_id.company_id.id or False,
