@@ -147,3 +147,46 @@ class WebHook(http.Controller):
                     _logger.info("Product Not Found !!!")
         else:
             _logger.info("Not Absolute Method")
+
+    @http.route('/store/product/inventory/updated', type='json', auth="none", methods=['POST'])
+    def update_store_product_inventory_webhook(self, **kw):
+        status_update_dict = http.request.httprequest.data.decode("utf-8")
+        inventory_data = json.loads(status_update_dict)
+        _logger.info("Get Successfull Response {}".format(inventory_data))
+        method = inventory_data.get('data').get('inventory').get('method')
+        product_qty = inventory_data.get('data').get('inventory').get('value')
+        product = inventory_data.get('data').get('inventory').get('product_id')
+
+        store = inventory_data.get('producer').replace("stores/","")
+        bigcommerce_store_id = http.request.env['bigcommerce.store.configuration'].sudo().search([('bigcommerce_store_hash','=',store)])
+
+        warehouse_id = bigcommerce_store_id.warehouse_id
+        if method == "absolute":
+            inventroy_line_obj = http.request.env['stock.inventory.line']
+            inventory_name = "BigCommerce_Inventory_%s" % (str(datetime.now().date()))
+            inventory_vals = {
+                'name': inventory_name,
+                'is_inventory_report': True,
+                'location_ids': [(6, 0, warehouse_id.lot_stock_id.ids)],
+                'date': time.strftime("%Y-%m-%d %H:%M:%S"),
+                'company_id': warehouse_id.company_id and warehouse_id.company_id.id or False,
+                'filter': 'partial'
+            }
+            inventory_id = request.env['stock.inventory'].sudo().create(inventory_vals)
+            _logger.info("Successfull Create Inventory")
+            product_product = http.request.env['product.product']
+            product_id = product_product.sudo().search([('bigcommerce_product_id', '=', product)])
+            if product_id:
+                inventroy_line_obj.create({'product_id': product_id.id,
+                                                            'inventory_id': inventory_id and inventory_id.id,
+                                                            'location_id': warehouse_id.lot_stock_id.id,
+                                                            'product_qty': product_qty,
+                                                            'product_uom_id': product_id.uom_id and product_id.uom_id.id,
+                                                            })
+                inventory_process_message = "%s : Product Inventory Imported!" % (product_id.name)
+                _logger.info("Successfully Product Qty Update By Product Id")
+            else:
+                _logger.info("Product Not Found !!!")
+        else:
+            _logger.info("Not Absolute Method")
+
