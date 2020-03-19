@@ -28,6 +28,10 @@
                             <field name="last_modification_date" />
                             <field name="bigcommerce_product_skucode" />
                             <field name="bigcommerce_operation_message" />
+
+                            <field name="source_of_import_data" />
+                            <field name="destination_of_import_data" />
+
                         </group>
                     </group>
                     <notebook>

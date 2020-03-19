@@ -283,8 +283,12 @@ class ProductTemplate(models.Model):
                     records = response_data.get('data')
 
                     total_pages= response_data.get('meta').get('pagination').get('total_pages')
+
+                    to_page = bigcommerce_store_id.source_of_import_data
+                    total_pages = bigcommerce_store_id.destination_of_import_data
+
                     if total_pages > 1:
-                        while (total_pages != 0):
+                        while (total_pages >= to_page):
                             try:
                                 page_api = "/v3/catalog/products?page=%s" % (total_pages)
                                 page_response_data = bigcommerce_store_id.send_get_request_from_odoo_to_bigcommerce(

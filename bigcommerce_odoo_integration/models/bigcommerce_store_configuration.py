@@ -34,8 +34,8 @@ class BigCommerceStoreConfiguration(models.Model):
     bigcommerce_operation_message = fields.Char(string="Bigcommerce Message", help="bigcommerce_operation_message", copy=False)
     warehouse_id = fields.Many2one("stock.warehouse", "Warehouse")
     bigcommerce_product_skucode = fields.Boolean("Check Bigcommerce Product Skucode")
-
-
+    source_of_import_data = fields.Integer(string="Source(Page) Of Import Data",default=1)
+    destination_of_import_data = fields.Integer(string="Destination(Page) Of Import Data",default=1)
 
     def send_request_from_odoo_to_bigcommerce(self, body=False,api_operation=False):
         headers = {"Accept": "application/json",
