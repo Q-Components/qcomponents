@@ -100,11 +100,10 @@ class WebHook(http.Controller):
                     order_line = http.request.env['sale.order.line'].sudo().search([('product_id','=',product_id.id)],limit=1)
                     if order_line:
                         order_line.quantity_shipped = response.get('quantity_shipped')
-                    request.env.cr.commit()
             else:
-                raise ValidationError("Order Should Be Shipped, Partially Shipped, Completed !")
+                _logger.warning("Order Should Be Shipped, Partially Shipped, Completed !")
         except Exception as e:
-            raise ValidationError(e)
+            _logger.warning(e)
 
 
     @http.route('/store/sku/inventory/updated', type='json', auth="none", methods=['POST'])
