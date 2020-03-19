@@ -166,10 +166,10 @@ class WebHook(http.Controller):
             inventory_vals = {
                 'name': inventory_name,
                 'location_ids': [(6, 0, warehouse_id.lot_stock_id.ids)],
+                'accounting_date': time.strftime("%Y-%m-%d %H:%M:%S"),
                 'date': time.strftime("%Y-%m-%d %H:%M:%S"),
-                'company_id': warehouse_id.company_id and warehouse_id.company_id.id or False,
-                'filter': 'partial'
-            }
+                'company_id': warehouse_id.company_id and warehouse_id.company_id.id or False}
+
             inventory_id = http.request.env['stock.inventory'].sudo().create(inventory_vals)
             _logger.info("Successfull Create Inventory")
             product_product = http.request.env['product.product']
