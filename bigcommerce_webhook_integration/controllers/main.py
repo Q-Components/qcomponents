@@ -19,7 +19,7 @@ class WebHook(http.Controller):
         _logger.warning('>>>>>>>>>>>>>>> \n \n \n Final data >>>>>>>%s' % (inventory_product_dict))
     
     
-    @http.route('store/product/created', type='json', auth="none", methods=['POST'])
+    @http.route('/store/product/created', type='json', auth="none", methods=['POST'])
     def create_product_using_webhook(self, **kw):
         _logger.warning('>>>>>>>>>>>>>>> \n \n \n Final data >>>>>>>%s' % (http.request.httprequest.data))
         create_product_dict = http.request.httprequest.data.decode("utf-8")
@@ -33,10 +33,10 @@ class WebHook(http.Controller):
                    "X-Auth-Client": "{}".format(bigcommerce_client_seceret),
                    "X-Auth-Token": "{}".format(bigcommerce_x_auth_token),
                    "Content-Type": "application/json"}
-        
-        url = "/catalog/products/%s" % (product_data.get('data').get('id'))
+
+        api_url = "%s%s/v3/catalog/products/%s" % (bigcommerce_store_id.bigcommerce_api_url, bigcommerce_store_hash, product_data.get('data').get('id'))
         try:
-            response = request(method="GET", url=url, headers=headers)
+            response = request(method="GET", url=api_url, headers=headers)
             response = response.json()
             product_template_id = http.request.env['product.template'].search([('bigcommerce_product_id','=',response.get('id'))],limit=1)
             if not product_template_id:
