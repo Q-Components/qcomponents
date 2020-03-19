@@ -184,9 +184,8 @@ class WebHook(http.Controller):
                 _logger.info("Successfully Product Qty Update By Product Id")
             else:
                 _logger.info("Product Not Found !!!")
-            request.env.cr.commit()
-            inventory_id.action_start()
-            inventory_id.action_validate()
+            inventory_id.sudo().action_start()
+            inventory_id.sudo().action_validate()
         else:
             _logger.info("Not Absolute Method")
 
