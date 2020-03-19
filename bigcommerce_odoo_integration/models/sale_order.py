@@ -415,6 +415,7 @@ class SaleOrderVts(models.Model):
                                                      operation_id, self.warehouse_id, False,
                                                      process_message)
         except Exception as e:
+        	_logger.info("Export Order Response {}".format(response and response.content))
             raise ValidationError(e)
         if response.status_code not in [200,201]:
             raise ValidationError("Getting Some Error {}".format(response))
