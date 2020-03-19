@@ -175,8 +175,8 @@ class WebHook(http.Controller):
             product_product = http.request.env['product.product']
             product_id = product_product.sudo().search([('bigcommerce_product_id', '=', product)])
             if product_id:
-                inventroy_line_obj.create({'product_id': product_id.id,
-                                                            'inventory_id': inventory_id and inventory_id.id,
+                inventroy_line_obj.sudo().create({'product_id': product_id.id,
+                                                            'inventory_id': inventory_id and inventory_id.sudo().id,
                                                             'location_id': warehouse_id.sudo().lot_stock_id.id,
                                                             'product_qty': product_qty,
                                                             'product_uom_id': product_id.uom_id and product_id.uom_id.id,
