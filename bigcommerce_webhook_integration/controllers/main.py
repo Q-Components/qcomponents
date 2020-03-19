@@ -97,8 +97,9 @@ class WebHook(http.Controller):
                             product_ids += product_id.ids
                     else:
                         product_id = product_template_id.product_variant_id
-                    order_line = http.request.order_line.filtered(lambda line: line.product_id in product_id)
-                    order_line.quantity_shipped = response.get('quantity_shipped')
+                    order_line = http.request.env['sale.order.line'].sudo().search([('product_id','=',product_id.id)],limit=1)
+                    if order_line:
+                        order_line.quantity_shipped = response.get('quantity_shipped')
                     self._cr.commit()
             else:
                 raise ValidationError("Order Should Be Shipped, Partially Shipped, Completed !")
