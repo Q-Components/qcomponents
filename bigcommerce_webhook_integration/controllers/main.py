@@ -177,7 +177,7 @@ class WebHook(http.Controller):
             if product_id:
                 inventroy_line_obj.create({'product_id': product_id.id,
                                                             'inventory_id': inventory_id and inventory_id.id,
-                                                            'location_id': warehouse_id.lot_stock_id.id,
+                                                            'location_id': warehouse_id.sudo().lot_stock_id.id,
                                                             'product_qty': product_qty,
                                                             'product_uom_id': product_id.uom_id and product_id.uom_id.id,
                                                             })
