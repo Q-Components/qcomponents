@@ -67,7 +67,7 @@ class WebHook(http.Controller):
         try:
             response = request(method="GET", url=url, headers=headers)
             response = response.json()
-            if response.get('new_status_id') in [2,3,10]:
+            if response.get('data') and response.get('data').get('status') and response.get('data').get('status').get('new_status_id') in [2,3,10]:
                 for response in response:
                     product_ids = []
                     domain = []
