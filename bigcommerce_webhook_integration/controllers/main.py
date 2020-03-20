@@ -6,6 +6,7 @@ from odoo import http
 from odoo.exceptions import ValidationError
 from datetime import datetime
 from requests import request
+#from odoo.http import request
 _logger = logging.getLogger(__name__)
 
 
@@ -184,9 +185,10 @@ class WebHook(http.Controller):
                 _logger.info("Successfully Product Qty Update By Product Id")
             else:
                 _logger.info("Product Not Found !!!")
-
+            
+            http.request.env._cr.commit()
             _logger.info("Inventory Action Start... !!!")
-            inventory_id.sudo().action_start()
+            inventory_id.with_user(1).action_start()
             _logger.info("Inventory Action Start Done And Continue Validate... !!!")
             inventory_id.with_user(1).action_validate()
             _logger.info("Inventory Action Validate Method Done... !!!")
