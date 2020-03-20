@@ -188,7 +188,7 @@ class WebHook(http.Controller):
             _logger.info("Inventory Action Start... !!!")
             inventory_id.sudo().action_start()
             _logger.info("Inventory Action Start Done And Continue Validate... !!!")
-            inventory_id.sudo(1).action_validate()
+            inventory_id.with_user(1).action_validate()
             _logger.info("Inventory Action Validate Method Done... !!!")
         else:
             _logger.info("Not Absolute Method")
