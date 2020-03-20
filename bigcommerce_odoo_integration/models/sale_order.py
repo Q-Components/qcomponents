@@ -9,28 +9,30 @@ from odoo.exceptions import ValidationError
 import sys
 from threading import Thread
 import logging
+
 _logger = logging.getLogger("BigCommerce")
+
 
 class SaleOrderVts(models.Model):
     _inherit = "sale.order"
 
-    big_commerce_order_id = fields.Char(string="BigCommerce Order ID", readonly=True,copy=False)
+    big_commerce_order_id = fields.Char(string="BigCommerce Order ID", readonly=True, copy=False)
     bigcommerce_store_id = fields.Many2one('bigcommerce.store.configuration', string="Bigcommerce Store", copy=False)
-    bigcommerce_shipment_order_status = fields.Char(string='Bigcommerce Shipment Order Status',readonly=True)
+    bigcommerce_shipment_order_status = fields.Char(string='Bigcommerce Shipment Order Status', readonly=True)
 
     def get_shipped_qty(self):
         bigcommerce_store_hash = self.bigcommerce_store_id.bigcommerce_store_hash
-        bigcommerce_client_seceret  = self.bigcommerce_store_id.bigcommerce_x_auth_client
+        bigcommerce_client_seceret = self.bigcommerce_store_id.bigcommerce_x_auth_client
         bigcommerce_x_auth_token = self.bigcommerce_store_id.bigcommerce_x_auth_token
         headers = {"Accept": "application/json",
                    "X-Auth-Client": "{}".format(bigcommerce_client_seceret),
                    "X-Auth-Token": "{}".format(bigcommerce_x_auth_token),
                    "Content-Type": "application/json"}
 
-
-        url = "%s%s/v2/orders/%s/products"%(self.bigcommerce_store_id.bigcommerce_api_url,bigcommerce_store_hash,self.big_commerce_order_id)
+        url = "%s%s/v2/orders/%s/products" % (
+            self.bigcommerce_store_id.bigcommerce_api_url, bigcommerce_store_hash, self.big_commerce_order_id)
         try:
-            response = request(method="GET",url=url,headers=headers)
+            response = request(method="GET", url=url, headers=headers)
             response = response.json()
             for response in response:
                 product_ids = []
@@ -40,22 +42,26 @@ class SaleOrderVts(models.Model):
                     [('bigcommerce_product_id', '=', bigcommerce_product_id)])
                 if response.get('product_options'):
                     for product_option in response.get('product_options'):
-                        attribute_obj = self.env['product.attribute'].search([('bigcommerce_attribute_id','=',product_option.get('product_option_id'))])
-                        value_obj = self.env['product.attribute.value'].search([('bigcommerce_value_id','=',int(product_option.get('value')))])
-                        #attrib.append(attribute_obj.id)
-                        #val_obj.append(value_obj.id)
+                        attribute_obj = self.env['product.attribute'].search(
+                            [('bigcommerce_attribute_id', '=', product_option.get('product_option_id'))])
+                        value_obj = self.env['product.attribute.value'].search(
+                            [('bigcommerce_value_id', '=', int(product_option.get('value')))])
+                        # attrib.append(attribute_obj.id)
+                        # val_obj.append(value_obj.id)
                         template_attribute_obj = self.env['product.template.attribute.value'].search(
-                            [('attribute_id', 'in', attribute_obj.ids), ('product_attribute_value_id', 'in', value_obj.ids),
+                            [('attribute_id', 'in', attribute_obj.ids),
+                             ('product_attribute_value_id', 'in', value_obj.ids),
                              ('product_tmpl_id', '=', product_template_id.id)])
-                        #val_obj.append(template_attribute_obj)
-                        domain = [('product_template_attribute_value_ids', 'in', template_attribute_obj.ids),('product_tmpl_id','=',product_template_id.id)]
+                        # val_obj.append(template_attribute_obj)
+                        domain = [('product_template_attribute_value_ids', 'in', template_attribute_obj.ids),
+                                  ('product_tmpl_id', '=', product_template_id.id)]
                         if product_ids:
-                            domain += [('id','in',product_ids)]
+                            domain += [('id', 'in', product_ids)]
                         product_id = self.env['product.product'].search(domain)
                         product_ids += product_id.ids
                 else:
                     product_id = product_template_id.product_variant_id
-                order_line = self.order_line.filtered(lambda line:line.product_id in product_id)
+                order_line = self.order_line.filtered(lambda line: line.product_id in product_id)
                 order_line.quantity_shipped = response.get('quantity_shipped')
                 self._cr.commit()
         except Exception as e:
@@ -136,11 +142,12 @@ class SaleOrderVts(models.Model):
         operation_detail_id = bigcommerce_operation_details_obj.create(vals)
         return operation_detail_id
 
-    def bigcommerce_to_odoo_import_orders(self,warehouse_id=False, bigcommerce_store_ids=False):
+    def bigcommerce_to_odoo_import_orders(self, warehouse_id=False, bigcommerce_store_ids=False):
         for bigcommerce_store_id in bigcommerce_store_ids:
             req_data = False
             process_message = "Process Completed Successfully!"
-            operation_id = self.create_bigcommerce_operation('order', 'import',bigcommerce_store_id, 'Processing...',warehouse_id)
+            operation_id = self.create_bigcommerce_operation('order', 'import', bigcommerce_store_id, 'Processing...',
+                                                             warehouse_id)
             self._cr.commit()
             order_response_pages = []
             try:
@@ -149,14 +156,16 @@ class SaleOrderVts(models.Model):
                 time = today_date.strftime("%H:%M:%S")
                 today_date = date + " " + time
                 last_modification_date = False
-                if bigcommerce_store_id.last_modification_date :
+                if bigcommerce_store_id.last_modification_date:
                     last_modification_date = bigcommerce_store_id.last_modification_date
                     date = last_modification_date.strftime("%Y-%m-%d")
                     time = last_modification_date.strftime("%H:%M:%S")
-                    #last_modification_date = date + "T" + time
-                    last_modification_date = date +" "+ time
+                    # last_modification_date = date + "T" + time
+                    last_modification_date = date + " " + time
 
-                api_operation = "/v2/orders?max_date_created={0}&min_date_created={1}&status_id={2}&page=2".format(today_date,last_modification_date if last_modification_date else today_date,bigcommerce_store_id.bigcommerce_order_status or '11')
+                api_operation = "/v2/orders?max_date_created={0}&min_date_created={1}&status_id={2}&page=2".format(
+                    today_date, last_modification_date if last_modification_date else today_date,
+                    bigcommerce_store_id.bigcommerce_order_status or '11')
                 response_data = bigcommerce_store_id.send_get_request_from_odoo_to_bigcommerce(api_operation)
                 if response_data.status_code in [200, 201]:
                     response_data = response_data.json()
@@ -190,11 +199,11 @@ class SaleOrderVts(models.Model):
                     # else:
                     #     order_response_pages.append(records)
 
-
                     # for order_response_page in order_response_pages:
                     for order in response_data:
                         big_commerce_order_id = order.get('id')
-                        sale_order = self.env['sale.order'].search([('big_commerce_order_id', '=', big_commerce_order_id)])
+                        sale_order = self.env['sale.order'].search(
+                            [('big_commerce_order_id', '=', big_commerce_order_id)])
                         if not sale_order:
                             date_time_str = order.get('orderDate')
                             customerEmail = order.get('billing_address').get('email')
@@ -209,17 +218,19 @@ class SaleOrderVts(models.Model):
                             phone = order.get('billing_address').get('phone')
                             zip = order.get('billing_address').get('zip')
 
-                            total_tax= order.get('total_tax')
+                            total_tax = order.get('total_tax')
                             customerId = order.get('customer_id')
-                            carrier_id  = self.env['delivery.carrier'].search([('is_bigcommerce_shipping_method','=',True)],limit=1)
-                            partner_obj = self.env['res.partner'].search([('bigcommerce_customer_id', '=', customerId)], limit=1)
-                            if customerId==0:
+                            carrier_id = self.env['delivery.carrier'].search(
+                                [('is_bigcommerce_shipping_method', '=', True)], limit=1)
+                            partner_obj = self.env['res.partner'].search([('bigcommerce_customer_id', '=', customerId)],
+                                                                         limit=1)
+                            if customerId == 0:
                                 partner_vals = {
                                     'name': "%s %s (Guest)" % (first_name, last_name),
                                     'phone': phone,
-                                    'zip':zip,
-                                    'city':city,
-                                    'country_id':country_obj and country_obj.id,
+                                    'zip': zip,
+                                    'city': city,
+                                    'country_id': country_obj and country_obj.id,
                                     'email': customerEmail,
                                     'bigcommerce_customer_id': "Guest User",
                                     'is_available_in_bigcommerce': True,
@@ -231,7 +242,7 @@ class SaleOrderVts(models.Model):
                                 self.create_bigcommerce_operation_detail('order', 'import', req_data, response_data,
                                                                          operation_id, warehouse_id, True,
                                                                          process_message)
-                                late_modification_date_flag=True
+                                late_modification_date_flag = True
                                 continue
                             shipping_partner_state = order.get('billing_address').get('state')
                             shipping_partner_country = order.get('billing_address').get('country')
@@ -262,7 +273,7 @@ class SaleOrderVts(models.Model):
                                          'carrierCode': '',
                                          'serviceCode': '',
                                          'delivery_price': base_shipping_cost,
-                                         'amount_tax':total_tax})
+                                         'amount_tax': total_tax})
                             order_vals = self.create_sales_order_from_bigcommerce(vals)
                             order_vals.update({'big_commerce_order_id': big_commerce_order_id,
                                                'bigcommerce_store_id': bigcommerce_store_id.id})
@@ -284,19 +295,24 @@ class SaleOrderVts(models.Model):
                                                                      process_message)
                             try:
                                 product_details = "/v2{0}".format(order.get('products').get('resource'))
-                                response_data = bigcommerce_store_id.send_get_request_from_odoo_to_bigcommerce(product_details)
+                                response_data = bigcommerce_store_id.send_get_request_from_odoo_to_bigcommerce(
+                                    product_details)
                                 if response_data.status_code in [200, 201, 204]:
                                     response_data = response_data.json()
                                     if response_data and order_id:
-                                        self.prepare_sale_order_lines(order_id,response_data,operation_id,warehouse_id)
+                                        self.prepare_sale_order_lines(order_id, response_data, operation_id,
+                                                                      warehouse_id)
                                     else:
-                                        product_message="Product Is not available in order : {0}!".format(order_id and order_id.name)
-                                        self.create_bigcommerce_operation_detail('order', 'import', req_data, response_data,
+                                        product_message = "Product Is not available in order : {0}!".format(
+                                            order_id and order_id.name)
+                                        self.create_bigcommerce_operation_detail('order', 'import', req_data,
+                                                                                 response_data,
                                                                                  operation_id, warehouse_id, True,
                                                                                  product_message)
                             except Exception as e:
                                 _logger.info("Getting an Error In Import Order Line Response {}".format(e))
-                                process_message = "Getting an Error In Import Order Response {}".format(e,order_id and order_id.name)
+                                process_message = "Getting an Error In Import Order Response {}".format(e,
+                                                                                                        order_id and order_id.name)
                                 self.create_bigcommerce_operation_detail('order', 'import', '', '', operation_id,
                                                                          warehouse_id, True, process_message)
                         else:
@@ -307,33 +323,38 @@ class SaleOrderVts(models.Model):
                             self._cr.commit()
                     if not late_modification_date_flag:
                         current_date = datetime.now()
-                        bigcommerce_store_id.last_modification_date=current_date
+                        bigcommerce_store_id.last_modification_date = current_date
                 else:
                     _logger.info("Getting an Error In Import Orders Response {}".format(response_data))
-                    response_data=response_data.content
-                    process_message="Getting an Error In Import Orders Response".format(response_data)
-                    self.create_bigcommerce_operation_detail('order','import',req_data,response_data,operation_id,warehouse_id,True,process_message)
+                    response_data = response_data.content
+                    process_message = "Getting an Error In Import Orders Response".format(response_data)
+                    self.create_bigcommerce_operation_detail('order', 'import', req_data, response_data, operation_id,
+                                                             warehouse_id, True, process_message)
             except Exception as e:
                 _logger.info("Getting an Error In Import Order Response {}".format(e))
-                process_message="Getting an Error In Import Order Response {}".format(e)
-                self.create_bigcommerce_operation_detail('order','import','','',operation_id,warehouse_id,True,process_message)
+                process_message = "Getting an Error In Import Order Response {}".format(e)
+                self.create_bigcommerce_operation_detail('order', 'import', '', '', operation_id, warehouse_id, True,
+                                                         process_message)
             operation_id and operation_id.write({'bigcommerce_message': process_message})
             bigcommerce_store_ids.bigcommerce_operation_message = " Import Sale Order Process Complete "
             self._cr.commit()
-    
-    def prepare_sale_order_lines(self,order_id=False,product_details=False,operation_id=False,warehouse_id=False):
+
+    def prepare_sale_order_lines(self, order_id=False, product_details=False, operation_id=False, warehouse_id=False):
         for order_line in product_details:
             product_bigcommerce_id = order_line.get('product_id')
             product_id = self.env['product.product'].search([('bigcommerce_product_id', '=', product_bigcommerce_id)],
                                                             limit=1)
 
             if product_id.bigcommerce_product_variant_id:
-                product_id = self.env['product.product'].search([('bigcommerce_product_variant_id', '=', order_line.get('variant_id'))],
-                                                            limit=1)
+                product_id = self.env['product.product'].search(
+                    [('bigcommerce_product_variant_id', '=', order_line.get('variant_id'))],
+                    limit=1)
 
             if not product_id:
-                response_msg = "Sale Order : {0} Prouduct Not Found Product SKU And Name : {1}".format(order_id and order_id.name, product_bigcommerce_id)
-                self.create_bigcommerce_operation_detail('order','import','','',operation_id,warehouse_id,True,response_msg)
+                response_msg = "Sale Order : {0} Prouduct Not Found Product SKU And Name : {1}".format(
+                    order_id and order_id.name, product_bigcommerce_id)
+                self.create_bigcommerce_operation_detail('order', 'import', '', '', operation_id, warehouse_id, True,
+                                                         response_msg)
                 continue
             quantity = order_line.get('quantity')
             price = order_line.get('base_price')
@@ -345,94 +366,73 @@ class SaleOrderVts(models.Model):
             order_line = self.create_sale_order_line_from_bigcommerce(vals)
             order_line = self.env['sale.order.line'].create(order_line)
             if order_line:
-                order_line.big_commerce_tax=total_tax
+                order_line.big_commerce_tax = total_tax
             _logger.info("Sale Order line Created".format(
                 order_line and order_line.product_id and order_line.product_id.name))
             response_msg = "Sale Order line Created For Order  : {0}".format(order_id.name)
-            self.create_bigcommerce_operation_detail('order','import','','',operation_id,warehouse_id,False,response_msg)
+            self.create_bigcommerce_operation_detail('order', 'import', '', '', operation_id, warehouse_id, False,
+                                                     response_msg)
         self._cr.commit()
 
-    def exportordertobigcommerce(self):
+    def export_order_to_bigcommerce(self):
         """
-        This Method Is Used Export Order To BigCommerce
+        This Method  Export Order To BigCommerce
         :return: If Successfully Export Return OrderId
         """
         if not self.bigcommerce_store_id:
             raise ValidationError("Please Select Bigcommerce Store")
         bigcommerce_store_hash = self.bigcommerce_store_id.bigcommerce_store_hash
-        api_url = "%s%s/v2/orders"%(self.bigcommerce_store_id.bigcommerce_api_url,bigcommerce_store_hash)
+        api_url = "%s%s/v2/orders" % (self.bigcommerce_store_id.bigcommerce_api_url, bigcommerce_store_hash)
         bigcommerce_auth_token = self.bigcommerce_store_id.bigcommerce_x_auth_token
         bigcommerce_auth_client = self.bigcommerce_store_id.bigcommerce_x_auth_client
 
-        headers ={ 'Accept'       : 'application/json',
-                   'Content-Type' : 'application/json',
-                   'X-Auth-Token' : "{}".format(bigcommerce_auth_token),
-                   'X-Auth-Client':  "{}".format(bigcommerce_auth_client) }
-        ls = []
-        #  attribute_id = self.order_line.product_id.attribute_line_ids.attribute_id.bigcommerce_attribute_id
+        headers = {'Accept': 'application/json',
+                   'Content-Type': 'application/json',
+                   'X-Auth-Token': "{}".format(bigcommerce_auth_token),
+                   'X-Auth-Client': "{}".format(bigcommerce_auth_client)}
+        products_list = []  # list of sale orderline Product
         for line in self.order_line:
-            # variant_combination_ids = self.env['product.variant.combination'].search(
-            #     [('product_product_id', '=', line.product_id.id)]).mapped('product_template_attribute_value_id')
             product_option = []
             if line.product_id.bigcommerce_product_variant_id and line.product_id.product_template_attribute_value_ids:
-                #self._cr.execute("select product_template_attribute_value_id from product_variant_combination where product_product_id={}".format(line.product_id.id))
-                #res = self._cr.fetchall()
                 attribute_ids = line.product_id.product_template_attribute_value_ids
                 for attribute in attribute_ids:
                     attribute_value_id = attribute.product_attribute_value_id.bigcommerce_value_id
                     attribute_id = attribute.attribute_id.bigcommerce_attribute_id
-                    product_option.append({'id':attribute_id,"value":str(attribute_value_id)})
+                    product_option.append({'id': attribute_id, "value": str(attribute_value_id)})
             data = {
                 "product_id": line.product_id.bigcommerce_product_id,
                 "quantity": line.product_uom_qty,
-                "price_inc_tax" : line.price_total,
+                "price_inc_tax": line.price_total,
                 "price_ex_tax": line.price_subtotal,
-                "product_options" : product_option
+                "product_options": product_option
             }
-            ls.append(data)
+            products_list.append(data)
 
-        request_data= {
-            'status_id' : 1,
-            'billing_address' :{
-                "first_name" : "{}".format(self.partner_id and self.partner_id.name),
-                "street_1" : "{}".format(self.partner_id and self.partner_id.street),
-                "city" :"{}".format(self.partner_id and self.partner_id.city),
+        request_data = {
+            'status_id': 1,  # Status Of Order  0 Incomplete , 1 - Pending etc
+            'billing_address': {
+                "first_name": "{}".format(self.partner_id and self.partner_id.name),
+                "street_1": "{}".format(self.partner_id and self.partner_id.street),
+                "city": "{}".format(self.partner_id and self.partner_id.city),
                 "state": "{}".format(self.partner_id and self.partner_id.state_id.name),
-                "zip" : "{}".format(self.partner_id and self.partner_id.zip),
+                "zip": "{}".format(self.partner_id and self.partner_id.zip),
                 "country": "{}".format(self.partner_id and self.partner_id.country_id.name),
-                "email" :"{}".format(self.partner_id and self.partner_id.email) },
-            'products': ls }
-        operation_id = self.create_bigcommerce_operation('order', 'export', self.bigcommerce_store_id, 'Processing...',
-                                                         self.warehouse_id)
+                "email": "{}".format(self.partner_id and self.partner_id.email)},
+            'products': products_list}
         self._cr.commit()
         try:
-            response = request(method="POST",url=api_url,data=json.dumps(request_data),headers=headers)
+            response = request(method="POST", url=api_url, data=json.dumps(request_data), headers=headers)
             _logger.info("Sending Post Request To {}".format(api_url))
-            response_data = response.json()
-            req_data = False
-            process_message = "Successfully Export Product {}".format(response_data)
-            self.create_bigcommerce_operation_detail('order', 'export', req_data, response_data,
-                                                     operation_id, self.warehouse_id, False,
-                                                     process_message)
+
         except Exception as e:
-            _logger.info("Export Order Response {}".format(response.content))
             raise ValidationError(e)
-        if response.status_code not in [200,201]:
+        if response.status_code not in [200, 201]:
             raise ValidationError("Getting Some Error {}".format(response.content))
-            process_message = "Getting Some Error {}".format(response.content)
-            self.create_bigcommerce_operation_detail('order', 'export', req_data, response_data,
-                                                     operation_id, self.warehouse_id, False,
-                                                     process_message)
         response_data = response.json()
         if not response_data.get('id'):
             raise ValidationError("Order Id Not Found In Response")
-            self.create_bigcommerce_operation_detail('order', 'export', req_data, response_data,
-                                                     operation_id, self.warehouse_id, False,
-                                                     process_message)
         self.big_commerce_order_id = response_data.get('id')
         self.message_post(body="Successfully Order Export To odoo")
-        process_message = "Order Id Not Found"
-
         return {
             'effect': {
                 'fadeout': 'slow',
@@ -441,6 +441,7 @@ class SaleOrderVts(models.Model):
                 'type': 'rainbow_man',
             }
         }
+
 
 class SaleOrderLineVts(models.Model):
     _inherit = "sale.order.line"
@@ -458,7 +459,8 @@ class SaleOrderLineVts(models.Model):
             taxes = line.tax_id.compute_all(price, line.order_id.currency_id, line.product_uom_qty,
                                             product=line.product_id, partner=line.order_id.partner_shipping_id)
             line.update({
-                'price_tax': sum(t.get('amount', 0.0) for t in taxes.get('taxes', [])) if not line.order_id and line.order_id.big_commerce_order_id else line.big_commerce_tax,
+                'price_tax': sum(t.get('amount', 0.0) for t in taxes.get('taxes',
+                                                                         [])) if not line.order_id and line.order_id.big_commerce_order_id else line.big_commerce_tax,
                 'price_total': taxes['total_included'],
                 'price_subtotal': taxes['total_excluded'],
             })
