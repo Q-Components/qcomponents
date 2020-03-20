@@ -186,7 +186,7 @@ class WebHook(http.Controller):
             else:
                 _logger.info("Product Not Found !!!")
             
-            http.request.env._cr.commit()
+            http.request.env.cr.commit()
             _logger.info("Inventory Action Start... !!!")
             inventory_id.with_user(1).action_start()
             _logger.info("Inventory Action Start Done And Continue Validate... !!!")
