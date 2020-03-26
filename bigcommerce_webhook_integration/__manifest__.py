@@ -11,6 +11,7 @@
 
     'data': [
         "security/ir.model.access.csv",
+        "data/res_group.xml",
         "views/bigcommerce_webhook_configuration_view.xml",
         "views/res_company.xml",
         "views/sale_order.xml",

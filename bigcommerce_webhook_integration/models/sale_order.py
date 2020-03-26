@@ -10,7 +10,7 @@ class SaleOrder(models.Model):
         for pick in picking_ids:
             is_valid = pick.prepare_picking_for_transfer()
             if is_valid:
-                pick.action_done()
+                pick.with_user(1).action_done()
                 pick.message_post(body=_("Delivery Order Process Through OneClickSaleOrder"))
                 self._cr.commit()
             else:

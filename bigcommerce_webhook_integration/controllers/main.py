@@ -54,11 +54,12 @@ class WebHook(http.Controller):
                     else:
                         quant_id.with_user(1).write({'inventory_quantity':response.get('data').get('inventory_level'),'quantity':response.get('data').get('inventory_level')})
                     _logger.info("Product Inventory : {}".format(quant_id.quantity))
-                product_process_message = "%s : Product is not imported Yet! %s" % (response.get('id'), product_template_id)
-                _logger.info("Getting an Error In Import Product Response {}".format(product_template_id))
+                if status != True:
+                    product_process_message = "%s : Product is not imported Yet! %s" % (response.get('id'), product_template_id)
+                    _logger.info("Getting an Error In Import Product Response {}".format(product_process_message))
         except Exception as e:
             product_process_message = "%s : Product is not imported Yet! %s" % (response.get('id'),e)
-            _logger.info("Getting an Error In Import Product Responase {}".format(e))
+            _logger.info("Getting an Error In Import Product Responase {}".format(product_process_message))
         
     @http.route('/store/order/statusUpdated', type='json', auth="none", methods=['POST'])
     def update_bigcommerce_order_status(self, **kw):
@@ -91,17 +92,17 @@ class WebHook(http.Controller):
                         product_ids = []
                         domain = []
                         bigcommerce_product_id = response.get('product_id')
-                        product_template_id = http.request.env['product.template'].sudo().search(
+                        product_template_id = http.request.env['product.template'].with_user(1).search(
                             [('bigcommerce_product_id', '=', bigcommerce_product_id)])
                         if response.get('product_options'):
                             for product_option in response.get('product_options'):
-                                attribute_obj = http.request.env['product.attribute'].sudo().search(
+                                attribute_obj = http.request.env['product.attribute'].with_user(1).search(
                                     [('bigcommerce_attribute_id', '=', product_option.get('product_option_id'))])
-                                value_obj = http.request.env['product.attribute.value'].sudo().search(
+                                value_obj = http.request.env['product.attribute.value'].with_user(1).search(
                                     [('bigcommerce_value_id', '=', int(product_option.get('value')))])
                                 # attrib.append(attribute_obj.id)
                                 # val_obj.append(value_obj.id)
-                                template_attribute_obj = http.request.env['product.template.attribute.value'].sudo().search(
+                                template_attribute_obj = http.request.env['product.template.attribute.value'].with_user(1).search(
                                     [('attribute_id', 'in', attribute_obj.ids),
                                      ('product_attribute_value_id', 'in', value_obj.ids),
                                      ('product_tmpl_id', '=', product_template_id.id)])
@@ -110,7 +111,7 @@ class WebHook(http.Controller):
                                           ('product_tmpl_id', '=', product_template_id.id)]
                                 if product_ids:
                                     domain += [('id', 'in', product_ids)]
-                                product_id = http.request.env['product.product'].sudo().search(domain)
+                                product_id = http.request.env['product.product'].with_user(1).search(domain)
                                 product_ids += product_id.ids
                         else:
                             product_id = product_template_id.product_variant_id

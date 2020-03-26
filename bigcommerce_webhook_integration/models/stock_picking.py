@@ -16,9 +16,9 @@ class StockPicking(models.Model):
             _logger.info("%s (Picking Status) : Could not process. Picking already in DONE state." %self.name)
             return False
         if self.state == 'draft':
-            self.action_confirm()
+            self.with_user(1).action_confirm()
             if self.state != 'assigned':
-                self.action_assign()
+                self.with_user(1).action_assign()
                 if self.state != 'assigned':
                     _logger.info("%s (Picking Status) : Could not reserve all requested products. Please use the \'Check Availability\' button to handle the reservation manually." %self.name)
                     return False
@@ -100,12 +100,12 @@ class StockPicking(models.Model):
                 'company_id':self.company_id.id
             }
         payment = self.env['account.payment'].new(vals)
-        payment.sudo()._compute_payment_difference()
-        payment.sudo()._onchange_payment_type()
-        vals = payment.sudo()._convert_to_write(payment._cache)
+        payment.with_user(1)._compute_payment_difference()
+        payment.with_user(1)._onchange_payment_type()
+        vals = payment.with_user(1)._convert_to_write(payment._cache)
         vals.update({'currency_id':invoice_obj.company_id.currency_id.id})
-        payment_id = self.env['account.payment'].sudo().create(vals)
-        payment_id.sudo().post()
+        payment_id = self.env['account.payment'].with_user(1).create(vals)
+        payment_id.with_user(1).post()
     
     def action_done(self):
         result = super(StockPicking, self).action_done()
@@ -119,10 +119,10 @@ class StockPicking(models.Model):
                         inv_id = picking.sale_id._create_invoices()
                         self.account_invoice_ids = [(4, inv_id.id)]
                         if picking.sale_id.company_id.invoice_generated_on == 'open':
-                            inv_id.action_post()
+                            inv_id.with_user(1).action_post()
                         if picking.sale_id.company_id.invoice_generated_on == 'paid':
-                            inv_id.action_post()
-                            self.generate_account_payment(inv_id)
+                            inv_id.with_user(1).action_post()
+                            self.with_user(1).generate_account_payment(inv_id)
         return result
 
     def action_view_account_invoice(self):
