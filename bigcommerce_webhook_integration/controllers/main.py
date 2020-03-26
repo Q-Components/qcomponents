@@ -45,6 +45,7 @@ class WebHook(http.Controller):
             _logger.warning('>>>>>>>>>>>>>>> \n \n Product Template >>>>>>>%s' % (product_template_id))
             if not product_template_id:                
                 status, product_template_id = http.request.env['product.template'].create_product_template(response.get('data'),bigcommerce_store_id)
+                _logger.info("Status : {0} Product Template : {1}".format(status,product_template_id))
                 if product_template_id:
                     quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','=',location_id.id)],limit=1)
                     if not quant_id:
@@ -54,7 +55,7 @@ class WebHook(http.Controller):
                         quant_id.with_user(1).write({'inventory_quantity':response.get('data').get('inventory_level'),'quantity':response.get('data').get('inventory_level')})
                     _logger.info("Product Inventory : {}".format(quant_id.quantity))
                 product_process_message = "%s : Product is not imported Yet! %s" % (response.get('id'), product_template_id)
-                _logger.info("Getting an Error In Import Product Responase {}".format(product_template_id))
+                _logger.info("Getting an Error In Import Product Response {}".format(product_template_id))
         except Exception as e:
             product_process_message = "%s : Product is not imported Yet! %s" % (response.get('id'),e)
             _logger.info("Getting an Error In Import Product Responase {}".format(e))
