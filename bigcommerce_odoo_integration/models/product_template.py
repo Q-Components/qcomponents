@@ -250,6 +250,7 @@ class ProductTemplate(models.Model):
             message = "Category not found!"
             _logger.info("Category not found: {}".format(category_id))
             return False, message
+        _logger.info("Category : {0} Weight : {1} List Price:{2}  Is Visible:{3} Store:{4} Id:{5} SKU:{6}".format(category_id,record.get('weight'),record.get("price"),record.get("is_visible"),store_id,record.get('id'),record.get("sku")))
         product_template = product_template_obj.create({
                 'name':template_title,
                 'type':'product',
