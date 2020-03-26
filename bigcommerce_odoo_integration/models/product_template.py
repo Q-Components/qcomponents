@@ -264,7 +264,6 @@ class ProductTemplate(models.Model):
         return True, product_template
     
     def import_product_from_bigcommerce(self, warehouse_id=False, bigcommerce_store_ids=False):
-
         for bigcommerce_store_id in bigcommerce_store_ids:
             req_data = False
             product_process_message = "Process Completed Successfully!"
@@ -281,7 +280,7 @@ class ProductTemplate(models.Model):
                     response_data = response_data.json()
                     _logger.info("Product Response Data : {0}".format(response_data))
                     records = response_data.get('data')
-
+                    location_id = bigcommerce_store_id.warehouse_id.lot_stock_id
                     total_pages= response_data.get('meta').get('pagination').get('total_pages')
 
                     to_page = bigcommerce_store_id.source_of_import_data
@@ -312,6 +311,7 @@ class ProductTemplate(models.Model):
                             total_pages = total_pages - 1
                     else:
                         product_response_pages.append(records)
+                    
                     for product_response_page in product_response_pages:
                         for record in product_response_page:
                             try:
@@ -349,6 +349,13 @@ class ProductTemplate(models.Model):
                                     })
                                     self.create_bigcommerce_operation_detail('product', 'import', req_data, response_data,operation_id, warehouse_id, False, process_message)
                                     self._cr.commit()
+                                quant_id = self.env['stock.quant'].search([('product_tmpl_id','=',product_template_id.id),('location_id','=',location_id.id)],limit=1)
+                                if not quant_id:
+                                    vals = {'product_tmpl_id':product_template_id.id,'location_id':location_id.id,'inventory_quantity':record.get('inventory_level'),'product_id':product_template_id.product_variant_id.id,'quantity':record.get('inventory_level')}
+                                    self.env['stock.quant'].sudo().create(vals)
+                                else:
+                                    quant_id.sudo().write({'inventory_quantity':record.get('inventory_level'),'quantity':record.get('inventory_level')})
+                                self._cr.commit()
                             except Exception as e:
                                 product_process_message = "%s : Product is not imported Yet! %s" % (record.get('id'),e)
                                 _logger.info("Getting an Error In Import Product Responase".format(e))

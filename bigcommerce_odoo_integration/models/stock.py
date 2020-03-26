@@ -42,7 +42,8 @@ class StockInventory(models.Model):
             operation_id = self.create_bigcommerce_operation('stock', 'import', bigcommerce_store_id, 'Processing...',warehouse_id)
             self._cr.commit()
             try:
-                product_ids = self.env['product.product'].search([('bigcommerce_product_id','!=',False),('is_exported_to_bigcommerce','=',True)])
+                #product_ids = self.env['product.product'].search([('bigcommerce_product_id','!=',False),('is_exported_to_bigcommerce','=',True)])
+                product_ids = self.env['product.product'].search([('bigcommerce_product_id','=',1146)])
                 inventroy_line_obj = self.env['stock.inventory.line']
                 inventory_name = "BigCommerce_Inventory_%s"%(str(datetime.now().date()))
                 inventory_vals = {
@@ -106,6 +107,8 @@ class StockInventory(models.Model):
                                                                          api_operation, operation_id,
                                                                          warehouse_id, False,
                                                                          inventory_process_message)
+                                inventory_id.action_start()
+                                inventory_id.action_validate()
                             else:
                                 process_message = "%s : Getting an Error In Import Product Responase : {0}".format(
                                     response_data)

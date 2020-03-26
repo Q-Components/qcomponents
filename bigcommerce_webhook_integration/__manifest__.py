@@ -7,12 +7,14 @@
     'summary': """BigCommerce Odoo Integration will help you connect with Market Place.""",
     'description': """""",
 
-    'depends': ['bigcommerce_odoo_integration'],
+    'depends': ['bigcommerce_odoo_integration','stock'],
 
     'data': [
         "security/ir.model.access.csv",
-        "views/bigcommerce_webhook_configuration_view.xml"
-
+        "views/bigcommerce_webhook_configuration_view.xml",
+        "views/res_company.xml",
+        "views/sale_order.xml",
+        "views/stock_picking.xml",
     ],
 
     'images': ['static/description/bigcommerce_cover_image.png'],
