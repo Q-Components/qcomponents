@@ -40,10 +40,10 @@ class WebHook(http.Controller):
             response = request(method="GET", url=api_url, headers=headers)
             response = response.json()
             _logger.warning('>>>>>>>>>>>>>>> \n \n \n  Product Response >>>>>>>%s' % (response))
-            product_template_id = http.request.env['product.template'].search([('bigcommerce_product_id','=',response.get('id'))],limit=1)
+            product_template_id = http.request.env['product.template'].search([('bigcommerce_product_id','=',response.get('data').get('id'))],limit=1)
             _logger.warning('>>>>>>>>>>>>>>> \n \n Product Template >>>>>>>%s' % (product_template_id))
             if not product_template_id:                
-                status, product_template_id = http.request.env['product.template'].create_product_template(response,bigcommerce_store_id)
+                status, product_template_id = http.request.env['product.template'].create_product_template(response.get('data'),bigcommerce_store_id)
                 product_process_message = "%s : Product is not imported Yet! %s" % (response.get('id'), product_template_id)
                 _logger.info("Getting an Error In Import Product Responase".format(product_template_id))
         except Exception as e:
