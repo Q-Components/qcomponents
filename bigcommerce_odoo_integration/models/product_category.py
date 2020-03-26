@@ -148,7 +148,7 @@ class ProductCategory(models.Model):
                                 vals = {
                                     'name':record.get('name'),
                                     'bigcommerce_product_category_id':record.get('id'),
-                                    'custom_url':record.get('custom_url').get('url'),
+                                    'custom_url':record.get('custom_url') and record.get('custom_url').get('url'),
                                     'is_visible':record.get('is_visible'),
                                     'bigcommerce_parent_category_id':record.get('parent_id'),
                                     'property_cost_method':'standard',
@@ -163,7 +163,7 @@ class ProductCategory(models.Model):
                             else:
                                 vals = {
                                     'name':record.get('name'),
-                                    'custom_url':record.get('custom_url').get('url'),
+                                    'custom_url':record.get('custom_url') and record.get('custom_url').get('url'),
                                     'is_visible':record.get('is_visible'),
                                     'bigcommerce_parent_category_id':record.get('parent_id'),
                                     'bigcommerce_store_id':bigcommerce_store_id.id
