@@ -223,8 +223,6 @@ class ProductTemplate(models.Model):
         product_attribute_obj = self.env['product.attribute']
         product_attribute_value_obj = self.env['product.attribute.value']
         product_template_obj = self.env['product.template']
-        _logger.info("Inside Create Product Template Method:")
-        _logger.info("Response:{}".format(record))
         template_title = ''
         if record.get('name',''):
             template_title = record.get('name')
@@ -245,12 +243,10 @@ class ProductTemplate(models.Model):
                     attribute_line_ids_data = [0, False,{'attribute_id': attribute.id,'value_ids':[[6, False, attribute_val_ids]]}]
                     attrib_line_vals.append(attribute_line_ids_data)
         category_id = self.env['product.category'].search([('bigcommerce_product_category_id','in',record.get('categories'))],limit=1)
-        _logger.info("Category:{}".format(category_id))
         if not category_id:
             message = "Category not found!"
             _logger.info("Category not found: {}".format(category_id))
             return False, message
-        _logger.info("Category : {0} Weight : {1} List Price:{2}  Is Visible:{3} Store:{4} Id:{5} SKU:{6}".format(category_id,record.get('weight'),record.get("price"),record.get("is_visible"),store_id,record.get('id'),record.get("sku")))
         vals = {
                 'name':template_title,
                 'type':'product',
@@ -265,7 +261,7 @@ class ProductTemplate(models.Model):
                 "is_exported_to_bigcommerce": True
                 }
         product_template = product_template_obj.with_user(1).create(vals)
-        _logger.info("Inside Create Product Template Method: Product ID:{}".format(product_template))
+        _logger.info("Product Created: {}".format(product_template))
         return True, product_template
     
     def import_product_from_bigcommerce(self, warehouse_id=False, bigcommerce_store_ids=False):
@@ -297,12 +293,10 @@ class ProductTemplate(models.Model):
                                 page_api = "/v3/catalog/products?page=%s" % (total_pages)
                                 page_response_data = bigcommerce_store_id.send_get_request_from_odoo_to_bigcommerce(
                                     page_api)
-                                _logger.info(
-                                    "BigCommerce Get Product Category Response : {0}".format(page_response_data))
                                 _logger.info("Response Status: {0}".format(page_response_data.status_code))
                                 if page_response_data.status_code in [200, 201]:
                                     page_response_data = page_response_data.json()
-                                    _logger.info("Category Response Data : {0}".format(page_response_data))
+                                    _logger.info("Product Response Data : {0}".format(page_response_data))
                                     records = page_response_data.get('data')
                                     product_response_pages.append(records)
                             except Exception as e:
