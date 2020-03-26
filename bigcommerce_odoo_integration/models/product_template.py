@@ -228,7 +228,7 @@ class ProductTemplate(models.Model):
         if record.get('name',''):
             template_title = record.get('name')
         attrib_line_vals = []
-        
+        _logger.info("Response:{}".get(record))
         if record.get('variants'):
             for attrib in record.get('variants'):
                 if not attrib.get('option_values'):
@@ -245,6 +245,7 @@ class ProductTemplate(models.Model):
                     attribute_line_ids_data = [0, False,{'attribute_id': attribute.id,'value_ids':[[6, False, attribute_val_ids]]}]
                     attrib_line_vals.append(attribute_line_ids_data)
         category_id = self.env['product.category'].search([('bigcommerce_product_category_id','in',record.get('categories'))],limit=1)
+        _logger.info("Category:{}".format(category_id))
         if not category_id:
             message = "Category not found!"
             _logger.info("Category not found: {}".format(category_id))
