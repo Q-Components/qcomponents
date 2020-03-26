@@ -224,7 +224,7 @@ class ProductTemplate(models.Model):
         product_attribute_value_obj = self.env['product.attribute.value']
         product_template_obj = self.env['product.template']
         _logger.info("Inside Create Product Template Method:")
-        _logger.info("Response:{}".get(record))
+        _logger.info("Response:{}".format(record))
         template_title = ''
         if record.get('name',''):
             template_title = record.get('name')
