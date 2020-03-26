@@ -223,7 +223,7 @@ class ProductTemplate(models.Model):
         product_attribute_obj = self.env['product.attribute']
         product_attribute_value_obj = self.env['product.attribute.value']
         product_template_obj = self.env['product.template']
-        
+        _logger.info("Inside Create Product Template Method:")
         template_title = ''
         if record.get('name',''):
             template_title = record.get('name')
@@ -261,6 +261,7 @@ class ProductTemplate(models.Model):
                 "is_imported_from_bigcommerce":True,
                 "is_exported_to_bigcommerce": True
                 })
+        _logger.info("Inside Create Product Template Method: Product ID:{}".format(product_template))
         return True, product_template
     
     def import_product_from_bigcommerce(self, warehouse_id=False, bigcommerce_store_ids=False):

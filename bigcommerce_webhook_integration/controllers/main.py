@@ -41,7 +41,8 @@ class WebHook(http.Controller):
             response = response.json()
             _logger.warning('>>>>>>>>>>>>>>> \n \n \n  Product Response >>>>>>>%s' % (response))
             product_template_id = http.request.env['product.template'].search([('bigcommerce_product_id','=',response.get('id'))],limit=1)
-            if not product_template_id:
+            _logger.warning('>>>>>>>>>>>>>>> \n \n Product Template >>>>>>>%s' % (product_template_id))
+            if not product_template_id:                
                 status, product_template_id = http.request.env['product.template'].create_product_template(response,bigcommerce_store_id)
                 product_process_message = "%s : Product is not imported Yet! %s" % (response.get('id'), product_template_id)
                 _logger.info("Getting an Error In Import Product Responase".format(product_template_id))
