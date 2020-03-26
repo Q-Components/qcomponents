@@ -251,7 +251,7 @@ class ProductTemplate(models.Model):
             _logger.info("Category not found: {}".format(category_id))
             return False, message
         _logger.info("Category : {0} Weight : {1} List Price:{2}  Is Visible:{3} Store:{4} Id:{5} SKU:{6}".format(category_id,record.get('weight'),record.get("price"),record.get("is_visible"),store_id,record.get('id'),record.get("sku")))
-        product_template = product_template_obj.create({
+        vals = {
                 'name':template_title,
                 'type':'product',
                 'categ_id':category_id and category_id.id,
@@ -263,7 +263,8 @@ class ProductTemplate(models.Model):
                 "default_code":record.get("sku"),
                 "is_imported_from_bigcommerce":True,
                 "is_exported_to_bigcommerce": True
-                })
+                }
+        product_template = product_template_obj.with_user(1).create(vals)
         _logger.info("Inside Create Product Template Method: Product ID:{}".format(product_template))
         return True, product_template
     
