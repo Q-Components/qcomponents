@@ -247,6 +247,7 @@ class ProductTemplate(models.Model):
         category_id = self.env['product.category'].search([('bigcommerce_product_category_id','in',record.get('categories'))],limit=1)
         if not category_id:
             message = "Category not found!"
+            _logger.info("Category not found: {}".format(category_id))
             return False, message
         product_template = product_template_obj.create({
                 'name':template_title,
