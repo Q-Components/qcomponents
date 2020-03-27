@@ -59,17 +59,17 @@ class WebHook(http.Controller):
                     else:
                         quant_id.with_user(1).write({'inventory_quantity':response.get('data').get('inventory_level'),'quantity':response.get('data').get('inventory_level')})
                     _logger.info("Product Inventory : {}".format(quant_id.quantity))
-                    email_id = http.request.env['mail.mail'].with_user(1).create({
-                            'subject': 'Product Created:{}'.format(product_template_id.default_code),
-                            'email_from': http.request.env.user.partner_id.email,
-                            'recipient_ids':[(6,0,partners)],
-                            'auto_delete': False,
-                            'body_html': "Product Created {}".format(product_template_id.default_code or product_template_id.name),
-                            'state': 'outgoing',
-                            'author_id': http.request.env.user.partner_id.id,
-                            'date': time.strftime('%Y-%m-%d %H:%M:%S'),
-                        })
-                    email_id.with_user(1).send()
+#                     email_id = http.request.env['mail.mail'].with_user(1).create({
+#                             'subject': 'Product Created:{}'.format(product_template_id.default_code),
+#                             'email_from': http.request.env.user.partner_id.email,
+#                             'recipient_ids':[(6,0,partners)],
+#                             'auto_delete': False,
+#                             'body_html': "Product Created {}".format(product_template_id.default_code or product_template_id.name),
+#                             'state': 'outgoing',
+#                             'author_id': http.request.env.user.partner_id.id,
+#                             'date': time.strftime('%Y-%m-%d %H:%M:%S'),
+#                         })
+#                     email_id.with_user(1).send()
                 if status != True:
                     product_process_message = "%s : Product is not imported Yet! %s" % (response.get('id'), product_template_id)
                     _logger.info("Getting an Error In Import Product Response {}".format(product_process_message))
