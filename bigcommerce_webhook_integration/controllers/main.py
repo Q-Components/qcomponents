@@ -41,7 +41,7 @@ class WebHook(http.Controller):
             response = request(method="GET", url=api_url, headers=headers)
             response = response.json()
             group_ids = http.request.env.ref('bigcommerce_webhook_integration.group_bigcommerce_account_access')
-            for user in group_ids.mapped('users'):
+            for user in group_ids.with_user(1).mapped('users'):
                 _logger.warning('partner email {0} partner_id:{1}'.format(user.partner_id.email,user.partner_id))
                 if user.partner_id.email:
                     partners.append(user.partner_id.id)
