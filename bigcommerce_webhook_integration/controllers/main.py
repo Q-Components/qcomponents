@@ -62,7 +62,7 @@ class WebHook(http.Controller):
                     email_id = http.request.env['mail.mail'].with_user(1).create({
                             'subject': 'Product Created:{}'.format(product_template_id.default_code),
                             'email_from': http.request.env.user.partner_id.email,
-                            'recipient_ids':(6,0partners),
+                            'recipient_ids':[(6,0,partners)],
                             'auto_delete': False,
                             'body_html': "Product Created {}".format(product_template_id.default_code or product_template_id.name),
                             'state': 'outgoing',
