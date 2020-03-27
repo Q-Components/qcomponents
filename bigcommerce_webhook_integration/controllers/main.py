@@ -44,6 +44,7 @@ class WebHook(http.Controller):
             for user in group_ids.mapped('users'):
                 if user.partner_id.email:
                     partners.append(user.partner_id.id)
+            _logger.warning('Group:{} Partner:{}'.format(group_ids,partners))
             _logger.warning('>>>>>>>>>>>>>>> \n \n \n  Product Response >>>>>>>%s' % (response))
             location_id = bigcommerce_store_id.warehouse_id.lot_stock_id
             product_template_id = http.request.env['product.template'].search([('bigcommerce_product_id','=',response.get('data').get('id'))],limit=1)
