@@ -41,7 +41,7 @@ class WebHook(http.Controller):
             response = request(method="GET", url=api_url, headers=headers)
             response = response.json()
             group_ids = http.request.env.ref('bigcommerce_webhook_integration.group_bigcommerce_account_access')
-            for user in group_ids.mapped('user_ids'):
+            for user in group_ids.mapped('users'):
                 if user.partner_id.email:
                     partners.append(user.partner_id.id)
             _logger.warning('>>>>>>>>>>>>>>> \n \n \n  Product Response >>>>>>>%s' % (response))
