@@ -58,18 +58,19 @@ class WebHook(http.Controller):
                         http.request.env['stock.quant'].with_user(1).create(vals)
                     else:
                         quant_id.with_user(1).write({'inventory_quantity':response.get('data').get('inventory_level'),'quantity':response.get('data').get('inventory_level')})
-                    email_id = http.request.env['mail.mail'].with_user(1).create({
+                    user_id = http.request.env['res.users'].search([('login','=','quote@qcomponents.com')],limit=1)
+                    email_id = http.request.env['mail.mail'].with_user(user_id.id).create({
                             'subject': 'Product Created:{}'.format(product_template_id.default_code),
-                            'email_from': http.request.env.user.partner_id.email,
+                            'email_from': user_id.partner_id.email,
                             'recipient_ids':[(6,0,partners)],
                             'auto_delete': False,
                             'body_html': "Product Created {}".format(product_template_id.default_code or product_template_id.name),
                             'state': 'outgoing',
-                            'author_id': http.request.env.user.partner_id.id,
+                            'author_id': user_id.partner_id.id,
                             'date': time.strftime('%Y-%m-%d %H:%M:%S'),
                         })
                     _logger.info("Email Created : {0}".format(email_id))
-                    email_id.with_user(1).send()
+                    email_id.with_user(user_id.id).send()
                 if status != True:
                     product_process_message = "%s : Product is not imported Yet! %s" % (response.get('id'), product_template_id)
                     _logger.info("Getting an Error In Import Product Response {}".format(product_process_message))
