@@ -22,6 +22,7 @@ class WebHook(http.Controller):
     
     @http.route('/store/product/created', type='json', auth="none", methods=['POST'])
     def create_product_using_webhook(self, **kw):
+        partners = []
         _logger.warning('>>>>>>>>>>>>>>> \n \n \n Final data >>>>>>>%s' % (http.request.httprequest.data))
         create_product_dict = http.request.httprequest.data.decode("utf-8")
         product_data = json.loads(create_product_dict)
@@ -39,6 +40,10 @@ class WebHook(http.Controller):
         try:
             response = request(method="GET", url=api_url, headers=headers)
             response = response.json()
+            group_ids = http.request.env('bigcommerce_webhook_integration.group_bigcommerce_account_access')
+            for user in group_ids.mapped('user_ids'):
+                if user.partner_id.email:
+                    partners.append(user.partner_id.id)
             _logger.warning('>>>>>>>>>>>>>>> \n \n \n  Product Response >>>>>>>%s' % (response))
             location_id = bigcommerce_store_id.warehouse_id.lot_stock_id
             product_template_id = http.request.env['product.template'].search([('bigcommerce_product_id','=',response.get('data').get('id'))],limit=1)
@@ -54,6 +59,17 @@ class WebHook(http.Controller):
                     else:
                         quant_id.with_user(1).write({'inventory_quantity':response.get('data').get('inventory_level'),'quantity':response.get('data').get('inventory_level')})
                     _logger.info("Product Inventory : {}".format(quant_id.quantity))
+                    email_id = http.request.env['mail.mail'].with_user(1).create({
+                            'subject': 'Product Created:{}'.format(product_template_id.default_code),
+                            'email_from': http.request.env.user.partner_id.email,
+                            'recipient_ids':(6,0partners),
+                            'auto_delete': False,
+                            'body_html': "Product Created {}".format(product_template_id.default_code or product_template_id.name),
+                            'state': 'outgoing',
+                            'author_id': http.request.env.user.partner_id.id,
+                            'date': time.strftime('%Y-%m-%d %H:%M:%S'),
+                        })
+                    email_id.with_user(1).send()
                 if status != True:
                     product_process_message = "%s : Product is not imported Yet! %s" % (response.get('id'), product_template_id)
                     _logger.info("Getting an Error In Import Product Response {}".format(product_process_message))
