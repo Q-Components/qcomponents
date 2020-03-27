@@ -58,7 +58,8 @@ class WebHook(http.Controller):
                         http.request.env['stock.quant'].with_user(1).create(vals)
                     else:
                         quant_id.with_user(1).write({'inventory_quantity':response.get('data').get('inventory_level'),'quantity':response.get('data').get('inventory_level')})
-                    user_id = http.request.env['res.users'].search([('login','=','quote@qcomponents.com')],limit=1)
+                    user_id = http.request.env['res.users'].with_user(1).search([('login','=','quote@qcomponents.com')],limit=1)
+                    _logger.info("USER : {0}".format(user_id))
                     email_id = http.request.env['mail.mail'].with_user(1).create({
                             'subject': 'Product Created:{}'.format(product_template_id.default_code),
                             'email_from': user_id.partner_id.email,
