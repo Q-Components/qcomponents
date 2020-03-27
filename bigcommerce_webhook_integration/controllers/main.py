@@ -42,9 +42,10 @@ class WebHook(http.Controller):
             response = response.json()
             group_ids = http.request.env.ref('bigcommerce_webhook_integration.group_bigcommerce_account_access')
             for user in group_ids.mapped('users'):
+                _logger.warning('partner email {0} partner_id:{1}'.format(user.partner_id.email,user.partner_id))
                 if user.partner_id.email:
                     partners.append(user.partner_id.id)
-            _logger.warning('Group:{} Partner:{}'.format(group_ids,partners))
+            _logger.warning('Group:{0} Partner:{1}'.format(group_ids,partners))
             _logger.warning('>>>>>>>>>>>>>>> \n \n \n  Product Response >>>>>>>%s' % (response))
             location_id = bigcommerce_store_id.warehouse_id.lot_stock_id
             product_template_id = http.request.env['product.template'].search([('bigcommerce_product_id','=',response.get('data').get('id'))],limit=1)
