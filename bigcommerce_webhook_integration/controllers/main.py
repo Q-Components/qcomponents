@@ -23,7 +23,6 @@ class WebHook(http.Controller):
     @http.route('/store/product/created', type='json', auth="none", methods=['POST'])
     def create_product_using_webhook(self, **kw):
         partners = []
-        _logger.warning('>>>>>>>>>>>>>>> \n \n \n Final data >>>>>>>%s' % (http.request.httprequest.data))
         create_product_dict = http.request.httprequest.data.decode("utf-8")
         product_data = json.loads(create_product_dict)
         store = product_data.get('producer').replace("stores/","")
@@ -42,21 +41,19 @@ class WebHook(http.Controller):
             response = response.json()
             group_ids = http.request.env.ref('bigcommerce_webhook_integration.group_bigcommerce_account_access')
             for user in group_ids.with_user(1).mapped('users'):
-                _logger.warning('partner email {0} partner_id:{1}'.format(user.partner_id.email,user.partner_id))
                 if user.partner_id.email:
                     partners.append(user.partner_id.id)
-            _logger.warning('Group:{0} Partner:{1}'.format(group_ids,partners))
             _logger.warning('>>>>>>>>>>>>>>> \n \n \n  Product Response >>>>>>>%s' % (response))
             location_id = bigcommerce_store_id.warehouse_id.lot_stock_id
             product_template_id = http.request.env['product.template'].search([('bigcommerce_product_id','=',response.get('data').get('id'))],limit=1)
-            _logger.warning('>>>>>>>>>>>>>>> \n \n Product Template >>>>>>>%s' % (product_template_id))
             if not product_template_id:                
                 status, product_template_id = http.request.env['product.template'].create_product_template(response.get('data'),bigcommerce_store_id)
                 _logger.info("Status : {0} Product Template : {1}".format(status,product_template_id))
                 if product_template_id:
+                    product_id = http.request.env['product.product'].with_user(1).search([('product_tmpl_id','=',product_template_id.id)],limit=1)
                     quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','=',location_id.id)],limit=1)
                     if not quant_id:
-                        vals = {'product_tmpl_id':product_template_id.id,'location_id':location_id.id,'inventory_quantity':response.get('data').get('inventory_level'),'product_id':product_template_id.product_variant_id.id,'quantity':response.get('data').get('inventory_level')}
+                        vals = {'product_tmpl_id':product_template_id.id,'location_id':location_id.id,'inventory_quantity':response.get('data').get('inventory_level'),'product_id':product_id.id,'quantity':response.get('data').get('inventory_level')}
                         http.request.env['stock.quant'].with_user(1).create(vals)
                     else:
                         quant_id.with_user(1).write({'inventory_quantity':response.get('data').get('inventory_level'),'quantity':response.get('data').get('inventory_level')})
@@ -67,7 +64,7 @@ class WebHook(http.Controller):
                             'email_from': user_id.partner_id.email,
                             'recipient_ids':[(6,0,partners)],
                             'auto_delete': False,
-                            'body_html': "Product Created {}".format(product_template_id.default_code or product_template_id.name),
+                            'body_html': "Product Created {0} with Inventory:{1} ".format(product_template_id.default_code or product_template_id.name,quant_id.with_user(1).quantity),
                             'state': 'outgoing',
                             'author_id': user_id.partner_id.id,
                             'date': time.strftime('%Y-%m-%d %H:%M:%S'),
@@ -83,7 +80,6 @@ class WebHook(http.Controller):
         
     @http.route('/store/order/statusUpdated', type='json', auth="none", methods=['POST'])
     def update_bigcommerce_order_status(self, **kw):
-        _logger.warning('>>>>>>>>>>>>>>> \n \n \n Final data >>>>>>>%s' % (http.request.httprequest.data))
         status_update_dict = http.request.httprequest.data.decode("utf-8")
         inventory_data = json.loads(status_update_dict)
         bigcommerce_order_id = inventory_data.get('data').get('id')
@@ -190,6 +186,7 @@ class WebHook(http.Controller):
     def update_store_product_inventory_webhook(self, **kw):
         status_update_dict = http.request.httprequest.data.decode("utf-8")
         inventory_data = json.loads(status_update_dict)
+        partners = []
         _logger.info("Get Successfull Response {}".format(inventory_data))
         method = inventory_data.get('data').get('inventory').get('method')
         product_qty = inventory_data.get('data').get('inventory').get('value')
@@ -197,39 +194,65 @@ class WebHook(http.Controller):
 
         store = inventory_data.get('producer').replace("stores/","")
         bigcommerce_store_id = http.request.env['bigcommerce.store.configuration'].sudo().search([('bigcommerce_store_hash','=',store)])
-
-        warehouse_id = bigcommerce_store_id.warehouse_id
+        group_ids = http.request.env.ref('bigcommerce_webhook_integration.group_bigcommerce_account_access')
+        for user in group_ids.with_user(1).mapped('users'):
+            if user.partner_id.email:
+                partners.append(user.partner_id.id)
+        #warehouse_id = bigcommerce_store_id.warehouse_id
+        location_id = bigcommerce_store_id.warehouse_id.lot_stock_id
         if method == "absolute":
-            inventroy_line_obj = http.request.env['stock.inventory.line']
-            inventory_name = "BigCommerce_Inventory_%s" % (str(datetime.now().date()))
-            inventory_vals = {
-                'name': inventory_name,
-                'location_ids': [(6, 0, warehouse_id.sudo().lot_stock_id.ids)],
-                'accounting_date': time.strftime("%Y-%m-%d %H:%M:%S"),
-                'date': time.strftime("%Y-%m-%d %H:%M:%S"),
-                'company_id': warehouse_id.company_id and warehouse_id.company_id.id or False}
-
-            inventory_id = http.request.env['stock.inventory'].sudo().create(inventory_vals)
-            _logger.info("Successfull Create Inventory")
             product_product = http.request.env['product.product']
             product_id = product_product.sudo().search([('bigcommerce_product_id', '=', product)])
             if product_id:
-                inventroy_line_obj.sudo().create({'product_id': product_id.id,
-                                                            'inventory_id': inventory_id and inventory_id.sudo().id,
-                                                            'location_id': warehouse_id.sudo().lot_stock_id.id,
-                                                            'product_qty': product_qty,
-                                                            'product_uom_id': product_id.uom_id and product_id.uom_id.id,
-                                                            })
-                _logger.info("Successfully Product Qty Update By Product Id")
+                quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.product_tmpl_id.id),('location_id','=',location_id.id)],limit=1)
+                if not quant_id:
+                    vals = {'product_tmpl_id':product_id.product_tmpl_id.id,'location_id':location_id.id,'inventory_quantity':product_qty,'product_id':product_id.id,'quantity':product_qty}
+                    http.request.env['stock.quant'].with_user(1).create(vals)
+                else:
+                    quant_id.with_user(1).write({'inventory_quantity':product_qty,'quantity':product_qty})
+                user_id = http.request.env['res.users'].with_user(1).search([('login','=','quote@qcomponents.com')],limit=1)
+                _logger.info("USER : {0}".format(user_id))
+                email_id = http.request.env['mail.mail'].with_user(1).create({
+                        'subject': 'Product Created:{}'.format(product_id.default_code or product_id.name),
+                        'email_from': user_id.partner_id.email,
+                        'recipient_ids':[(6,0,partners)],
+                        'auto_delete': False,
+                        'body_html': "Product Created {0} with Inventory:{1} ".format(product_id.name or product_id.default_code,product_qty),
+                        'state': 'outgoing',
+                        'author_id': user_id.partner_id.id,
+                        'date': time.strftime('%Y-%m-%d %H:%M:%S'),
+                    })
+                _logger.info("Email Created : {0}".format(email_id))
+                email_id.with_user(1).send()
+#             inventroy_line_obj = http.request.env['stock.inventory.line']
+#             inventory_name = "BigCommerce_Inventory_%s" % (str(datetime.now().date()))
+#             inventory_vals = {
+#                 'name': inventory_name,
+#                 'location_ids': [(6, 0, warehouse_id.sudo().lot_stock_id.ids)],
+#                 'accounting_date': time.strftime("%Y-%m-%d %H:%M:%S"),
+#                 'date': time.strftime("%Y-%m-%d %H:%M:%S"),
+#                 'company_id': warehouse_id.company_id and warehouse_id.company_id.id or False}
+# 
+#             inventory_id = http.request.env['stock.inventory'].sudo().create(inventory_vals)
+#             _logger.info("Successfull Create Inventory")
+#             if product_id:
+#                 inventroy_line_obj.sudo().create({'product_id': product_id.id,
+#                                                             'inventory_id': inventory_id and inventory_id.sudo().id,
+#                                                             'location_id': warehouse_id.sudo().lot_stock_id.id,
+#                                                             'product_qty': product_qty,
+#                                                             'product_uom_id': product_id.uom_id and product_id.uom_id.id,
+#                                                             })
+#                 _logger.info("Successfully Product Qty Update By Product Id")
             else:
                 _logger.info("Product Not Found !!!")
             
             http.request.env.cr.commit()
-            _logger.info("Inventory Action Start... !!!")
-            inventory_id.with_user(1).action_start()
-            _logger.info("Inventory Action Start Done And Continue Validate... !!!")
-            inventory_id.with_user(1).action_validate()
-            _logger.info("Inventory Action Validate Method Done... !!!")
+            
+#             _logger.info("Inventory Action Start... !!!")
+#             inventory_id.with_user(1).action_start()
+#             _logger.info("Inventory Action Start Done And Continue Validate... !!!")
+#             inventory_id.with_user(1).action_validate()
+#             _logger.info("Inventory Action Validate Method Done... !!!")
         else:
             _logger.info("Not Absolute Method")
 
