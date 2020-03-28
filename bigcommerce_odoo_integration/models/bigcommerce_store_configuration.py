@@ -32,6 +32,7 @@ class BigCommerceStoreConfiguration(models.Model):
                                               ('14', '14 - Partially Refunded')],default='11')
     last_modification_date = fields.Datetime(string="Last Modification Date")
     bigcommerce_operation_message = fields.Char(string="Bigcommerce Message", help="bigcommerce_operation_message", copy=False)
+    bigcommerce_product_import_status = fields.Char(string="Product Import Message", help="show status of import product process", copy=False)
     warehouse_id = fields.Many2one("stock.warehouse", "Warehouse")
     bigcommerce_product_skucode = fields.Boolean("Check Bigcommerce Product Skucode")
     source_of_import_data = fields.Integer(string="Source(Page) Of Import Data",default=1)
@@ -104,9 +105,9 @@ class BigCommerceStoreConfiguration(models.Model):
             import_categories = product_category_obj.bigcommerce_to_odoo_import_product_categories(self.warehouse_id,
                                                                                                    self)
             return import_categories
-
+    
     def import_product_from_bigcommerce_main(self):
-        self.bigcommerce_operation_message = "Import Product Process Running..."
+        self.bigcommerce_product_import_status = "Import Product Process Running..."
         self._cr.commit()
         dbname = self.env.cr.dbname
         db_registry = registry(dbname)
@@ -115,7 +116,6 @@ class BigCommerceStoreConfiguration(models.Model):
             t = Thread(target=self.import_product_from_bigcommerce, args=())
             t.start()
 
-
     def import_product_from_bigcommerce(self):
         with api.Environment.manage():
             new_cr = registry(self._cr.dbname).cursor()
@@ -123,6 +123,17 @@ class BigCommerceStoreConfiguration(models.Model):
             product_obj = self.env['product.template']
             import_product = product_obj.import_product_from_bigcommerce(self.warehouse_id,self)
             return import_product
+    
+    def auto_update_pages_for_import_product(self):
+        store_ids = self.env['bigcommerce.store.configuration'].search([])
+        for store in store_ids:
+            if store.bigcommerce_product_import_status == "Import Product Process Completed.":
+                source_page = store.source_of_import_data
+                destination_page = store.destination_of_import_data
+                store.source_of_import_data = destination_page + 1
+                store.destination_of_import_data = destination_page + 50
+                self._cr.commit()
+                store.import_product_from_bigcommerce_main()
 
     def import_product_attribute_from_bigcommerce_main(self):
         product_attribute_obj = self.env['product.attribute']
@@ -206,5 +217,12 @@ class BigCommerceStoreConfiguration(models.Model):
             product_image_obj = self.env['bigcommerce.product.image']
             import_variant_image = product_image_obj.bigcommerce_to_odoo_import_variant_product_image(self.warehouse_id, self)
             return import_variant_image
-
+    
+    def bigcommerce_to_odoo_import_product_custom_fields(self):
+        with api.Environment.manage():
+            new_cr = registry(self._cr.dbname).cursor()
+            self = self.with_env(self.env(cr=new_cr))
+            product_obj = self.env['product.template']
+            import_product_custom_fields = product_obj.import_product_custom_fields_from_bigcommerce(self)
+            return import_product_custom_fields
 

@@ -145,9 +145,9 @@ class SaleOrderVts(models.Model):
             order_response_pages = []
             try:
                 today_date = datetime.now()
-                date = today_date.strftime("%Y-%m-%d")
-                time = today_date.strftime("%H:%M:%S")
-                today_date = date + " " + time
+                todaydate = today_date.strftime("%Y-%m-%d")
+                todaytime = today_date.strftime("%H:%M:%S")
+                today_date = todaydate + " " + todaytime
                 last_modification_date = False
                 if bigcommerce_store_id.last_modification_date :
                     last_modification_date = bigcommerce_store_id.last_modification_date
@@ -156,21 +156,19 @@ class SaleOrderVts(models.Model):
                     #last_modification_date = date + "T" + time
                     last_modification_date = date +" "+ time
 
-                api_operation = "/v2/orders?max_date_created={0}&min_date_created={1}&status_id={2}&page=2".format(today_date,last_modification_date if last_modification_date else today_date,bigcommerce_store_id.bigcommerce_order_status or '11')
+                api_operation = "/v2/orders?max_date_created={0}&min_date_created={1}&status_id={2}".format(today_date,last_modification_date if last_modification_date else today_date,bigcommerce_store_id.bigcommerce_order_status or '11')
                 response_data = bigcommerce_store_id.send_get_request_from_odoo_to_bigcommerce(api_operation)
                 if response_data.status_code in [200, 201]:
                     response_data = response_data.json()
                     _logger.info("Category Response Data : {0}".format(response_data))
                     late_modification_date_flag = False
 
-                    # records = response_data.get('data')
-                    #
-                    # total_pages = response_data.get('meta').get('pagination').get('total_pages')
+                    # total_pages = response_data.get('meta') and response_data.get('meta').get('pagination').get('total_pages')
                     # if total_pages > 1:
                     #     while (total_pages != 0):
                     #         try:
-                    #             page_api = "/v2/orders?max_date_created={0}&min_date_created={1}&page={2}".format(
-                    #                 today_date, last_modification_date if last_modification_date else today_date,total_pages)
+                    #             page_api = "/v2/orders?max_date_created={0}&min_date_created={1}&status_id={2}&page={2}".format(
+                    #             today_date, last_modification_date if last_modification_date else today_date, bigcommerce_store_id.bigcommerce_order_status or '11',total_pages)
                     #             page_response_data = bigcommerce_store_id.send_get_request_from_odoo_to_bigcommerce(
                     #                 page_api)
                     #             _logger.info(
@@ -179,8 +177,7 @@ class SaleOrderVts(models.Model):
                     #             if page_response_data.status_code in [200, 201]:
                     #                 page_response_data = page_response_data.json()
                     #                 _logger.info("Order Response Data : {0}".format(page_response_data))
-                    #                 records = page_response_data.get('data')
-                    #                 order_response_pages.append(records)
+                    #                 order_response_pages.append(page_response_data)
                     #         except Exception as e:
                     #             _logger.info("Getting an Error In Import Order Response {}".format(e))
                     #             process_message = "Getting an Error In Import Order Response {}".format(e)
@@ -188,9 +185,8 @@ class SaleOrderVts(models.Model):
                     #                                                      warehouse_id, True, process_message)
                     #         total_pages = total_pages - 1
                     # else:
-                    #     order_response_pages.append(records)
-
-
+                    #     order_response_pages.append(response_data)
+                    #
                     # for order_response_page in order_response_pages:
                     for order in response_data:
                         big_commerce_order_id = order.get('id')
@@ -257,7 +253,7 @@ class SaleOrderVts(models.Model):
                                          'partner_shipping_id': partner_obj.id,
                                          'date_order': date_time_str or today_date,
                                          'carrier_id': carrier_id and carrier_id.id,
-                                         'company_id': self.env.user.company_id.id,
+                                         'company_id': warehouse_id.company_id and warehouse_id.company_id.id or self.env.user.company_id.id,
                                          'warehouse_id': warehouse_id.id,
                                          'carrierCode': '',
                                          'serviceCode': '',

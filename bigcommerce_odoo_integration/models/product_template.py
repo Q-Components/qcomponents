@@ -264,6 +264,56 @@ class ProductTemplate(models.Model):
         _logger.info("Product Created: {}".format(product_template))
         return True, product_template
     
+    def import_product_custom_fields_from_bigcommerce(self,bigcommerce_store_ids):
+        for bigcommerce_store_id in bigcommerce_store_ids:
+            req_data = False
+            product_process_message = "Process Completed Successfully!"
+            operation_id = self.create_bigcommerce_operation('product','import',bigcommerce_store_id,'Processing...',bigcommerce_store_id.warehouse_id)
+            self._cr.commit()
+            headers = {"Accept": "application/json",
+                   "X-Auth-Client": "{}".format(bigcommerce_store_id.bigcommerce_x_auth_client),
+                   "X-Auth-Token": "{}".format (bigcommerce_store_id.bigcommerce_x_auth_token),
+                   "Content-Type": "application/json"}
+        #
+            product_template = self.env['product.template'].sudo().search([('bigcommerce_product_id','!=',False),('bigcommerce_store_id','=',bigcommerce_store_id.id)])
+            for product in product_template:
+                url = "{0}{1}{2}{3}{4}".format(bigcommerce_store_id.bigcommerce_api_url ,bigcommerce_store_id.bigcommerce_store_hash,'/v3/catalog/products/',product.bigcommerce_product_id,'/custom-fields')
+                try:
+                    _logger.info("Send GET Request From odoo to BigCommerce: {0}".format(url))
+                    response_data = request(method='GET', url=url, headers=headers)            
+                    _logger.info("BigCommerce Get Product  Response : {0}".format(response_data))
+                    if response_data.status_code in [200, 201]:
+                        response_data = response_data.json()
+                        _logger.info("Product Response Data : {0}".format(response_data))
+                        records = response_data.get('data')
+                        for record in records:
+                            if record.get('name') == 'Alternate Part Number':
+                                product.x_studio_alternate_number = record.get('value')
+                            elif record.get('name') == 'Alternate Manufacturer':
+                                product.x_studio_manufacturer = record.get('value')
+                            elif record.get('name') == 'Date Code':
+                                product.x_studio_date_code_1 = record.get('value')
+                            elif record.get('name') == 'Country of Origin':
+                                product.x_studio_country_of_origin = record.get('value')
+                            elif record.get('name') == 'Condition':
+                                product.x_studio_condition_1 = record.get('value')
+                            elif record.get('name') == 'Package':
+                                product.x_studio_package = record.get('value')
+                            elif record.get('name') == 'RoHS':
+                                product.x_studio_rohs = record.get('value')
+                            self._cr.commit()
+                    else:
+                        process_message="Getting an Error In Import Product Responase : {0}".format(response_data)
+                        _logger.info("Getting an Error In Import Product Responase".format(response_data))
+                        self.create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,bigcommerce_store_id.warehouse_id,True,)
+                except Exception as e:
+                    product_process_message = "Process Is Not Completed Yet! %s" % (e)
+                    _logger.info("Getting an Error In Import Product Responase".format(e))
+                    self.create_bigcommerce_operation_detail('product','import',"","",operation_id,bigcommerce_store_id.warehouse_id,True,product_process_message)
+            bigcommerce_store_id.bigcommerce_operation_message = "Import Product  Custom Field Process Completed."
+            operation_id and operation_id.write({'bigcommerce_message': product_process_message})
+            self._cr.commit()                            
+                            
     def import_product_from_bigcommerce(self, warehouse_id=False, bigcommerce_store_ids=False):
         for bigcommerce_store_id in bigcommerce_store_ids:
             req_data = False
@@ -372,6 +422,6 @@ class ProductTemplate(models.Model):
                 product_process_message = "Process Is Not Completed Yet! %s" % (e)
                 _logger.info("Getting an Error In Import Product Responase".format(e))
                 self.create_bigcommerce_operation_detail('product','import',"","",operation_id,warehouse_id,True,product_process_message)
-            bigcommerce_store_id.bigcommerce_operation_message = "Import Product Process Completed."
+            bigcommerce_store_id.bigcommerce_product_import_status = "Import Product Process Completed."
             operation_id and operation_id.write({'bigcommerce_message': product_process_message})
             self._cr.commit()
