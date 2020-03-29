@@ -131,7 +131,7 @@ class BigCommerceStoreConfiguration(models.Model):
                 source_page = store.source_of_import_data
                 destination_page = store.destination_of_import_data
                 store.source_of_import_data = destination_page + 1
-                store.destination_of_import_data = destination_page + 50
+                store.destination_of_import_data = destination_page + 20
                 self._cr.commit()
                 store.import_product_from_bigcommerce_main()
 
