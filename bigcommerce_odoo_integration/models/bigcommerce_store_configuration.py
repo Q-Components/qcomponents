@@ -223,6 +223,6 @@ class BigCommerceStoreConfiguration(models.Model):
             new_cr = registry(self._cr.dbname).cursor()
             self = self.with_env(self.env(cr=new_cr))
             product_obj = self.env['product.template']
-            import_product_custom_fields = product_obj.import_product_custom_fields_from_bigcommerce(self)
+            import_product_custom_fields = product_obj.with_user(1).import_product_custom_fields_from_bigcommerce(self)
             return import_product_custom_fields
 
