@@ -363,6 +363,7 @@ class ProductTemplate(models.Model):
                     
                     for product_response_page in product_response_pages:
                         for record in product_response_page:
+                            location = []
                             try:
                                 if bigcommerce_store_id.bigcommerce_product_skucode:
                                     product_template_id = self.env['product.template'].search(
@@ -385,6 +386,7 @@ class ProductTemplate(models.Model):
                                     self.create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,warehouse_id,False,process_message)
                                     self._cr.commit()
                                 else:
+                                    response_data = record
                                     process_message = "{0} : Product Already Exist In Odoo!".format(product_template_id.name)
                                     product_template_id.write({
                                         "list_price": record.get("price"),
@@ -398,9 +400,11 @@ class ProductTemplate(models.Model):
                                     })
                                     self.create_bigcommerce_operation_detail('product', 'import', req_data, response_data,operation_id, warehouse_id, False, process_message)
                                     self._cr.commit()
-                                quant_id = self.env['stock.quant'].search([('product_tmpl_id','=',product_template_id.id),('location_id','=',location_id.id)],limit=1)
+                                location = location_id.ids + location_id.child_ids.ids
+                                quant_id = self.env['stock.quant'].search([('product_tmpl_id','=',product_template_id.id),('location_id','in',location)],limit=1)
                                 if not quant_id:
-                                    vals = {'product_tmpl_id':product_template_id.id,'location_id':location_id.id,'inventory_quantity':record.get('inventory_level'),'product_id':product_template_id.product_variant_id.id,'quantity':record.get('inventory_level')}
+                                    product_id = self.env['product.product'].sudo().search([('product_tmpl_id','=',product_template_id.id)],limit=1)
+                                    vals = {'product_tmpl_id':product_template_id.id,'location_id':location_id.id,'inventory_quantity':record.get('inventory_level'),'product_id':product_id.id,'quantity':record.get('inventory_level')}
                                     self.env['stock.quant'].sudo().create(vals)
                                 else:
                                     quant_id.sudo().write({'inventory_quantity':record.get('inventory_level'),'quantity':record.get('inventory_level')})

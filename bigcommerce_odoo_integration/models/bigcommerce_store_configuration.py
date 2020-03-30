@@ -133,7 +133,7 @@ class BigCommerceStoreConfiguration(models.Model):
                 store.source_of_import_data = destination_page + 1
                 store.destination_of_import_data = destination_page + 20
                 self._cr.commit()
-                store.import_product_from_bigcommerce_main()
+                store.with_user(1).import_product_from_bigcommerce_main()
 
     def import_product_attribute_from_bigcommerce_main(self):
         product_attribute_obj = self.env['product.attribute']
@@ -223,6 +223,6 @@ class BigCommerceStoreConfiguration(models.Model):
             new_cr = registry(self._cr.dbname).cursor()
             self = self.with_env(self.env(cr=new_cr))
             product_obj = self.env['product.template']
-            import_product_custom_fields = product_obj.with_user(1).import_product_custom_fields_from_bigcommerce(self)
+            import_product_custom_fields = product_obj.import_product_custom_fields_from_bigcommerce(self)
             return import_product_custom_fields
 
