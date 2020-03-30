@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+    
+       <record id="python_code_execute_tree_view_extended" model="ir.ui.view">
+            <field name="name">python.code.execute.tree.view.extended</field>
+            <field name="model">python.code.execute</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+            	<tree string="Python Code">
+            		<field name="name" />
+            	</tree>
+            </field>
+       </record>
+    
+        <record id="python_code_execute_form_view_extended" model="ir.ui.view">
+            <field name="name">python.code.execute.form.view.extended</field>
+            <field name="model">python.code.execute</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+             <form string="Execute Code">
+             <sheet>
+                 <field name="name"/>
+                 <group colspan="4">
+                 	<field name="py_code" colspan="4" nolabel="1" style="font-size:16px;"/>
+                 </group>
+                 <group colspan="4">
+                 	<button special="cancel" string="Cancel"/>
+                 	<button name="execute" string="Execute" type="object"/>
+                 </group>
+                 <group colspan="4">
+                 	<field name="result" colspan="4" />
+                 </group>
+            </sheet>
+            </form>
+            </field>
+        </record>
+
+        <record id="action_python_code_execute" model="ir.actions.act_window">
+            <field name="name">Execute</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">python.code.execute</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="python_code_execute_tree_view_extended"/>
+        </record>
+        
+        <menuitem
+        	name="Python Code Execute"
+            parent="base.menu_administration"
+            id="python_code_execute_menuitem_id"
+            action="action_python_code_execute"
+            groups="base.group_erp_manager" />
+        
+</data>
+</odoo>
