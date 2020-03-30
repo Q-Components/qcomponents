@@ -40,7 +40,6 @@
             <field name="name">Execute</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">python.code.execute</field>
-            <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="python_code_execute_tree_view_extended"/>
         </record>
