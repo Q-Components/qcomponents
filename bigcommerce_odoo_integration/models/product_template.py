@@ -416,16 +416,16 @@ class ProductTemplate(models.Model):
                                                                          "", operation_id,
                                                                          warehouse_id, True, product_process_message)
 
-                    operation_id and operation_id.write({'bigcommerce_message': product_process_message})
+                    operation_id and operation_id.with_user(1).write({'bigcommerce_message': product_process_message})
                     _logger.info("Import Product Process Completed ")
                 else:
                     process_message="Getting an Error In Import Product Responase : {0}".format(response_data)
                     _logger.info("Getting an Error In Import Product Responase".format(response_data))
-                    self.create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,warehouse_id,True,)
+                    self.with_user(1).create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,warehouse_id,True,)
             except Exception as e:
                 product_process_message = "Process Is Not Completed Yet! %s" % (e)
                 _logger.info("Getting an Error In Import Product Responase".format(e))
-                self.create_bigcommerce_operation_detail('product','import',"","",operation_id,warehouse_id,True,product_process_message)
+                self.with_user(1).create_bigcommerce_operation_detail('product','import',"","",operation_id,warehouse_id,True,product_process_message)
             bigcommerce_store_id.bigcommerce_product_import_status = "Import Product Process Completed."
-            operation_id and operation_id.write({'bigcommerce_message': product_process_message})
+            operation_id and operation_id.with_user(1).write({'bigcommerce_message': product_process_message})
             self._cr.commit()
