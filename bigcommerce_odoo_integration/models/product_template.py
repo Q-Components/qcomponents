@@ -274,59 +274,60 @@ class ProductTemplate(models.Model):
                    "X-Auth-Client": "{}".format(bigcommerce_store_id.bigcommerce_x_auth_client),
                    "X-Auth-Token": "{}".format (bigcommerce_store_id.bigcommerce_x_auth_token),
                    "Content-Type": "application/json"}
-        #
-            product_template = self.env['product.template'].sudo().search([('bigcommerce_product_id','!=',False),('bigcommerce_store_id','=',bigcommerce_store_id.id)])
-            for product in product_template:
-                url = "{0}{1}{2}{3}{4}".format(bigcommerce_store_id.bigcommerce_api_url ,bigcommerce_store_id.bigcommerce_store_hash,'/v3/catalog/products/',product.bigcommerce_product_id,'/custom-fields')
-                try:
-                    _logger.info("Send GET Request From odoo to BigCommerce: {0}".format(url))
-                    response_data = request(method='GET', url=url, headers=headers)            
-                    _logger.info("BigCommerce Get Product  Response : {0}".format(response_data))
-                    if response_data.status_code in [200, 201]:
-                        response_data = response_data.json()
-                        _logger.info("Product Response Data : {0}".format(response_data))
-                        records = response_data.get('data')
-                        for record in records:
-                            if record.get('name') == 'Alternate Part Number':
-                                product.x_studio_alternate_number = record.get('value')
-                            elif record.get('name') == 'Alternate Manufacturer':
-                                product.x_studio_manufacturer = record.get('value')
-                            elif record.get('name') == 'Date Code':
-                                product.x_studio_date_code_1 = record.get('value')
-                            elif record.get('name') == 'Country of Origin':
-                                product.x_studio_country_of_origin = record.get('value')
-                            elif record.get('name') == 'Condition':
-                                product.x_studio_condition_1 = record.get('value')
-                            elif record.get('name') == 'Package':
-                                product.x_studio_package = record.get('value')
-                            elif record.get('name') == 'RoHS':
-                                product.x_studio_rohs = record.get('value')
-                            self._cr.commit()
-                    else:
-                        process_message="Getting an Error In Import Product Responase : {0}".format(response_data)
-                        _logger.info("Getting an Error In Import Product Responase".format(response_data))
-                        self.create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,bigcommerce_store_id.warehouse_id,True,)
-                except Exception as e:
-                    product_process_message = "Process Is Not Completed Yet! %s" % (e)
-                    _logger.info("Getting an Error In Import Product Responase".format(e))
-                    self.create_bigcommerce_operation_detail('product','import',"","",operation_id,bigcommerce_store_id.warehouse_id,True,product_process_message)
-            bigcommerce_store_id.bigcommerce_operation_message = "Import Product  Custom Field Process Completed."
-            operation_id and operation_id.write({'bigcommerce_message': product_process_message})
-            self._cr.commit()                            
+            
+            for product_id in range(bigcommerce_store_id.from_product_id,bigcommerce_store_id.to_product_id):
+                product_template = self.env['product.template'].sudo().search([('bigcommerce_product_id','!=',str(product_id)),('bigcommerce_store_id','=',bigcommerce_store_id.id)])
+                for product in product_template:
+                    url = "{0}{1}{2}{3}{4}".format(bigcommerce_store_id.bigcommerce_api_url ,bigcommerce_store_id.bigcommerce_store_hash,'/v3/catalog/products/',product.bigcommerce_product_id,'/custom-fields')
+                    try:
+                        _logger.info("Send GET Request From odoo to BigCommerce: {0}".format(url))
+                        response_data = request(method='GET', url=url, headers=headers)            
+                        _logger.info("BigCommerce Get Product  Response : {0}".format(response_data))
+                        if response_data.status_code in [200, 201]:
+                            response_data = response_data.json()
+                            _logger.info("Product Response Data : {0}".format(response_data))
+                            records = response_data.get('data')
+                            for record in records:
+                                if record.get('name') == 'Alternate Part Number':
+                                    product.x_studio_alternate_number = record.get('value')
+                                elif record.get('name') == 'Alternate Manufacturer':
+                                    product.x_studio_manufacturer = record.get('value')
+                                elif record.get('name') == 'Date Code':
+                                    product.x_studio_date_code_1 = record.get('value')
+                                elif record.get('name') == 'Country of Origin':
+                                    product.x_studio_country_of_origin = record.get('value')
+                                elif record.get('name') == 'Condition':
+                                    product.x_studio_condition_1 = record.get('value')
+                                elif record.get('name') == 'Package':
+                                    product.x_studio_package = record.get('value')
+                                elif record.get('name') == 'RoHS':
+                                    product.x_studio_rohs = record.get('value')
+                                self._cr.commit()
+                        else:
+                            process_message="Getting an Error In Import Product Responase : {0}".format(response_data)
+                            _logger.info("Getting an Error In Import Product Responase".format(response_data))
+                            self.create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,bigcommerce_store_id.warehouse_id,True,)
+                    except Exception as e:
+                        product_process_message = "Process Is Not Completed Yet! %s" % (e)
+                        _logger.info("Getting an Error In Import Product Responase".format(e))
+                        self.create_bigcommerce_operation_detail('product','import',"","",operation_id,bigcommerce_store_id.warehouse_id,True,product_process_message)
+                bigcommerce_store_id.bigcommerce_operation_message = "Import Product  Custom Field Process Completed."
+                operation_id and operation_id.write({'bigcommerce_message': product_process_message})
+                self._cr.commit()                            
                             
     def import_product_from_bigcommerce(self, warehouse_id=False, bigcommerce_store_ids=False):
         for bigcommerce_store_id in bigcommerce_store_ids:
             req_data = False
-            #bigcommerce_store_id.bigcommerce_product_import_status = "Import Product Process Running..."
+            bigcommerce_store_id.bigcommerce_product_import_status = "Import Product Process Running..."
             product_process_message = "Process Completed Successfully!"
-            operation_id = self.create_bigcommerce_operation('product','import',bigcommerce_store_id,'Processing...',warehouse_id)
+            operation_id = self.with_user(1).create_bigcommerce_operation('product','import',bigcommerce_store_id,'Processing...',warehouse_id)
             self._cr.commit()
             product_response_pages=[]
             try:
                 api_operation="/v3/catalog/products"
-                response_data = bigcommerce_store_id.send_get_request_from_odoo_to_bigcommerce(api_operation)
+                response_data = bigcommerce_store_id.with_user(1).send_get_request_from_odoo_to_bigcommerce(api_operation)
                 _logger.info("BigCommerce Get Product  Response : {0}".format(response_data))
-                product_ids = self.search([('bigcommerce_product_id', '=', False)])
+                product_ids = self.with_user(1).search([('bigcommerce_product_id', '=', False)])
                 _logger.info("Response Status: {0}".format(response_data.status_code))
                 if response_data.status_code in [200, 201]:
                     response_data = response_data.json()
@@ -354,7 +355,7 @@ class ProductTemplate(models.Model):
                                 product_process_message = "Page is not imported! %s" % (e)
                                 _logger.info("Getting an Error In Import Product Category Response {}".format(e))
                                 process_message = "Getting an Error In Import Product Category Response {}".format(e)
-                                self.create_bigcommerce_operation_detail('product', 'import', response_data,
+                                self.with_user(1).create_bigcommerce_operation_detail('product', 'import', response_data,
                                                                          process_message, operation_id,
                                                                          warehouse_id, True, product_process_message)
 
@@ -367,10 +368,10 @@ class ProductTemplate(models.Model):
                             location = []
                             try:
                                 if bigcommerce_store_id.bigcommerce_product_skucode:
-                                    product_template_id = self.env['product.template'].search(
+                                    product_template_id = self.env['product.template'].sudo().search(
                                         [('default_code', '=', record.get('sku'))], limit=1)
                                 else:
-                                    product_template_id = self.env['product.template'].search([('bigcommerce_product_id','=',record.get('id'))],limit=1)
+                                    product_template_id = self.env['product.template'].sudo().search([('bigcommerce_product_id','=',record.get('id'))],limit=1)
                                 if not product_template_id:
                                     status, product_template_id = self.create_product_template(record,bigcommerce_store_id)
                                     if not status:
@@ -413,7 +414,7 @@ class ProductTemplate(models.Model):
                             except Exception as e:
                                 product_process_message = "%s : Product is not imported Yet! %s" % (record.get('id'),e)
                                 _logger.info("Getting an Error In Import Product Responase".format(e))
-                                self.create_bigcommerce_operation_detail('product', 'import', "",
+                                self.with_user(1).create_bigcommerce_operation_detail('product', 'import', "",
                                                                          "", operation_id,
                                                                          warehouse_id, True, product_process_message)
 

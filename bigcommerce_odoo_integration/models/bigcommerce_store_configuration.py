@@ -38,6 +38,8 @@ class BigCommerceStoreConfiguration(models.Model):
     bigcommerce_product_skucode = fields.Boolean("Check Bigcommerce Product Skucode")
     source_of_import_data = fields.Integer(string="Source(Page) Of Import Data",default=1)
     destination_of_import_data = fields.Integer(string="Destination(Page) Of Import Data",default=1)
+    from_product_id = fields.Integer(string='From Product ID')
+    to_product_id = fields.Integer(string='To Product ID')
 
     def send_request_from_odoo_to_bigcommerce(self, body=False,api_operation=False):
         headers = {"Accept": "application/json",
@@ -108,8 +110,6 @@ class BigCommerceStoreConfiguration(models.Model):
             return import_categories
     
     def import_product_from_bigcommerce_main(self):
-        self.bigcommerce_product_import_status = "Import Product Process Running..."
-        self._cr.commit()
         dbname = self.env.cr.dbname
         db_registry = registry(dbname)
         with api.Environment.manage(), db_registry.cursor() as cr:
@@ -137,8 +137,8 @@ class BigCommerceStoreConfiguration(models.Model):
                 store.destination_of_import_data = destination_page + 20
                 self._cr.commit()
                 _logger.info("CRON JOB Enter in Product Import Method ")
-                store.with_user(1).import_product_from_bigcommerce_main()
-                #product_obj.with_user(1).import_product_from_bigcommerce(store.warehouse_id,store)
+                #store.with_user(1).import_product_from_bigcommerce_main()
+                product_obj.with_user(1).import_product_from_bigcommerce(store.warehouse_id,store)
                 self._cr.commit()
 
     def import_product_attribute_from_bigcommerce_main(self):
@@ -225,6 +225,8 @@ class BigCommerceStoreConfiguration(models.Model):
             return import_variant_image
     
     def bigcommerce_to_odoo_import_product_custom_fields(self):
+        if not self.from_product_id or self.to_product_id:
+            raise UserWarning("Please Enter the From BigCommerce Product Id to To ")
         with api.Environment.manage():
             new_cr = registry(self._cr.dbname).cursor()
             self = self.with_env(self.env(cr=new_cr))

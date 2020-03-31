@@ -54,7 +54,8 @@ class SaleOrderVts(models.Model):
                         product_id = self.env['product.product'].search(domain)
                         product_ids += product_id.ids
                 else:
-                    product_id = product_template_id.product_variant_id
+                    product_id = self.env['product.product'].sudo().search([('product_tmpl_id','=',product_template_id.id)],limit=1)
+                    #product_id = product_template_id.product_variant_id
                 order_line = self.order_line.filtered(lambda line:line.product_id in product_id)
                 order_line.quantity_shipped = response.get('quantity_shipped')
                 self._cr.commit()
