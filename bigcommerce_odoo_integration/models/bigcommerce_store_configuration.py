@@ -3,6 +3,7 @@ from requests import request
 from threading import Thread
 from odoo import fields,models,api,_, registry, SUPERUSER_ID
 import logging
+from datetime import datetime, timedelta
 _logger = logging.getLogger("BigCommerce")
 
 class BigCommerceStoreConfiguration(models.Model):
@@ -125,6 +126,7 @@ class BigCommerceStoreConfiguration(models.Model):
             return import_product
     
     def auto_update_pages_for_import_product(self):
+        _logger.info("CRON JOB Started: {0}".format(datetime.now()))
         store_ids = self.env['bigcommerce.store.configuration'].search([])
         for store in store_ids:
             if store.bigcommerce_product_import_status == "Import Product Process Completed.":
