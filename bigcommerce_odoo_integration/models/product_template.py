@@ -242,7 +242,7 @@ class ProductTemplate(models.Model):
                 if attribute_val_ids:
                     attribute_line_ids_data = [0, False,{'attribute_id': attribute.id,'value_ids':[[6, False, attribute_val_ids]]}]
                     attrib_line_vals.append(attribute_line_ids_data)
-        category_id = self.env['product.category'].search([('bigcommerce_product_category_id','in',record.get('categories'))],limit=1)
+        category_id = self.env['product.category'].sudo().search([('bigcommerce_product_category_id','in',record.get('categories'))],limit=1)
         if not category_id:
             message = "Category not found!"
             _logger.info("Category not found: {}".format(category_id))
@@ -326,12 +326,12 @@ class ProductTemplate(models.Model):
             try:
                 api_operation="/v3/catalog/products"
                 response_data = bigcommerce_store_id.with_user(1).send_get_request_from_odoo_to_bigcommerce(api_operation)
-                _logger.info("BigCommerce Get Product  Response : {0}".format(response_data))
+                #_logger.info("BigCommerce Get Product  Response : {0}".format(response_data))
                 product_ids = self.with_user(1).search([('bigcommerce_product_id', '=', False)])
                 _logger.info("Response Status: {0}".format(response_data.status_code))
                 if response_data.status_code in [200, 201]:
                     response_data = response_data.json()
-                    _logger.info("Product Response Data : {0}".format(response_data))
+                    #_logger.info("Product Response Data : {0}".format(response_data))
                     records = response_data.get('data')
                     location_id = bigcommerce_store_id.warehouse_id.lot_stock_id
                     total_pages= response_data.get('meta').get('pagination').get('total_pages')
@@ -345,7 +345,7 @@ class ProductTemplate(models.Model):
                                 page_api = "/v3/catalog/products?page=%s" % (total_pages)
                                 page_response_data = bigcommerce_store_id.send_get_request_from_odoo_to_bigcommerce(
                                     page_api)
-                                _logger.info("Response Status: {0}".format(page_response_data.status_code))
+                                #_logger.info("Response Status: {0}".format(page_response_data.status_code))
                                 if page_response_data.status_code in [200, 201]:
                                     page_response_data = page_response_data.json()
                                     _logger.info("Product Response Data : {0}".format(page_response_data))
@@ -373,17 +373,18 @@ class ProductTemplate(models.Model):
                                 else:
                                     product_template_id = self.env['product.template'].sudo().search([('bigcommerce_product_id','=',record.get('id'))],limit=1)
                                 if not product_template_id:
-                                    status, product_template_id = self.create_product_template(record,bigcommerce_store_id)
+                                    status, product_template_id = self.with_user(1).create_product_template(record,bigcommerce_store_id)
                                     if not status:
                                         product_process_message = "%s : Product is not imported Yet! %s" % (
                                         record.get('id'), product_template_id)
-                                        _logger.info("Getting an Error In Import Product Responase".format(product_template_id))
+                                        _logger.info("Getting an Error In Import Product Responase :{}".format(product_template_id))
                                         self.with_user(1).create_bigcommerce_operation_detail('product', 'import', "",
                                                                                  "", operation_id,
                                                                                  warehouse_id, True,
                                                                                  product_process_message)
                                         continue
                                     process_message = "Product Created : {}".format(product_template_id.name)
+                                    _logger.info("{0}".format(process_message))
                                     response_data = record
                                     self.with_user(1).create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,warehouse_id,False,process_message)
                                     self._cr.commit()
@@ -401,6 +402,7 @@ class ProductTemplate(models.Model):
                                         "name":record.get('name')
                                     })
                                     self.with_user(1).create_bigcommerce_operation_detail('product', 'import', req_data, response_data,operation_id, warehouse_id, False, process_message)
+                                    _logger.info("{0}".format(process_message))
                                     self._cr.commit()
                                 location = location_id.ids + location_id.child_ids.ids
                                 quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','in',location)],limit=1)
