@@ -268,7 +268,6 @@ class ProductTemplate(models.Model):
         for bigcommerce_store_id in bigcommerce_store_ids:
             req_data = False
             product_process_message = "Process Completed Successfully!"
-            bigcommerce_store_id.bigcommerce_product_import_status = "Import Product Process Running..."
             operation_id = self.create_bigcommerce_operation('product','import',bigcommerce_store_id,'Processing...',bigcommerce_store_id.warehouse_id)
             self._cr.commit()
             headers = {"Accept": "application/json",
@@ -318,6 +317,7 @@ class ProductTemplate(models.Model):
     def import_product_from_bigcommerce(self, warehouse_id=False, bigcommerce_store_ids=False):
         for bigcommerce_store_id in bigcommerce_store_ids:
             req_data = False
+            #bigcommerce_store_id.bigcommerce_product_import_status = "Import Product Process Running..."
             product_process_message = "Process Completed Successfully!"
             operation_id = self.create_bigcommerce_operation('product','import',bigcommerce_store_id,'Processing...',warehouse_id)
             self._cr.commit()

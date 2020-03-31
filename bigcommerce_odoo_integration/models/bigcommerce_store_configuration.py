@@ -137,7 +137,8 @@ class BigCommerceStoreConfiguration(models.Model):
                 store.destination_of_import_data = destination_page + 20
                 self._cr.commit()
                 _logger.info("CRON JOB Enter in Product Import Method ")
-                product_obj.with_user(1).import_product_from_bigcommerce(store.warehouse_id,store)
+                store.with_user(1).import_product_from_bigcommerce_main()
+                #product_obj.with_user(1).import_product_from_bigcommerce(store.warehouse_id,store)
                 self._cr.commit()
 
     def import_product_attribute_from_bigcommerce_main(self):
