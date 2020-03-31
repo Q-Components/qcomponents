@@ -376,14 +376,14 @@ class ProductTemplate(models.Model):
                                         product_process_message = "%s : Product is not imported Yet! %s" % (
                                         record.get('id'), product_template_id)
                                         _logger.info("Getting an Error In Import Product Responase".format(product_template_id))
-                                        self.create_bigcommerce_operation_detail('product', 'import', "",
+                                        self.with_user(1).create_bigcommerce_operation_detail('product', 'import', "",
                                                                                  "", operation_id,
                                                                                  warehouse_id, True,
                                                                                  product_process_message)
                                         continue
                                     process_message = "Product Created : {}".format(product_template_id.name)
                                     response_data = record
-                                    self.create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,warehouse_id,False,process_message)
+                                    self.with_user(1).create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,warehouse_id,False,process_message)
                                     self._cr.commit()
                                 else:
                                     response_data = record
@@ -398,10 +398,10 @@ class ProductTemplate(models.Model):
                                         "is_exported_to_bigcommerce": True,
                                         "name":record.get('name')
                                     })
-                                    self.create_bigcommerce_operation_detail('product', 'import', req_data, response_data,operation_id, warehouse_id, False, process_message)
+                                    self.with_user(1).create_bigcommerce_operation_detail('product', 'import', req_data, response_data,operation_id, warehouse_id, False, process_message)
                                     self._cr.commit()
                                 location = location_id.ids + location_id.child_ids.ids
-                                quant_id = self.env['stock.quant'].search([('product_tmpl_id','=',product_template_id.id),('location_id','in',location)],limit=1)
+                                quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','in',location)],limit=1)
                                 if not quant_id:
                                     product_id = self.env['product.product'].sudo().search([('product_tmpl_id','=',product_template_id.id)],limit=1)
                                     vals = {'product_tmpl_id':product_template_id.id,'location_id':location_id.id,'inventory_quantity':record.get('inventory_level'),'product_id':product_id.id,'quantity':record.get('inventory_level')}
