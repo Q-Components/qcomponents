@@ -428,5 +428,6 @@ class ProductTemplate(models.Model):
                 _logger.info("Getting an Error In Import Product Responase".format(e))
                 self.with_user(1).create_bigcommerce_operation_detail('product','import',"","",operation_id,warehouse_id,True,product_process_message)
             bigcommerce_store_id.bigcommerce_product_import_status = "Import Product Process Completed."
+            product_process_message = product_process_message + "From :" + to_page +"To :" + total_pages
             operation_id and operation_id.with_user(1).write({'bigcommerce_message': product_process_message})
             self._cr.commit()
