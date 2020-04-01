@@ -4,6 +4,8 @@ from threading import Thread
 from odoo import fields,models,api,_, registry, SUPERUSER_ID
 import logging
 from datetime import datetime, timedelta
+from odoo.exceptions import UserError, ValidationError
+
 _logger = logging.getLogger("BigCommerce")
 
 class BigCommerceStoreConfiguration(models.Model):
@@ -225,8 +227,8 @@ class BigCommerceStoreConfiguration(models.Model):
             return import_variant_image
     
     def bigcommerce_to_odoo_import_product_custom_fields(self):
-        if not self.from_product_id or self.to_product_id:
-            raise UserWarning("Please Enter the From BigCommerce Product Id to To ")
+        if not (self.from_product_id or self.to_product_id):
+            raise UserError("Please Enter the From BigCommerce Product Id to To BigCommerce Product Id")
         with api.Environment.manage():
             new_cr = registry(self._cr.dbname).cursor()
             self = self.with_env(self.env(cr=new_cr))
@@ -234,3 +236,10 @@ class BigCommerceStoreConfiguration(models.Model):
             import_product_custom_fields = product_obj.import_product_custom_fields_from_bigcommerce(self)
             return import_product_custom_fields
 
+    def import_product_custom_fields_main(self):
+        dbname = self.env.cr.dbname
+        db_registry = registry(dbname)
+        with api.Environment.manage(), db_registry.cursor() as cr:
+            env_thread1 = api.Environment(cr, SUPERUSER_ID, self._context)
+            t = Thread(target=self.bigcommerce_to_odoo_import_product_custom_fields, args=())
+            t.start()

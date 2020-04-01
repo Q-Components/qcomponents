@@ -79,7 +79,7 @@
                       		<field name="to_product_id" />
                       	</group>
                       	<group>
-	                      		<td style="padding-left:60px"><button name="bigcommerce_to_odoo_import_product_custom_fields" string="Import Product Custom Fields" type="object" class="oe_highlight" /></td>
+	                      		<td style="padding-left:60px"><button name="import_product_custom_fields_main" string="Import Product Custom Fields" type="object" class="oe_highlight" /></td>
                       	</group>
                       </page>
                     </notebook>

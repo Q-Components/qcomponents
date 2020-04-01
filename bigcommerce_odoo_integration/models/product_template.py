@@ -64,6 +64,7 @@ class ProductTemplate(models.Model):
     is_visible = fields.Boolean(string="Product Should Be Visible to Customer",default=True)
     warranty = fields.Char(string="Warranty Information")
     is_imported_from_bigcommerce = fields.Boolean(string="Is Imported From Big Commerce ?")
+    batch_number = fields.Char(string='Batch Number')
 
     def export_stock_from_odoo_to_bigcommerce(self):
         raise ValidationError("Kindly Export product using product variant menu!")
@@ -276,7 +277,7 @@ class ProductTemplate(models.Model):
                    "Content-Type": "application/json"}
             
             for product_id in range(bigcommerce_store_id.from_product_id,bigcommerce_store_id.to_product_id):
-                product_template = self.env['product.template'].sudo().search([('bigcommerce_product_id','!=',str(product_id)),('bigcommerce_store_id','=',bigcommerce_store_id.id)])
+                product_template = self.env['product.template'].sudo().search([('bigcommerce_product_id','=',str(product_id)),('bigcommerce_store_id','=',bigcommerce_store_id.id)])
                 for product in product_template:
                     url = "{0}{1}{2}{3}{4}".format(bigcommerce_store_id.bigcommerce_api_url ,bigcommerce_store_id.bigcommerce_store_hash,'/v3/catalog/products/',product.bigcommerce_product_id,'/custom-fields')
                     try:
@@ -288,7 +289,9 @@ class ProductTemplate(models.Model):
                             _logger.info("Product Response Data : {0}".format(response_data))
                             records = response_data.get('data')
                             for record in records:
-                                if record.get('name') == 'Alternate Part Number':
+                                if record.get('name') == 'Batch':
+                                    product.batch_number = record.get('value')
+                                elif record.get('name') == 'Alternate Part Number':
                                     product.x_studio_alternate_number = record.get('value')
                                 elif record.get('name') == 'Alternate Manufacturer':
                                     product.x_studio_manufacturer = record.get('value')
