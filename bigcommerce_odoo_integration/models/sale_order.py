@@ -382,8 +382,8 @@ class SaleOrderVts(models.Model):
             data = {
                 "product_id": line.product_id.bigcommerce_product_id,
                 "quantity": line.product_uom_qty,
-                "price_inc_tax" : line.price_total,
-                "price_ex_tax": line.price_subtotal,
+                "price_inc_tax" : round((line.price_total/line.product_uom_qty),2),
+                "price_ex_tax": round((line.price_subtotal/line.product_uom_qty),2),
                 "product_options" : product_option
             }
             ls.append(data)
