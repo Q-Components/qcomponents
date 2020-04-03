@@ -42,6 +42,7 @@ class BigCommerceStoreConfiguration(models.Model):
     destination_of_import_data = fields.Integer(string="Destination(Page) Of Import Data",default=1)
     from_product_id = fields.Integer(string='From Product ID')
     to_product_id = fields.Integer(string='To Product ID')
+    bigcommerce_product_id = fields.Char(string='Bigcommerce Product ID')
 
     def send_request_from_odoo_to_bigcommerce(self, body=False,api_operation=False):
         headers = {"Accept": "application/json",
@@ -142,6 +143,12 @@ class BigCommerceStoreConfiguration(models.Model):
                 #store.with_user(1).import_product_from_bigcommerce_main()
                 product_obj.with_user(1).import_product_from_bigcommerce(store.warehouse_id,store)
                 self._cr.commit()
+    
+    def import_product_manually_from_bigcommerce(self):
+        if not self.bigcommerce_product_id:
+            raise UserError("Please Enter the BigCommerce Product Id.")
+        product_obj = self.env['product.template']
+        product_obj.import_product_manually_from_bigcommerce(self.warehouse_id,self,self.bigcommerce_product_id)
 
     def import_product_attribute_from_bigcommerce_main(self):
         product_attribute_obj = self.env['product.attribute']

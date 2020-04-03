@@ -437,3 +437,65 @@ class ProductTemplate(models.Model):
             #product_process_message = product_process_message + "From :" + to_page +"To :" + total_pages
             operation_id and operation_id.with_user(1).write({'bigcommerce_message': product_process_message})
             self._cr.commit()
+    
+    def import_product_manually_from_bigcommerce(self, warehouse_id=False, bigcommerce_store_ids=False,product_id=False):
+        bigcommerce_store_id = bigcommerce_store_ids
+        req_data = False
+        product_process_message = "Process Completed Successfully!"
+        self._cr.commit()
+        product_response_pages=[]
+        try:
+            api_operation="/v3/catalog/products/{}".format(product_id)
+            response_data = bigcommerce_store_id.with_user(1).send_get_request_from_odoo_to_bigcommerce(api_operation)
+            _logger.info("Response Status: {0}".format(response_data.status_code))
+            if response_data.status_code in [200, 201]:
+                response_data = response_data.json()
+                record = response_data.get('data')
+                location_id = bigcommerce_store_id.warehouse_id.lot_stock_id
+                if bigcommerce_store_id.bigcommerce_product_skucode:
+                    product_template_id = self.env['product.template'].sudo().search(
+                        [('default_code', '=', record.get('sku'))], limit=1)
+                else:
+                    product_template_id = self.env['product.template'].sudo().search([('bigcommerce_product_id','=',record.get('id'))],limit=1)
+                if not product_template_id:
+                    status, product_template_id = self.with_user(1).create_product_template(record,bigcommerce_store_id)
+                    if not status:
+                        product_process_message = "%s : Product is not imported Yet! %s" % (record.get('id'), product_template_id)
+                        _logger.info("Getting an Error In Import Product Responase :{}".format(product_template_id))
+                        raise UserError(product_process_message)
+                    process_message = "Product Created : {}".format(product_template_id.name)
+                    _logger.info("{0}".format(process_message))
+                else:
+                    process_message = "{0} : Product Already Exist In Odoo!".format(product_template_id.name)
+                    product_template_id.write({
+                        "list_price": record.get("price"),
+                        "is_visible": record.get("is_visible"),
+                        "bigcommerce_product_id": record.get('id'),
+                        "bigcommerce_store_id": bigcommerce_store_id.id,
+                        "default_code": record.get("sku"),
+                        "is_imported_from_bigcommerce": True,
+                        "is_exported_to_bigcommerce": True,
+                        "name":record.get('name')
+                    })
+                    _logger.info("{0}".format(process_message))
+                    self._cr.commit()
+                location = location_id.ids + location_id.child_ids.ids
+                quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','in',location)],limit=1)
+                if not quant_id:
+                    product_id = self.env['product.product'].sudo().search([('product_tmpl_id','=',product_template_id.id)],limit=1)
+                    vals = {'product_tmpl_id':product_template_id.id,'location_id':location_id.id,'inventory_quantity':record.get('inventory_level'),'product_id':product_id.id,'quantity':record.get('inventory_level')}
+                    self.env['stock.quant'].sudo().create(vals)
+                else:
+                    quant_id.sudo().write({'inventory_quantity':record.get('inventory_level'),'quantity':record.get('inventory_level')})
+                self._cr.commit()
+                return {
+                    'effect': {
+                        'fadeout': 'slow',
+                        'message': "Yeah! Successfully Product Imported".format(product_template_id.name),
+                        'img_url': '/web/static/src/img/smile.svg',
+                        'type': 'rainbow_man',
+                    }
+                }
+        except Exception as e:
+            _logger.info("Getting an Error In Import Product Responase".format(e))
+            raise UserError("Getting an Error In Import Product Responase".format(e))

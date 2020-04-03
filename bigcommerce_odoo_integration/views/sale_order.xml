@@ -19,7 +19,6 @@
                 </xpath>
             </field>
         </record>
-
         <record id="bigcommerce_order_line_form_view" model="ir.ui.view">
             <field name="name">Bigcommerce Order Line</field>
             <field name="model">sale.order</field>
@@ -30,7 +29,19 @@
                 </xpath>
             </field>
         </record>
-
-
+		<record id="bigcommerce_sale_order_action_form" model="ir.actions.act_window">
+            <field name="name">Bigcommerce SaleOrder</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="sale.view_order_tree"/>
+            <field name="search_view_id" ref="sale.sale_order_view_search_inherit_sale"/>
+            <field name="domain">[('big_commerce_order_id','!=',False)]
+            </field>
+            <field name="context">{'big_commerce_order_id':True}</field>
+        </record>
+		<menuitem id="bigcommerce_store_sale_order_menuitem" name="Sale Order"
+                  sequence="9" parent="bigcommerce_odoo_integration_store_menuitem"
+                  action="bigcommerce_sale_order_action_form"/>
     </data>
 </odoo>
