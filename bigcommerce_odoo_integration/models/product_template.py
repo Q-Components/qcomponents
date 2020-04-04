@@ -312,6 +312,7 @@ class ProductTemplate(models.Model):
     def import_product_custom_fields_from_bigcommerce(self,bigcommerce_store_ids):
         for bigcommerce_store_id in bigcommerce_store_ids:
             req_data = False
+            bigcommerce_store_id.bigcommerce_operation_message = "Import Product  Custom Field Process Started."
             product_process_message = "Process Completed Successfully!"
             operation_id = self.create_bigcommerce_operation('product','import',bigcommerce_store_id,'Processing...',bigcommerce_store_id.warehouse_id)
             self._cr.commit()
