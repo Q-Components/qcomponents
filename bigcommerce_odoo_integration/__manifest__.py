@@ -27,6 +27,7 @@
              "views/export_order_to_bigcommerce_button_view.xml",
              "views/bigcommerce_stock_picking_view.xml",
              "views/shipped_product_view.xml",
+             "views/bc_product_brand.xml",
              ],
 
     

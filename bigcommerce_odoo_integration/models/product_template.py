@@ -65,6 +65,7 @@ class ProductTemplate(models.Model):
     warranty = fields.Char(string="Warranty Information")
     is_imported_from_bigcommerce = fields.Boolean(string="Is Imported From Big Commerce ?")
     batch_number = fields.Char(string='Batch Number')
+    x_studio_manufacturer = fields.Many2one('bc.product.brand',string='Manufacturer')
 
     def export_stock_from_odoo_to_bigcommerce(self):
         raise ValidationError("Kindly Export product using product variant menu!")
@@ -248,6 +249,7 @@ class ProductTemplate(models.Model):
             message = "Category not found!"
             _logger.info("Category not found: {}".format(category_id))
             return False, message
+        brand_id = self.env['bc.product.brand'].sudo().search([('bc_brand_id','=',record.get('brand_id'))],limit=1)
         vals = {
                 'name':template_title,
                 'type':'product',
@@ -259,11 +261,53 @@ class ProductTemplate(models.Model):
                 "bigcommerce_store_id":store_id.id,
                 "default_code":record.get("sku"),
                 "is_imported_from_bigcommerce":True,
-                "is_exported_to_bigcommerce": True
+                "is_exported_to_bigcommerce": True,
+                "x_studio_manufacturer":brand_id and brand_id.id
                 }
         product_template = product_template_obj.with_user(1).create(vals)
         _logger.info("Product Created: {}".format(product_template))
         return True, product_template
+    
+    def update_bc_custom_fields(self,bigcommerce_store_id,product_template_id):
+        headers = {"Accept": "application/json",
+                   "X-Auth-Client": "{}".format(bigcommerce_store_id.bigcommerce_x_auth_client),
+                   "X-Auth-Token": "{}".format (bigcommerce_store_id.bigcommerce_x_auth_token),
+                   "Content-Type": "application/json"}
+        url = "{0}{1}{2}{3}{4}".format(bigcommerce_store_id.bigcommerce_api_url ,bigcommerce_store_id.bigcommerce_store_hash,'/v3/catalog/products/',product_template_id.bigcommerce_product_id,'/custom-fields')
+        try:
+            _logger.info("Send GET Request From odoo to BigCommerce: {0}".format(url))
+            response_data = request(method='GET', url=url, headers=headers)            
+            _logger.info("BigCommerce Get Product  Response : {0}".format(response_data))
+            if response_data.status_code in [200, 201]:
+                response_data = response_data.json()
+                _logger.info("Product Response Data : {0}".format(response_data))
+                records = response_data.get('data')
+                for record in records:
+                    if record.get('name') == 'Batch':
+                        product_template_id.batch_number = record.get('value')
+                    elif record.get('name') == 'Alternate Part Number':
+                        product_template_id.x_studio_alternate_number = record.get('value')
+                    elif record.get('name') == 'Alternate Manufacturer':
+                        product_template_id.x_studio_manufacturer = record.get('value')
+                    elif record.get('name') == 'Date Code':
+                        product_template_id.x_studio_date_code_1 = record.get('value')
+                    elif record.get('name') == 'Country of Origin':
+                        product_template_id.x_studio_country_of_origin = record.get('value')
+                    elif record.get('name') == 'Condition':
+                        product_template_id.x_studio_condition_1 = record.get('value')
+                    elif record.get('name') == 'Package':
+                        product_template_id.x_studio_package = record.get('value')
+                    elif record.get('name') == 'RoHS':
+                        product_template_id.x_studio_rohs = record.get('value')
+                    self._cr.commit()
+                    return True
+            else:
+                _logger.info("Getting an Error In Import Product Responase".format(response_data))
+                return False
+        except Exception as e:
+            _logger.info("Getting an Error In Import Product Responase".format(e))
+            return False
+    
     
     def import_product_custom_fields_from_bigcommerce(self,bigcommerce_store_ids):
         for bigcommerce_store_id in bigcommerce_store_ids:
@@ -306,10 +350,11 @@ class ProductTemplate(models.Model):
                                 elif record.get('name') == 'RoHS':
                                     product.x_studio_rohs = record.get('value')
                                 self._cr.commit()
+                                process_message='Custom Field Updated Sucessfully'.format(product.name)
+                                self.create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,bigcommerce_store_id.warehouse_id,True,process_message)
                         else:
-                            process_message="Getting an Error In Import Product Responase : {0}".format(response_data)
-                            _logger.info("Getting an Error In Import Product Responase".format(response_data))
-                            self.create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,bigcommerce_store_id.warehouse_id,True,)
+                            process_message="Getting an Error In Import Product Custom Field Responase : {0}".format(product.name)
+                            self.create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,bigcommerce_store_id.warehouse_id,True,process_message)
                     except Exception as e:
                         product_process_message = "Process Is Not Completed Yet! %s" % (e)
                         _logger.info("Getting an Error In Import Product Responase".format(e))
@@ -416,6 +461,7 @@ class ProductTemplate(models.Model):
                                 else:
                                     quant_id.sudo().write({'inventory_quantity':record.get('inventory_level'),'quantity':record.get('inventory_level')})
                                 self._cr.commit()
+                                self.update_bc_custom_fields(bigcommerce_store_id,product_template_id)
                             except Exception as e:
                                 product_process_message = "%s : Product is not imported Yet! %s" % (record.get('id'),e)
                                 _logger.info("Getting an Error In Import Product Responase".format(e))

@@ -13,7 +13,8 @@ class BigCommerceOperation(models.Model):
                                               ('product_attribute','Product Attribute'),
                                               ('product_variant', 'Product Variant'),
                                               ('order', 'Order'),
-                                              ('stock', 'Stock')
+                                              ('stock', 'Stock'),
+                                              ('brand','Brand')
                                     # ('sale', 'Sales'),
                                     # ('delivery_order', 'Delivery Order'),
                                     # ('warehouse', 'Warehouse'),
@@ -51,7 +52,8 @@ class BigCommerceOperationDetail(models.Model):
                                               ('product_attribute','Product Attribute'),
                                               ('product_variant', 'Product Variant'),
                                               ('order', 'Order'),
-                                              ('stock', 'Stock')
+                                              ('stock', 'Stock'),
+                                              ('brand','Brand')
                                     #('warehouse', 'Warehouse'),
                                     #('stock', 'Stock'),
                                     #('other', 'Other')

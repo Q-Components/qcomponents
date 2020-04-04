@@ -1,7 +1,7 @@
 from . import bigcommerce_store_configuration
-# from . import bigcommerce_webhook_configuration
 from . import warehouse
 from . import bigcommerce_operation_details
+from . import bc_product_brand
 from . import product_category
 from . import product_attribute
 from . import product_template

@@ -73,6 +73,7 @@
                          <tr>
                           <td style="padding-left:60px"><button name="bigcommerce_to_odoo_import_product_image_main" string="Import Product Image" type="object" class="oe_highlight" /></td>
                           <td style="padding-left:60px"><button name="bigcommerce_to_odoo_import_product_variant_image_main" string="Import Product Variant Image" type="object" class="oe_highlight" /></td>
+                          <td style="padding-left:60px"><button name="bigcommerce_to_odoo_import_product_brands_main" string="Import Product Brand" type="object" class="oe_highlight" /></td>
                         </tr>
                           <br/>
                       </table>

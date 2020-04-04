@@ -43,6 +43,32 @@ class BigCommerceStoreConfiguration(models.Model):
     from_product_id = fields.Integer(string='From Product ID')
     to_product_id = fields.Integer(string='To Product ID')
     bigcommerce_product_id = fields.Char(string='Bigcommerce Product ID')
+    
+    def create_bigcommerce_operation(self,operation,operation_type,bigcommerce_store_id,log_message,warehouse_id):
+        vals = {
+                    'bigcommerce_operation': operation,
+                   'bigcommerce_operation_type': operation_type,
+                   'bigcommerce_store': bigcommerce_store_id and bigcommerce_store_id.id ,
+                   'bigcommerce_message': log_message,
+                   'warehouse_id': warehouse_id and warehouse_id.id or False
+                   }
+        operation_id = self.env['bigcommerce.operation'].create(vals)
+        return  operation_id
+            
+    def create_bigcommerce_operation_detail(self,operation,operation_type,req_data,response_data,operation_id,warehouse_id=False,fault_operation=False,process_message=False):
+        bigcommerce_operation_details_obj = self.env['bigcommerce.operation.details']
+        vals = {
+                   'bigcommerce_operation': operation,
+                   'bigcommerce_operation_type': operation_type,
+                   'bigcommerce_request_message': '{}'.format(req_data),
+                   'bigcommerce_response_message': '{}'.format(response_data),
+                   'operation_id':operation_id.id,
+                   'warehouse_id': warehouse_id and warehouse_id.id or False,
+                   'fault_operation':fault_operation,
+                    'process_message':process_message,
+                   }
+        operation_detail_id = bigcommerce_operation_details_obj.create(vals)
+        return operation_detail_id
 
     def send_request_from_odoo_to_bigcommerce(self, body=False,api_operation=False):
         headers = {"Accept": "application/json",
@@ -71,8 +97,26 @@ class BigCommerceStoreConfiguration(models.Model):
         except Exception as e:
             _logger.info("Getting an Error in GET Req odoo to BigCommerce: {0}".format(e))
             return e
+    
+    def bigcommerce_to_odoo_import_product_brands_main(self):
+        self.bigcommerce_operation_message = "Import Product Brand Process Running..."
+        self._cr.commit()
+        dbname = self.env.cr.dbname
+        db_registry = registry(dbname)
+        with api.Environment.manage(), db_registry.cursor() as cr:
+            env_thread1 = api.Environment(cr, SUPERUSER_ID, self._context)
+            t = Thread(target=self.bigcommerce_to_odoo_import_product_brands, args=())
+            t.start()
 
-
+    def bigcommerce_to_odoo_import_product_brands(self):
+        with api.Environment.manage():
+            new_cr = registry(self._cr.dbname).cursor()
+            self = self.with_env(self.env(cr=new_cr))
+            product_brand_obj = self.env['bc.product.brand']
+            import_brand =  product_brand_obj.bigcommerce_to_odoo_import_product_brands(self.warehouse_id,
+                                                                                                   self)
+            return import_brand
+        
     def odoo_to_bigcommerce_export_product_categories_main(self):
         product_category_obj = self.env['product.category']
         import_categorires = product_category_obj.odoo_to_bigcommerce_export_product_categories(self.warehouse_id,self)
