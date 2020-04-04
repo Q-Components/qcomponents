@@ -350,7 +350,7 @@ class ProductTemplate(models.Model):
                                 elif record.get('name') == 'RoHS':
                                     product.x_studio_rohs = record.get('value')
                                 self._cr.commit()
-                                process_message='Custom Field Updated Sucessfully'.format(product.name)
+                                process_message='Custom Field Updated Sucessfully : {0}'.format(product.name)
                                 self.create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,bigcommerce_store_id.warehouse_id,True,process_message)
                         else:
                             process_message="Getting an Error In Import Product Custom Field Responase : {0}".format(product.name)
