@@ -329,7 +329,7 @@ class ProductTemplate(models.Model):
                         _logger.info("Send GET Request From odoo to BigCommerce: {0}".format(url))
                         response_data = request(method='GET', url=url, headers=headers)            
                         if response_data.status_code in [200, 201]:
-                        _logger.info("BigCommerce Get Product  Response : {0}".format(response_data))
+                            _logger.info("BigCommerce Get Product  Response : {0}".format(response_data))
                             response_data = response_data.json()
                             _logger.info("Product Response Data : {0}".format(response_data))
                             records = response_data.get('data')
