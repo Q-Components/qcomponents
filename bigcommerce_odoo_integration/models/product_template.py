@@ -312,8 +312,8 @@ class ProductTemplate(models.Model):
     def import_product_custom_fields_from_bigcommerce(self,bigcommerce_store_ids):
         for bigcommerce_store_id in bigcommerce_store_ids:
             req_data = False
-            bigcommerce_store_id.bigcommerce_operation_message = "Import Product  Custom Field Process Started."
             product_process_message = "Process Completed Successfully!"
+            bigcommerce_store_id.bigcommerce_operation_message = "Import Product  Custom Field Process Started."
             operation_id = self.create_bigcommerce_operation('product','import',bigcommerce_store_id,'Processing...',bigcommerce_store_id.warehouse_id)
             self._cr.commit()
             headers = {"Accept": "application/json",
@@ -328,8 +328,8 @@ class ProductTemplate(models.Model):
                     try:
                         _logger.info("Send GET Request From odoo to BigCommerce: {0}".format(url))
                         response_data = request(method='GET', url=url, headers=headers)            
-                        _logger.info("BigCommerce Get Product  Response : {0}".format(response_data))
                         if response_data.status_code in [200, 201]:
+                        _logger.info("BigCommerce Get Product  Response : {0}".format(response_data))
                             response_data = response_data.json()
                             _logger.info("Product Response Data : {0}".format(response_data))
                             records = response_data.get('data')
@@ -352,7 +352,7 @@ class ProductTemplate(models.Model):
                                     product.x_studio_rohs = record.get('value')
                                 self._cr.commit()
                                 process_message='Custom Field Updated Sucessfully : {0}'.format(product.name)
-                                self.create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,bigcommerce_store_id.warehouse_id,True,process_message)
+                                self.create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,bigcommerce_store_id.warehouse_id,False,process_message)
                         else:
                             process_message="Getting an Error In Import Product Custom Field Responase : {0}".format(product.name)
                             self.create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,bigcommerce_store_id.warehouse_id,True,process_message)
@@ -360,9 +360,9 @@ class ProductTemplate(models.Model):
                         product_process_message = "Process Is Not Completed Yet! %s" % (e)
                         _logger.info("Getting an Error In Import Product Responase".format(e))
                         self.create_bigcommerce_operation_detail('product','import',"","",operation_id,bigcommerce_store_id.warehouse_id,True,product_process_message)
-                bigcommerce_store_id.bigcommerce_operation_message = "Import Product  Custom Field Process Completed."
-                operation_id and operation_id.write({'bigcommerce_message': product_process_message})
-                self._cr.commit()                            
+            bigcommerce_store_id.bigcommerce_operation_message = "Import Product  Custom Field Process Completed."
+            operation_id and operation_id.write({'bigcommerce_message': product_process_message})
+            self._cr.commit()                            
                             
     def import_product_from_bigcommerce(self, warehouse_id=False, bigcommerce_store_ids=False):
         for bigcommerce_store_id in bigcommerce_store_ids:
