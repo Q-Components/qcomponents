@@ -16,7 +16,7 @@ class SaleOrderVts(models.Model):
 
     big_commerce_order_id = fields.Char(string="BigCommerce Order ID", readonly=True,copy=False)
     bigcommerce_store_id = fields.Many2one('bigcommerce.store.configuration', string="Bigcommerce Store", copy=False)
-    bigcommerce_shipment_order_status = fields.Char(string='Bigcommerce Shipment Order Status',readonly=True)
+    bigcommerce_shipment_order_status = fields.Char(string='Bigcommerce Shipment Order Status',readonly=True,copy=False)
 
     def get_shipped_qty(self):
         bigcommerce_store_hash = self.bigcommerce_store_id.bigcommerce_store_hash
@@ -442,7 +442,8 @@ class SaleOrderVts(models.Model):
 class SaleOrderLineVts(models.Model):
     _inherit = "sale.order.line"
 
-    quantity_shipped = fields.Float(string='Shipped Products')
+    quantity_shipped = fields.Float(string='Shipped Products',copy=False)
+    x_studio_manufacturer = fields.Many2one('bc.product.brand',string='Manufacturer')
     big_commerce_tax = fields.Float(string="BigCommerce Tax", copy=False)
 
     @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id')
