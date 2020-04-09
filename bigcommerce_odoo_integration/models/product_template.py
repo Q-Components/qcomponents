@@ -2,6 +2,9 @@ from odoo import fields, models, api
 from requests import request
 import logging
 import json
+import requests
+import json
+import base64
 from odoo.exceptions import UserError, ValidationError
 
 _logger = logging.getLogger("BigCommerce")
@@ -226,7 +229,9 @@ class ProductTemplate(models.Model):
         product_attribute_value_obj = self.env['product.attribute.value']
         product_template_obj = self.env['product.template']
         template_title = ''
-        if record.get('name',''):
+        if record.get('mpn',''):
+            template_title = record.get('mpn')
+        else:
             template_title = record.get('name')
         attrib_line_vals = []
         if record.get('variants'):
@@ -263,7 +268,9 @@ class ProductTemplate(models.Model):
                 "default_code":record.get("sku"),
                 "is_imported_from_bigcommerce":True,
                 "is_exported_to_bigcommerce": True,
-                "x_studio_manufacturer":brand_id and brand_id.id
+                "x_studio_manufacturer":brand_id and brand_id.id,
+                "is_published":True,
+                "description_sale":record.get('description')
                 }
         product_template = product_template_obj.with_user(1).create(vals)
         _logger.info("Product Created: {}".format(product_template))
@@ -367,6 +374,12 @@ class ProductTemplate(models.Model):
                             
     def import_product_from_bigcommerce(self, warehouse_id=False, bigcommerce_store_ids=False):
         for bigcommerce_store_id in bigcommerce_store_ids:
+            headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Auth-Client': '{}'.format(bigcommerce_store_ids.bigcommerce_x_auth_client),
+                'X-Auth-Token': "{}".format(bigcommerce_store_ids.bigcommerce_x_auth_token)
+            }
             req_data = False
             bigcommerce_store_id.bigcommerce_product_import_status = "Import Product Process Running..."
             product_process_message = "Process Completed Successfully!"
@@ -452,11 +465,25 @@ class ProductTemplate(models.Model):
                                         "is_imported_from_bigcommerce": True,
                                         "is_exported_to_bigcommerce": True,
                                         "name":record.get('name'),
-                                        "x_studio_manufacturer":brand_id and brand_id.id
+                                        "x_studio_manufacturer":brand_id and brand_id.id,
+                                        "description_sale":record.get('description')
                                     })
                                     self.with_user(1).create_bigcommerce_operation_detail('product', 'import', req_data, response_data,operation_id, warehouse_id, False, process_message)
                                     _logger.info("{0}".format(process_message))
                                     self._cr.commit()
+                                api_url = "%s%s/v3/catalog/products/%s/variants"%(bigcommerce_store_ids.bigcommerce_api_url,bigcommerce_store_ids.bigcommerce_store_hash, product_template_id.bigcommerce_product_id)
+                                response = requests.get(url=api_url,headers=headers)
+                                _logger.info("Sending Request To {}".format(api_url))
+                                if response.status_code in [200, 201]:
+                                    response = response.json()
+                                    for product_variant_id in response.get('data'):
+                                        if product_variant_id.get('image_url',''):
+                                            variant_product_img_url = product_variant_id.get('image_url')
+                                            image = base64.b64encode(requests.get(variant_product_img_url).content)
+                                            product_template_id.image_1920 = image
+                                            self._cr.commit()
+                                            _logger.info("Suceessfully Image Import of product {}".format(product_template_id))
+                                self.env['bigcommerce.product.image'].sudo().import_multiple_product_image(bigcommerce_store_id,product_template_id)
                                 location = location_id.ids + location_id.child_ids.ids
                                 quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','in',location)],limit=1)
                                 if not quant_id:
@@ -518,6 +545,8 @@ class ProductTemplate(models.Model):
                     _logger.info("{0}".format(process_message))
                 else:
                     process_message = "{0} : Product Already Exist In Odoo!".format(product_template_id.name)
+                    brand_id = self.env['bc.product.brand'].sudo().search([('bc_brand_id','=',record.get('brand_id'))],limit=1)
+                    _logger.info("BRAND : {0}".format(brand_id))
                     product_template_id.write({
                         "list_price": record.get("price"),
                         "is_visible": record.get("is_visible"),
@@ -526,7 +555,9 @@ class ProductTemplate(models.Model):
                         "default_code": record.get("sku"),
                         "is_imported_from_bigcommerce": True,
                         "is_exported_to_bigcommerce": True,
-                        "name":record.get('name')
+                        "name":record.get('name'),
+                        "x_studio_manufacturer":brand_id and brand_id.id,
+                        "description_sale":record.get('description')
                     })
                     _logger.info("{0}".format(process_message))
                     self._cr.commit()

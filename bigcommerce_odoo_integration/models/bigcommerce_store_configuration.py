@@ -174,19 +174,19 @@ class BigCommerceStoreConfiguration(models.Model):
     
     def auto_update_pages_for_import_product(self):
         _logger.info("CRON JOB Started: {0}".format(datetime.now()))
-        store_ids = self.env['bigcommerce.store.configuration'].search([])
-        product_obj = self.env['product.template']
-        for store in store_ids:
-            if store.bigcommerce_product_import_status == "Import Product Process Completed.":
-                source_page = store.source_of_import_data
-                destination_page = store.destination_of_import_data
-                store.source_of_import_data = destination_page + 1
-                store.destination_of_import_data = destination_page + 20
-                self._cr.commit()
-                _logger.info("CRON JOB Enter in Product Import Method ")
-                #store.with_user(1).import_product_from_bigcommerce_main()
-                product_obj.with_user(1).import_product_from_bigcommerce(store.warehouse_id,store)
-                self._cr.commit()
+#         store_ids = self.env['bigcommerce.store.configuration'].search([])
+#         product_obj = self.env['product.template']
+#         for store in store_ids:
+#             if store.bigcommerce_product_import_status == "Import Product Process Completed.":
+#                 source_page = store.source_of_import_data
+#                 destination_page = store.destination_of_import_data
+#                 store.source_of_import_data = destination_page + 1
+#                 store.destination_of_import_data = destination_page + 20
+#                 self._cr.commit()
+#                 _logger.info("CRON JOB Enter in Product Import Method ")
+#                 #store.with_user(1).import_product_from_bigcommerce_main()
+#                 product_obj.with_user(1).import_product_from_bigcommerce(store.warehouse_id,store)
+#                 self._cr.commit()
     
     def import_product_manually_from_bigcommerce(self):
         if not self.bigcommerce_product_id:
