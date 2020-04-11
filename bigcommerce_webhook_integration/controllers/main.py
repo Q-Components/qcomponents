@@ -130,7 +130,7 @@ class WebHook(http.Controller):
                                 product_id = http.request.env['product.product'].with_user(1).search(domain)
                                 product_ids += product_id.ids
                         else:
-                            product_id = product_template_id.product_variant_id
+                            product_id = self.env['product.product'].with_user(1).search([('product_tmpl_id','=',product_template_id.id)],limit=1)
                         order_line = http.request.env['sale.order.line'].with_user(1).search([('product_id','=',product_id.id),('order_id','=',sale_order_id.id)],limit=1)
                         if order_line:
                             order_line.quantity_shipped = response.get('quantity_shipped')
@@ -200,11 +200,18 @@ class WebHook(http.Controller):
                 partners.append(user.partner_id.id)
         #warehouse_id = bigcommerce_store_id.warehouse_id
         location_id = bigcommerce_store_id.warehouse_id.lot_stock_id
+        location = location_id.ids + location_id.child_ids.ids
         if method == "absolute":
-            product_product = http.request.env['product.product']
-            product_id = product_product.sudo().search([('bigcommerce_product_id', '=', product)])
+            product_template_obj = http.request.env['product.template']
+            product_id = product_template_obj.sudo().search([('bigcommerce_product_id', '=', product)])
             if product_id:
-                quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.product_tmpl_id.id),('location_id','=',location_id.id)],limit=1)
+                quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.id),('location_id','in',location)])
+                _logger.info("Quant : {0}".format(quant_id))
+                if len(quant_id) > 1:
+                    stock_quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.id),('location_id','=',location_id.id)])
+                    _logger.info(" Stock Quant : {0}".format(stock_quant_id))
+                    stock_quant_id.with_user(1).unlink()
+                quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.id),('location_id','in',location)],limit=1)
                 if not quant_id:
                     vals = {'product_tmpl_id':product_id.product_tmpl_id.id,'location_id':location_id.id,'inventory_quantity':product_qty,'product_id':product_id.id,'quantity':product_qty}
                     http.request.env['stock.quant'].with_user(1).create(vals)

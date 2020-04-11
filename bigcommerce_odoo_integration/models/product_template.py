@@ -485,7 +485,12 @@ class ProductTemplate(models.Model):
                                             _logger.info("Suceessfully Image Import of product {}".format(product_template_id))
                                 self.env['bigcommerce.product.image'].sudo().import_multiple_product_image(bigcommerce_store_id,product_template_id)
                                 location = location_id.ids + location_id.child_ids.ids
-                                quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','in',location)],limit=1)
+                                quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','in',location)])
+                                if len(quant_id) > 1:
+                                    stock_quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','=',location_id.id)])
+                                    _logger.info(" Stock Quant : {0}".format(stock_quant_id))
+                                    stock_quant_id.with_user(1).unlink()
+                                quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','in',location)])
                                 if not quant_id:
                                     product_id = self.env['product.product'].sudo().search([('product_tmpl_id','=',product_template_id.id)],limit=1)
                                     vals = {'product_tmpl_id':product_template_id.id,'location_id':location_id.id,'inventory_quantity':record.get('inventory_level'),'product_id':product_id.id,'quantity':record.get('inventory_level')}
@@ -516,8 +521,13 @@ class ProductTemplate(models.Model):
             operation_id and operation_id.with_user(1).write({'bigcommerce_message': product_process_message})
             self._cr.commit()
     
-    def import_product_manually_from_bigcommerce(self, warehouse_id=False, bigcommerce_store_ids=False,product_id=False):
-        bigcommerce_store_id = bigcommerce_store_ids
+    def import_product_manually_from_bigcommerce(self, warehouse_id=False, bigcommerce_store_id=False,product_id=False):
+        headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Auth-Client': '{}'.format(bigcommerce_store_id.bigcommerce_x_auth_client),
+                'X-Auth-Token': "{}".format(bigcommerce_store_id.bigcommerce_x_auth_token)
+            }
         req_data = False
         product_process_message = "Process Completed Successfully!"
         self._cr.commit()
@@ -561,8 +571,26 @@ class ProductTemplate(models.Model):
                     })
                     _logger.info("{0}".format(process_message))
                     self._cr.commit()
+                api_url = "%s%s/v3/catalog/products/%s/variants"%(bigcommerce_store_id.bigcommerce_api_url,bigcommerce_store_id.bigcommerce_store_hash, product_template_id.bigcommerce_product_id)
+                response = requests.get(url=api_url,headers=headers)
+                _logger.info("Sending Request To {}".format(api_url))
+                if response.status_code in [200, 201]:
+                    response = response.json()
+                    for product_variant_id in response.get('data'):
+                        if product_variant_id.get('image_url',''):
+                            variant_product_img_url = product_variant_id.get('image_url')
+                            image = base64.b64encode(requests.get(variant_product_img_url).content)
+                            product_template_id.image_1920 = image
+                            self._cr.commit()
+                            _logger.info("Suceessfully Image Import of product {}".format(product_template_id))
+                self.env['bigcommerce.product.image'].sudo().import_multiple_product_image(bigcommerce_store_id,product_template_id)
                 location = location_id.ids + location_id.child_ids.ids
-                quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','in',location)],limit=1)
+                quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','in',location)])
+                if len(quant_id) > 1:
+                    stock_quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','=',location_id.id)])
+                    _logger.info(" Stock Quant : {0}".format(stock_quant_id))
+                    stock_quant_id.with_user(1).unlink()
+                quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','in',location)])
                 if not quant_id:
                     product_id = self.env['product.product'].sudo().search([('product_tmpl_id','=',product_template_id.id)],limit=1)
                     vals = {'product_tmpl_id':product_template_id.id,'location_id':location_id.id,'inventory_quantity':record.get('inventory_level'),'product_id':product_id.id,'quantity':record.get('inventory_level')}
@@ -570,6 +598,7 @@ class ProductTemplate(models.Model):
                 else:
                     quant_id.sudo().write({'inventory_quantity':record.get('inventory_level'),'quantity':record.get('inventory_level')})
                 self._cr.commit()
+                self.update_bc_custom_fields(bigcommerce_store_id,product_template_id)
                 return {
                     'effect': {
                         'fadeout': 'slow',
