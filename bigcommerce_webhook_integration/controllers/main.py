@@ -205,9 +205,9 @@ class WebHook(http.Controller):
             product_template_obj = http.request.env['product.template']
             product_id = product_template_obj.sudo().search([('bigcommerce_product_id', '=', product)])
             if product_id:
-                quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.id),('location_id','in',location)])
+                quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.id),('location_id','in',location)])
                 if len(quant_id) > 1:
-                    quant_id = self.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.id),('location_id','=',location_id.id)])
+                    quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.id),('location_id','=',location_id.id)])
                     quant_id.with_user(1).unlink()
                 #quant_id = http.request.env['stock.quant'].with_user(1).search([('product_id','=',product_id.id),('location_id','in',location)],limit=1)
                 if not quant_id:
