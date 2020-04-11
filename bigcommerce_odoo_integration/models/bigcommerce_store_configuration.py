@@ -3,6 +3,9 @@ from requests import request
 from threading import Thread
 from odoo import fields,models,api,_, registry, SUPERUSER_ID
 import logging
+from datetime import datetime, timedelta
+from odoo.exceptions import UserError, ValidationError
+
 _logger = logging.getLogger("BigCommerce")
 
 class BigCommerceStoreConfiguration(models.Model):
@@ -32,10 +35,40 @@ class BigCommerceStoreConfiguration(models.Model):
                                               ('14', '14 - Partially Refunded')],default='11')
     last_modification_date = fields.Datetime(string="Last Modification Date")
     bigcommerce_operation_message = fields.Char(string="Bigcommerce Message", help="bigcommerce_operation_message", copy=False)
+    bigcommerce_product_import_status = fields.Char(string="Product Import Message", help="show status of import product process", copy=False)
     warehouse_id = fields.Many2one("stock.warehouse", "Warehouse")
     bigcommerce_product_skucode = fields.Boolean("Check Bigcommerce Product Skucode")
     source_of_import_data = fields.Integer(string="Source(Page) Of Import Data",default=1)
     destination_of_import_data = fields.Integer(string="Destination(Page) Of Import Data",default=1)
+    from_product_id = fields.Integer(string='From Product ID')
+    to_product_id = fields.Integer(string='To Product ID')
+    bigcommerce_product_id = fields.Char(string='Bigcommerce Product ID')
+    
+    def create_bigcommerce_operation(self,operation,operation_type,bigcommerce_store_id,log_message,warehouse_id):
+        vals = {
+                    'bigcommerce_operation': operation,
+                   'bigcommerce_operation_type': operation_type,
+                   'bigcommerce_store': bigcommerce_store_id and bigcommerce_store_id.id ,
+                   'bigcommerce_message': log_message,
+                   'warehouse_id': warehouse_id and warehouse_id.id or False
+                   }
+        operation_id = self.env['bigcommerce.operation'].create(vals)
+        return  operation_id
+            
+    def create_bigcommerce_operation_detail(self,operation,operation_type,req_data,response_data,operation_id,warehouse_id=False,fault_operation=False,process_message=False):
+        bigcommerce_operation_details_obj = self.env['bigcommerce.operation.details']
+        vals = {
+                   'bigcommerce_operation': operation,
+                   'bigcommerce_operation_type': operation_type,
+                   'bigcommerce_request_message': '{}'.format(req_data),
+                   'bigcommerce_response_message': '{}'.format(response_data),
+                   'operation_id':operation_id.id,
+                   'warehouse_id': warehouse_id and warehouse_id.id or False,
+                   'fault_operation':fault_operation,
+                    'process_message':process_message,
+                   }
+        operation_detail_id = bigcommerce_operation_details_obj.create(vals)
+        return operation_detail_id
 
     def send_request_from_odoo_to_bigcommerce(self, body=False,api_operation=False):
         headers = {"Accept": "application/json",
@@ -64,8 +97,26 @@ class BigCommerceStoreConfiguration(models.Model):
         except Exception as e:
             _logger.info("Getting an Error in GET Req odoo to BigCommerce: {0}".format(e))
             return e
+    
+    def bigcommerce_to_odoo_import_product_brands_main(self):
+        self.bigcommerce_operation_message = "Import Product Brand Process Running..."
+        self._cr.commit()
+        dbname = self.env.cr.dbname
+        db_registry = registry(dbname)
+        with api.Environment.manage(), db_registry.cursor() as cr:
+            env_thread1 = api.Environment(cr, SUPERUSER_ID, self._context)
+            t = Thread(target=self.bigcommerce_to_odoo_import_product_brands, args=())
+            t.start()
 
-
+    def bigcommerce_to_odoo_import_product_brands(self):
+        with api.Environment.manage():
+            new_cr = registry(self._cr.dbname).cursor()
+            self = self.with_env(self.env(cr=new_cr))
+            product_brand_obj = self.env['bc.product.brand']
+            import_brand =  product_brand_obj.bigcommerce_to_odoo_import_product_brands(self.warehouse_id,
+                                                                                                   self)
+            return import_brand
+        
     def odoo_to_bigcommerce_export_product_categories_main(self):
         product_category_obj = self.env['product.category']
         import_categorires = product_category_obj.odoo_to_bigcommerce_export_product_categories(self.warehouse_id,self)
@@ -104,17 +155,14 @@ class BigCommerceStoreConfiguration(models.Model):
             import_categories = product_category_obj.bigcommerce_to_odoo_import_product_categories(self.warehouse_id,
                                                                                                    self)
             return import_categories
-
+    
     def import_product_from_bigcommerce_main(self):
-        self.bigcommerce_operation_message = "Import Product Process Running..."
-        self._cr.commit()
         dbname = self.env.cr.dbname
         db_registry = registry(dbname)
         with api.Environment.manage(), db_registry.cursor() as cr:
             env_thread1 = api.Environment(cr, SUPERUSER_ID, self._context)
             t = Thread(target=self.import_product_from_bigcommerce, args=())
             t.start()
-
 
     def import_product_from_bigcommerce(self):
         with api.Environment.manage():
@@ -123,6 +171,28 @@ class BigCommerceStoreConfiguration(models.Model):
             product_obj = self.env['product.template']
             import_product = product_obj.import_product_from_bigcommerce(self.warehouse_id,self)
             return import_product
+    
+    def auto_update_pages_for_import_product(self):
+        _logger.info("CRON JOB Started: {0}".format(datetime.now()))
+#         store_ids = self.env['bigcommerce.store.configuration'].search([])
+#         product_obj = self.env['product.template']
+#         for store in store_ids:
+#             if store.bigcommerce_product_import_status == "Import Product Process Completed.":
+#                 source_page = store.source_of_import_data
+#                 destination_page = store.destination_of_import_data
+#                 store.source_of_import_data = destination_page + 1
+#                 store.destination_of_import_data = destination_page + 20
+#                 self._cr.commit()
+#                 _logger.info("CRON JOB Enter in Product Import Method ")
+#                 #store.with_user(1).import_product_from_bigcommerce_main()
+#                 product_obj.with_user(1).import_product_from_bigcommerce(store.warehouse_id,store)
+#                 self._cr.commit()
+    
+    def import_product_manually_from_bigcommerce(self):
+        if not self.bigcommerce_product_id:
+            raise UserError("Please Enter the BigCommerce Product Id.")
+        product_obj = self.env['product.template']
+        product_obj.import_product_manually_from_bigcommerce(self.warehouse_id,self,self.bigcommerce_product_id)
 
     def import_product_attribute_from_bigcommerce_main(self):
         product_attribute_obj = self.env['product.attribute']
@@ -206,5 +276,21 @@ class BigCommerceStoreConfiguration(models.Model):
             product_image_obj = self.env['bigcommerce.product.image']
             import_variant_image = product_image_obj.bigcommerce_to_odoo_import_variant_product_image(self.warehouse_id, self)
             return import_variant_image
+    
+    def bigcommerce_to_odoo_import_product_custom_fields(self):
+        if not (self.from_product_id or self.to_product_id):
+            raise UserError("Please Enter the From BigCommerce Product Id to To BigCommerce Product Id")
+        with api.Environment.manage():
+            new_cr = registry(self._cr.dbname).cursor()
+            self = self.with_env(self.env(cr=new_cr))
+            product_obj = self.env['product.template']
+            import_product_custom_fields = product_obj.import_product_custom_fields_from_bigcommerce(self)
+            return import_product_custom_fields
 
-
+    def import_product_custom_fields_main(self):
+        dbname = self.env.cr.dbname
+        db_registry = registry(dbname)
+        with api.Environment.manage(), db_registry.cursor() as cr:
+            env_thread1 = api.Environment(cr, SUPERUSER_ID, self._context)
+            t = Thread(target=self.bigcommerce_to_odoo_import_product_custom_fields, args=())
+            t.start()

@@ -13,5 +13,17 @@
             <field name="numbercall">-1</field>
             <field name="doall" eval="False"/>
         </record>
+        <record forcecreate="True" id="bigcommerce_auto_update_pages_cron_job" model="ir.cron">
+            <field name="name">Auto Update Source and Destination Page Cron</field>
+            <field name="model_id" ref="model_bigcommerce_store_configuration"/>
+            <field name="state">code</field>
+            <field name="code">model.auto_update_pages_for_import_product()</field>
+            <field name="active" eval="False"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">25</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+        </record>
     </data>
 </odoo>
