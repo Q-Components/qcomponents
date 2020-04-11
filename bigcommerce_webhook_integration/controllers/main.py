@@ -206,10 +206,12 @@ class WebHook(http.Controller):
             product_id = product_template_obj.sudo().search([('bigcommerce_product_id', '=', product)])
             if product_id:
                 quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.id),('location_id','in',location)])
+                _logger.info("Quant : {0}".format(quant_id))
                 if len(quant_id) > 1:
-                    quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.id),('location_id','=',location_id.id)])
-                    quant_id.with_user(1).unlink()
-                #quant_id = http.request.env['stock.quant'].with_user(1).search([('product_id','=',product_id.id),('location_id','in',location)],limit=1)
+                    stock_quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.id),('location_id','=',location_id.id)])
+                    _logger.info(" Stock Quant : {0}".format(stock_quant_id))
+                    stock_quant_id.with_user(1).unlink()
+                #quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.id),('location_id','in',location)],limit=1)
                 if not quant_id:
                     vals = {'product_tmpl_id':product_id.product_tmpl_id.id,'location_id':location_id.id,'inventory_quantity':product_qty,'product_id':product_id.id,'quantity':product_qty}
                     http.request.env['stock.quant'].with_user(1).create(vals)
