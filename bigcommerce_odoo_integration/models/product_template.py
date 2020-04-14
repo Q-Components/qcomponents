@@ -452,6 +452,10 @@ class ProductTemplate(models.Model):
                                     self.with_user(1).create_bigcommerce_operation_detail('product','import',req_data,response_data,operation_id,warehouse_id,False,process_message)
                                     self._cr.commit()
                                 else:
+                                    if record.get('mpn',''):
+                                        product_name = record.get('mpn')
+                                    else:
+                                        product_name = record.get('name')
                                     response_data = record
                                     process_message = "{0} : Product Already Exist In Odoo!".format(product_template_id.name)
                                     brand_id = self.env['bc.product.brand'].sudo().search([('bc_brand_id','=',record.get('brand_id'))],limit=1)
@@ -464,7 +468,7 @@ class ProductTemplate(models.Model):
                                         "default_code": record.get("sku"),
                                         "is_imported_from_bigcommerce": True,
                                         "is_exported_to_bigcommerce": True,
-                                        "name":record.get('name'),
+                                        "name":product_name,
                                         "x_studio_manufacturer":brand_id and brand_id.id,
                                         "description_sale":record.get('description')
                                     })
@@ -554,6 +558,10 @@ class ProductTemplate(models.Model):
                     process_message = "Product Created : {}".format(product_template_id.name)
                     _logger.info("{0}".format(process_message))
                 else:
+                    if record.get('mpn',''):
+                        product_name = record.get('mpn')
+                    else:
+                        product_name = record.get('name')
                     process_message = "{0} : Product Already Exist In Odoo!".format(product_template_id.name)
                     brand_id = self.env['bc.product.brand'].sudo().search([('bc_brand_id','=',record.get('brand_id'))],limit=1)
                     _logger.info("BRAND : {0}".format(brand_id))
@@ -565,7 +573,7 @@ class ProductTemplate(models.Model):
                         "default_code": record.get("sku"),
                         "is_imported_from_bigcommerce": True,
                         "is_exported_to_bigcommerce": True,
-                        "name":record.get('name'),
+                        "name":product_name,
                         "x_studio_manufacturer":brand_id and brand_id.id,
                         "description_sale":record.get('description')
                     })
