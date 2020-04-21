@@ -232,6 +232,25 @@ class WebHook(http.Controller):
                     })
                 _logger.info("Email Created : {0}".format(email_id))
                 email_id.with_user(1).send()
+#             inventroy_line_obj = http.request.env['stock.inventory.line']
+#             inventory_name = "BigCommerce_Inventory_%s" % (str(datetime.now().date()))
+#             inventory_vals = {
+#                 'name': inventory_name,
+#                 'location_ids': [(6, 0, warehouse_id.sudo().lot_stock_id.ids)],
+#                 'accounting_date': time.strftime("%Y-%m-%d %H:%M:%S"),
+#                 'date': time.strftime("%Y-%m-%d %H:%M:%S"),
+#                 'company_id': warehouse_id.company_id and warehouse_id.company_id.id or False}
+# 
+#             inventory_id = http.request.env['stock.inventory'].sudo().create(inventory_vals)
+#             _logger.info("Successfull Create Inventory")
+#             if product_id:
+#                 inventroy_line_obj.sudo().create({'product_id': product_id.id,
+#                                                             'inventory_id': inventory_id and inventory_id.sudo().id,
+#                                                             'location_id': warehouse_id.sudo().lot_stock_id.id,
+#                                                             'product_qty': product_qty,
+#                                                             'product_uom_id': product_id.uom_id and product_id.uom_id.id,
+#                                                             })
+#                 _logger.info("Successfully Product Qty Update By Product Id")
             else:
                 _logger.info("Product Not Found !!!")
             
