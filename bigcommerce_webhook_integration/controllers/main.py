@@ -213,7 +213,8 @@ class WebHook(http.Controller):
                     stock_quant_id.with_user(1).unlink()
                 quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.id),('location_id','in',location)],limit=1)
                 if not quant_id:
-                    vals = {'product_tmpl_id':product_id.product_tmpl_id.id,'location_id':location_id.id,'inventory_quantity':product_qty,'product_id':product_id.id,'quantity':product_qty}
+                    product_obj = http.request.env['product.product'].search([('product_tmpl_id','=',product_id.id)],limit=1)
+                    vals = {'product_tmpl_id':product_id.id,'location_id':location_id.id,'inventory_quantity':product_qty,'product_id':product_obj.id,'quantity':product_qty}
                     http.request.env['stock.quant'].with_user(1).create(vals)
                 else:
                     quant_id.with_user(1).write({'inventory_quantity':product_qty,'quantity':product_qty})
