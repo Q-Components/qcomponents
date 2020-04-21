@@ -130,7 +130,7 @@ class WebHook(http.Controller):
                                 product_id = http.request.env['product.product'].with_user(1).search(domain)
                                 product_ids += product_id.ids
                         else:
-                            product_id = self.env['product.product'].with_user(1).search([('product_tmpl_id','=',product_template_id.id)],limit=1)
+                            product_id = http.request.env['product.product'].with_user(1).search([('product_tmpl_id','=',product_template_id.id)],limit=1)
                         order_line = http.request.env['sale.order.line'].with_user(1).search([('product_id','=',product_id.id),('order_id','=',sale_order_id.id)],limit=1)
                         if order_line:
                             order_line.quantity_shipped = response.get('quantity_shipped')
