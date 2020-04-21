@@ -187,7 +187,7 @@ class WebHook(http.Controller):
         status_update_dict = http.request.httprequest.data.decode("utf-8")
         inventory_data = json.loads(status_update_dict)
         partners = []
-        _logger.info("Get Successfull Response {}".format(inventory_data))
+        _logger.info("Get Successfull Response {} : ".format(inventory_data))
         method = inventory_data.get('data').get('inventory').get('method')
         product_qty = inventory_data.get('data').get('inventory').get('value')
         product = inventory_data.get('data').get('inventory').get('product_id')
