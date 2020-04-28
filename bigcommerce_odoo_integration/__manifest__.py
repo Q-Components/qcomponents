@@ -7,7 +7,7 @@
     'summary': """BigCommerce Odoo Integration will help you connect with Market Place.""",
     'description': """""",
 
-    'depends': ['sale_management','sale_stock','product','delivery','stock','import_inventory','website_sale'],
+    'depends': ['delivery','import_inventory','website_sale'],#'sale_management','sale_stock','product','stock',
 
     'data': [
              'data/delivery_demo.xml',
