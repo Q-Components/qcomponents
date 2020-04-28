@@ -389,7 +389,7 @@ class SaleOrderVts(models.Model):
             ls.append(data)
 
         request_data= {
-            'status_id' : 1,
+            'status_id' : 11,
             'billing_address' :{
                 "first_name" : "{}".format(self.partner_id and self.partner_id.name),
                 "street_1" : "{}".format(self.partner_id and self.partner_id.street),
