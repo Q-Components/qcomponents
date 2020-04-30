@@ -391,7 +391,7 @@ class SaleOrderVts(models.Model):
         request_data= {
             'status_id' : 11,
             'billing_address' :{
-                "first_name" : "{}".format(self.partner_id and self.partner_id.name),
+                "first_name" : "{}".format(self.partner_id.parent_id and self.partner_id.parent_id.name if self.partner_id.parent_id else self.partner_id and self.partner_id.name),
                 "street_1" : "{}".format(self.partner_id and self.partner_id.street),
                 "city" :"{}".format(self.partner_id and self.partner_id.city),
                 "state": "{}".format(self.partner_id and self.partner_id.state_id.name),

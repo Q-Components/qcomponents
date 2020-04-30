@@ -66,6 +66,8 @@ class BigcommerceProductImage(models.Model):
                         self.write(values)
                         self._cr.commit()
                         _logger.info("Successfully Update Images{}".format(image_id))
+                    if not product_id.image_1920:
+                        product_id.image_1920 = image_data
             else:
                 _logger.info("Get Some Error {}".format(response))
         bigcommerce_store_ids.bigcommerce_operation_message =" Import Product Image Process Complete "
