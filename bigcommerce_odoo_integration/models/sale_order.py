@@ -427,7 +427,7 @@ class SaleOrderVts(models.Model):
                                                      operation_id, self.warehouse_id, False,
                                                      process_message)
         self.big_commerce_order_id = response_data.get('id')
-        self.message_post(body="Successfully Order Export To odoo")
+        self.message_post(body="Order Successfully Exported from Odoo to Bigcomm")
         process_message = "Order Id Not Found"
 
         return {
