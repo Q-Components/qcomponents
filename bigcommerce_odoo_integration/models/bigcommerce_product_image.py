@@ -144,6 +144,7 @@ class BigcommerceProductImage(models.Model):
                         'product_template_id': product_id.id,
                     }
                     self.create(values)
+                    product_id.image_1920 = image_data
                     self._cr.commit()
                     _logger.info("Successfully Import Images {}".format(image_id))
         else:

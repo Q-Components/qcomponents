@@ -1,5 +1,9 @@
 from odoo import models,api,fields,_
 import logging
+import base64
+from odoo.exceptions import ValidationError
+import requests
+import json
 
 _logger = logging.getLogger("BigCommerce")
 
@@ -114,27 +118,37 @@ class product_attribute(models.Model):
             operation_id and operation_id.write({'bigcommerce_message': product_process_message})
             self._cr.commit()
                 
-    def import_product_attribute_from_bigcommerce(self,warehouse_id=False, bigcommerce_store_ids=False):
+    def import_product_attribute_from_bigcommerce(self,warehouse_id=False, bigcommerce_store_ids=False,product_objs=False,operation_id=False):
         for bigcommerce_store_id in bigcommerce_store_ids:
             product_process_message = "Process Completed Successfully!"
-            operation_id = self.create_bigcommerce_operation('product_attribute','import',bigcommerce_store_id,'Processing...',warehouse_id)
-            try:
+            location_id = bigcommerce_store_id.warehouse_id.lot_stock_id
+            if not operation_id:
+                operation_id = self.create_bigcommerce_operation('product_attribute','import',bigcommerce_store_id,'Processing...',warehouse_id)
+            response_data = False
+            if not product_objs:
                 product_objs = self.env['product.template'].search([('bigcommerce_product_id','!=',False)])
-                # product_objs = self.env['product.template'].search([('bigcommerce_product_id','in',[322])])
-                for product in product_objs:
+#             attribute_line = self.env['product.template.attribute.line'].search([("product_tmpl_id",'=',product_objs.id)])
+#             if attribute_line:
+#                 attribute_line.with_user(1).unlink()
+#                 self._cr.commit()
+            product_objs = product_objs.filtered(lambda pp:pp.product_variant_count <= 1)
+            self._cr.commit()
+            for product in product_objs:
+                try:
+                    template_id = product
                     api_operation = "/v3/catalog/products/{}/options".format(product.bigcommerce_product_id)
                     response_data = bigcommerce_store_id.send_get_request_from_odoo_to_bigcommerce(api_operation)
                     _logger.info("BigCommerce Get Product Attribute Response : {0}".format(response_data))
                     _logger.info("Response Status: {0}".format(response_data.status_code))
-                    if response_data.status_code in [200, 201]:
+                    if response_data and response_data.status_code in [200, 201]:
                         response_data = response_data.json()
                         _logger.info("Product attribute Response Data : {0}".format(response_data))
                         records = response_data.get('data')
                         if records:
                             self.create_bigcommerce_operation_detail('product_attribute', 'import', api_operation, records,operation_id, warehouse_id, False, records)
                         for record in records:
-                            template_id = self.env['product.template'].search([('bigcommerce_product_id','=',record.get("product_id"))],limit=1)
-                            attribute_id = self.env['product.attribute'].search([('bigcommerce_attribute_id','=',record.get('id'))],limit=1)
+                            template_id = product
+                            attribute_id = self.env['product.attribute'].search([('bigcommerce_attribute_id','=',record.get('id'))],limit=1) 
                             if not attribute_id:
                                 vals = {}
                                 if record.get('type')=='swatch':
@@ -167,7 +181,9 @@ class product_attribute(models.Model):
                             else:
                                 vals = {"attribute_id":attribute_id.id,"value_ids":[(6,0,attribute_value_ids)],"product_tmpl_id":template_id.id}
                                 attribute_line = self.env['product.template.attribute.line'].create(vals)
-                            template_id._create_variant_ids()
+                                self._cr.commit()
+                        
+                        template_id._create_variant_ids()
                         api_operation_variant = "/v3/catalog/products/{}/variants".format(product.bigcommerce_product_id)
                         api_operation_variant_response_data = bigcommerce_store_id.send_get_request_from_odoo_to_bigcommerce(
                             api_operation_variant)
@@ -186,8 +202,22 @@ class product_attribute(models.Model):
                                 for product_variant_id in product.product_variant_ids:
                                     if product_variant_id.mapped(lambda pv: pv.product_template_attribute_value_ids.mapped('name') == option_labales)[0]:
                                         product_variant_id.default_code = product_sku
+                                        product_variant_id.lst_price = variant_data.get('price','calculated_price') 
                                         product_variant_id.bigcommerce_product_variant_id = v_id
-
+                                        variant_product_img_url = variant_data.get('image_url')
+                                        if variant_product_img_url:
+                                            image = base64.b64encode(requests.get(variant_product_img_url).content)
+                                            product_variant_id.image_1920 = image
+                                        self._cr.commit()
+#                                         product_qty = variant_data.get('inventory_level')
+#                                         if product_qty > 0:
+#                                             quant_id = self.env['stock.quant'].search([('product_id','=',product_variant_id.id),('location_id','=',location_id.id)],limit=1)
+#                                             if not quant_id:
+#                                                 quant_vals = {'product_tmpl_id':product_variant_id.product_tmpl_id.id,'location_id':location_id.id,'inventory_quantity':product_qty,'product_id':product_variant_id.id,'quantity':product_qty}
+#                                                 self.env['stock.quant'].sudo().create(quant_vals)
+#                                             else:
+#                                                 quant_id.sudo().write({'inventory_quantity':product_qty,'quantity':product_qty})
+#                                            self._cr.commit()
                         else:
                             api_operation_variant_response_data = api_operation_variant_response_data.json()
                             error_msg = api_operation_variant_response_data.get('errors')
@@ -199,10 +229,11 @@ class product_attribute(models.Model):
                             response_data = response_data.json()
                             error_msg = response_data.get('errors')
                             self.create_bigcommerce_operation_detail('product_attribute','import','',error_msg,operation_id,warehouse_id,True,error_msg)
-            except Exception as e:
-                product_process_message = "Process Is Not Completed Yet!  {}".format(e)
-                self.create_bigcommerce_operation_detail('product_attribute','export',"",response_data,operation_id,warehouse_id,True,product_process_message)
+                except Exception as e:
+                    product_process_message = "Product : {0} Process Is Not Completed Yet!  {1}".format(product,e)
+                    self.create_bigcommerce_operation_detail('product_attribute','export',"",response_data,operation_id,warehouse_id,True,product_process_message)
             operation_id and operation_id.write({'bigcommerce_message': product_process_message})
+            bigcommerce_store_id.bigcommerce_operation_message = "Import Product Attribute Process Completed."
             self._cr.commit()        
         
 class product_attribute_value(models.Model):
