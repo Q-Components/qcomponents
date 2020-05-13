@@ -291,6 +291,7 @@ class ProductTemplate(models.Model):
                 _logger.info("Update Custom Filed Response Data==============> : {0} ===> {1}".format(response_data,product_template_id))
                 records = response_data.get('data')
                 for record in records:
+		    _logger.info("Record ==============> : {0} ".format(record))
                     if record.get('name') == 'Batch':
                         product_template_id.with_user(1).batch_number = record.get('value')
                         _logger.info("Update Batch Number ==============> : {0}".format(product_template_id))
@@ -491,7 +492,7 @@ class ProductTemplate(models.Model):
                                 else:
                                     quant_id.sudo().write({'inventory_quantity':record.get('inventory_level'),'quantity':record.get('inventory_level')})
                                 self._cr.commit()
-                                self.update_bc_custom_fields(bigcommerce_store_id,product_template_id)
+                                self.with_user(1).update_bc_custom_fields(bigcommerce_store_id,product_template_id)
                             except Exception as e:
                                 product_process_message = "%s : Product is not imported Yet! %s" % (record.get('id'),e)
                                 _logger.info("Getting an Error In Import Product Responase".format(e))
@@ -595,7 +596,7 @@ class ProductTemplate(models.Model):
                 else:
                     quant_id.sudo().write({'inventory_quantity':record.get('inventory_level'),'quantity':record.get('inventory_level')})
                 self._cr.commit()
-                self.update_bc_custom_fields(bigcommerce_store_id,product_template_id)
+                self.with_user(1).update_bc_custom_fields(bigcommerce_store_id,product_template_id)
                 return {
                     'effect': {
                         'fadeout': 'slow',
