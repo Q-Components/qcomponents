@@ -288,7 +288,7 @@ class ProductTemplate(models.Model):
             _logger.info("BigCommerce Get Product  Response : {0}".format(response_data))
             if response_data.status_code in [200, 201]:
                 response_data = response_data.json()
-                _logger.info("Update Custom Filed Response Data==============> : {0}".format(response_data))
+                _logger.info("Update Custom Filed Response Data==============> : {0} ===> {1}".format(response_data,product_template_id))
                 records = response_data.get('data')
                 for record in records:
                     if record.get('name') == 'Batch':
