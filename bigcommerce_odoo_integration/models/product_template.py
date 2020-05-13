@@ -310,7 +310,7 @@ class ProductTemplate(models.Model):
                     elif record.get('name') == 'RoHS':
                         product_template_id.x_studio_rohs = record.get('value')
                     self._cr.commit()
-                    return True
+                return True
             else:
                 _logger.info("Getting an Error In Import Product Responase".format(response_data))
                 return False
