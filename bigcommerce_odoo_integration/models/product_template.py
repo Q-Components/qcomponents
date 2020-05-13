@@ -288,11 +288,12 @@ class ProductTemplate(models.Model):
             _logger.info("BigCommerce Get Product  Response : {0}".format(response_data))
             if response_data.status_code in [200, 201]:
                 response_data = response_data.json()
-                _logger.info("Product Response Data : {0}".format(response_data))
+                _logger.info("Update Custom Filed Response Data==============> : {0}".format(response_data))
                 records = response_data.get('data')
                 for record in records:
                     if record.get('name') == 'Batch':
                         product_template_id.batch_number = record.get('value')
+			_logger.info("Batch Number Updated:{}".format(product_template_id))
                     elif record.get('name') == 'Alternate Part Number':
                         product_template_id.x_studio_alternate_number = record.get('value')
                     elif record.get('name') == 'Alternate Manufacturer':
