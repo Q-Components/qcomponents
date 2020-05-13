@@ -292,8 +292,8 @@ class ProductTemplate(models.Model):
                 records = response_data.get('data')
                 for record in records:
                     if record.get('name') == 'Batch':
-                        product_template_id.batch_number = record.get('value')
-			#_logger.info("Batch Number Updated:{}".format(product_template_id))
+                        product_template_id.with_user(1).batch_number = record.get('value')
+                        _logger.info("Update Batch Number ==============> : {0}".format(product_template_id))
                     elif record.get('name') == 'Alternate Part Number':
                         product_template_id.x_studio_alternate_number = record.get('value')
                     elif record.get('name') == 'Alternate Manufacturer':
