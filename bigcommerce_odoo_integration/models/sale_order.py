@@ -386,6 +386,7 @@ class SaleOrderVts(models.Model):
                 "price_ex_tax": round((line.price_subtotal/line.product_uom_qty),2),
                 "product_options" : product_option
             }
+            _logger.info("Product Data {0}".format(data))
             ls.append(data)
 
         request_data= {
