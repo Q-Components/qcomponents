@@ -382,8 +382,10 @@ class SaleOrderVts(models.Model):
             data = {
                 "product_id": line.product_id.bigcommerce_product_id,
                 "quantity": line.product_uom_qty,
-                "price_inc_tax" : round((line.price_total/line.product_uom_qty),3),
-                "price_ex_tax": round((line.price_subtotal/line.product_uom_qty),3),
+            #   "price_inc_tax" : round((line.price_total/line.product_uom_qty),3),
+            #   "price_ex_tax": round((line.price_subtotal/line.product_uom_qty),3),
+                "price_inc_tax" : line.price_unit,
+                "price_ex_tax": line.price_unit,
                 "product_options" : product_option
             }
             _logger.info("Product Data {0}".format(data))
