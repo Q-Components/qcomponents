@@ -297,8 +297,8 @@ class ProductTemplate(models.Model):
                         _logger.info("Update Batch Number ==============> : {0}".format(product_template_id))
                     elif record.get('name') == 'Alternate Part Number':
                         product_template_id.x_studio_alternate_number = record.get('value')
-                    elif record.get('name') == 'Alternate Manufacturer':
-                        product_template_id.x_studio_manufacturer = record.get('value')
+#                     elif record.get('name') == 'Alternate Manufacturer':
+#                         product_template_id.x_studio_manufacturer = record.get('value')
                     elif record.get('name') == 'Date Code':
                         product_template_id.x_studio_date_code_1 = record.get('value')
                     elif record.get('name') == 'Country of Origin':
@@ -348,8 +348,8 @@ class ProductTemplate(models.Model):
                                     product.batch_number = record.get('value')
                                 elif record.get('name') == 'Alternate Part Number':
                                     product.x_studio_alternate_number = record.get('value')
-                                elif record.get('name') == 'Alternate Manufacturer':
-                                    product.x_studio_manufacturer = record.get('value')
+#                                 elif record.get('name') == 'Alternate Manufacturer':
+#                                     product.x_studio_manufacturer = record.get('value')
                                 elif record.get('name') == 'Date Code':
                                     product.x_studio_date_code_1 = record.get('value')
                                 elif record.get('name') == 'Country of Origin':
@@ -492,7 +492,7 @@ class ProductTemplate(models.Model):
                                 else:
                                     quant_id.sudo().write({'inventory_quantity':record.get('inventory_level'),'quantity':record.get('inventory_level')})
                                 self._cr.commit()
-                                self.with_user(1).update_bc_custom_fields(bigcommerce_store_id,product_template_id)
+                                self.update_bc_custom_fields(bigcommerce_store_id,product_template_id)
                             except Exception as e:
                                 product_process_message = "%s : Product is not imported Yet! %s" % (record.get('id'),e)
                                 _logger.info("Getting an Error In Import Product Responase".format(e))
@@ -596,7 +596,7 @@ class ProductTemplate(models.Model):
                 else:
                     quant_id.sudo().write({'inventory_quantity':record.get('inventory_level'),'quantity':record.get('inventory_level')})
                 self._cr.commit()
-                self.with_user(1).update_bc_custom_fields(bigcommerce_store_id,product_template_id)
+                self.update_bc_custom_fields(bigcommerce_store_id,product_template_id)
                 return {
                     'effect': {
                         'fadeout': 'slow',
