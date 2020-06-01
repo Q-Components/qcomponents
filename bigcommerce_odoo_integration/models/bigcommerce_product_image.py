@@ -132,9 +132,9 @@ class BigcommerceProductImage(models.Model):
         if response.status_code in [200,201]:
             _logger.info("Get Successfull Response")
             response = response.json()
+            image_ids = self.search([('product_template_id','=',product_id.id)])
+            image_ids.sudo().unlink()
             for data in response.get('data'):
-                image_ids = self.search([('product_template_id','=',product_id.id)])
-                image_ids.sudo().unlink()
                 if not self.search([('bigcommerce_product_image_id', '=', data.get('id'))]):
                     image_id = data.get('id')
                     image_url = data.get('url_standard')
