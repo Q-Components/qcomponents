@@ -133,6 +133,8 @@ class BigcommerceProductImage(models.Model):
             _logger.info("Get Successfull Response")
             response = response.json()
             for data in response.get('data'):
+                image_ids = self.search([('product_template_id','=',product_id.id)])
+                image_ids.sudo().unlink()
                 if not self.search([('bigcommerce_product_image_id', '=', data.get('id'))]):
                     image_id = data.get('id')
                     image_url = data.get('url_standard')
@@ -144,7 +146,8 @@ class BigcommerceProductImage(models.Model):
                         'product_template_id': product_id.id,
                     }
                     self.create(values)
-                    product_id.image_1920 = image_data
+                    if product_id.image_1920:
+                        product_id.image_1920 = image_data
                     self._cr.commit()
                     _logger.info("Successfully Import Images {}".format(image_id))
         else:
