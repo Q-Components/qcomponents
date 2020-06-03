@@ -6,6 +6,40 @@ import logging
 
 _logger = logging.getLogger("BigCommerce")
 
+class StockPicking(models.Model):
+    _inherit = 'stock.picking'
+    
+    bc_shipping_provider = fields.Char(string='Shipping Provider')
+    bigcommerce_shimpment_id = fields.Char(string="Bigcommerce Shipment Numebr")
+
+    def get_order_shipment(self):
+        tracking_number = shipping_provider = ''
+        shipping_cost = 0.0 
+        bigcommerce_store_hash = self.sale_id.bigcommerce_store_id.bigcommerce_store_hash
+        bigcommerce_client_seceret  = self.sale_id.bigcommerce_store_id.bigcommerce_x_auth_client
+        bigcommerce_x_auth_token = self.sale_id.bigcommerce_store_id.bigcommerce_x_auth_token
+        headers = {"Accept": "application/json",
+                   "X-Auth-Client": "{}".format(bigcommerce_client_seceret),
+                   "X-Auth-Token": "{}".format(bigcommerce_x_auth_token),
+                   "Content-Type": "application/json"}
+        url = "%s%s/v2/orders/%s/shipments"%(self.sale_id.bigcommerce_store_id.bigcommerce_api_url,bigcommerce_store_hash,self.sale_id.big_commerce_order_id)
+        try:
+            response = request(method="GET",url=url,headers=headers)
+            if response.status_code in [200,201]:
+                response = response.json()
+                _logger.info("BigCommerce Get Shipment  Response : {0}".format(response))
+                for response in response:
+                    tracking_number += response.get('tracking_number')
+                    shipping_provider += response.get('shipping_provider')
+                    shipping_cost += float(response.get('merchant_shipping_cost'))
+                    shipment_id = response.get('id')
+                self.with_user(1).write({'carrier_price':shipping_cost,'carrier_tracking_ref':tracking_number,'bc_shipping_provider':shipping_provider,'bigcommerce_shimpment_id':shipment_id})
+                self.sale_id.with_user(1).bigcommerce_shipment_order_status = 'Shipped'
+            else:
+                self.with_user(1).message_post(body="Getting an Error in Import Shipment Information : {0}".format(response.content))
+        except Exception as e:
+            self.with_user(1).message_post(body="Getting an Error in Import Shipment Information : {0}".format(e))
+
 class StockInventory(models.Model):
     _inherit = 'stock.inventory'
 

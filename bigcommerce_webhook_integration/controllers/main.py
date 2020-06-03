@@ -134,6 +134,8 @@ class WebHook(http.Controller):
                         order_line = http.request.env['sale.order.line'].with_user(1).search([('product_id','=',product_id.id),('order_id','=',sale_order_id.id)],limit=1)
                         if order_line:
                             order_line.quantity_shipped = response.get('quantity_shipped')
+                    for picking in sale_order_id.picking_ids:
+                        picking.with_user(1).get_order_shipment()
                     sale_order_id.with_user(1).auto_process_delivery_order(sale_order_id.picking_ids)
                 else:
                     _logger.warning("Order Should Be Shipped, Partially Shipped, Completed !")
