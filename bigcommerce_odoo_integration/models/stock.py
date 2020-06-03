@@ -1,7 +1,7 @@
 import time
 from requests import request
 from datetime import datetime
-from odoo import models,api,_
+from odoo import models,api,fields,_
 import logging
 
 _logger = logging.getLogger("BigCommerce")
