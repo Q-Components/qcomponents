@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="add_invoice_button_stock_picking_form_view" model="ir.ui.view">
+            <field name="name">add.invoice.button.stock.picking.form.view</field>
+            <field name="model">stock.picking</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="stock.view_picking_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//div[@class='oe_button_box']" position="inside">
+                 	<button type="object" name="action_view_account_invoice" string="Invoice" class="oe_stat_button" icon="fa-pencil-square-o" attrs="{'invisible':[('account_invoice_ids','=',[])]}">
+                         <field name="account_invoice_ids" invisible="1"/>
+                    </button>
+                </xpath>
+            </field>
+    </record>
+</odoo>
