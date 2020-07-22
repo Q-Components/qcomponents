@@ -49,6 +49,7 @@ class WebHook(http.Controller):
             if not product_template_id:                
                 status, product_template_id = http.request.env['product.template'].create_product_template(response.get('data'),bigcommerce_store_id)
                 _logger.info("Status : {0} Product Template : {1}".format(status,product_template_id))
+                http.request.env['product.attribute'].with_user(1).import_product_attribute_from_bigcommerce(warehouse_id,bigcommerce_store_id,product_template_id,operation_id=operation_id)
                 if product_template_id:
                     product_id = http.request.env['product.product'].with_user(1).search([('product_tmpl_id','=',product_template_id.id)],limit=1)
                     quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','=',location_id.id)],limit=1)
@@ -57,6 +58,8 @@ class WebHook(http.Controller):
                         http.request.env['stock.quant'].with_user(1).create(vals)
                     else:
                         quant_id.with_user(1).write({'inventory_quantity':response.get('data').get('inventory_level'),'quantity':response.get('data').get('inventory_level')})
+                    http.request.env['bigcommerce.product.image'].with_user(1).import_multiple_product_image(bigcommerce_store_id,product_template_id)
+                    http.request.env['product.template'].with_user(1).update_bc_custom_fields(bigcommerce_store_id,product_template_id)
                     user_id = http.request.env['res.users'].with_user(1).search([('login','=','quote@qcomponents.com')],limit=1)
                     _logger.info("USER : {0}".format(user_id))
                     email_id = http.request.env['mail.mail'].with_user(1).create({

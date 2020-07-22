@@ -4,7 +4,6 @@ import base64
 from odoo.exceptions import ValidationError
 import requests
 import json
-import time
 
 _logger = logging.getLogger("BigCommerce")
 
@@ -121,38 +120,35 @@ class product_attribute(models.Model):
                 
     def import_product_attribute_from_bigcommerce(self,warehouse_id=False, bigcommerce_store_ids=False,product_objs=False,operation_id=False):
         for bigcommerce_store_id in bigcommerce_store_ids:
-            process_complete = False
             product_process_message = "Process Completed Successfully!"
             location_id = bigcommerce_store_id.warehouse_id.lot_stock_id
             if not operation_id:
-                process_complete = True
-                operation_id = self.with_user(1).create_bigcommerce_operation('product_attribute','import',bigcommerce_store_id,'Processing...',warehouse_id)
+                operation_id = self.create_bigcommerce_operation('product_attribute','import',bigcommerce_store_id,'Processing...',warehouse_id)
             response_data = False
-            _logger.info("Attribute Method ===> Products: {0}".format(product_objs))
             if not product_objs:
-                product_objs = self.env['product.template'].with_user(1).search([('bigcommerce_product_id','!=',False)])
+                product_objs = self.env['product.template'].search([('bigcommerce_product_id','!=',False)])
 #             attribute_line = self.env['product.template.attribute.line'].search([("product_tmpl_id",'=',product_objs.id)])
 #             if attribute_line:
 #                 attribute_line.with_user(1).unlink()
 #                 self._cr.commit()
-            product_objs = product_objs.filtered(lambda pp:pp.with_user(1).product_variant_count <= 1)
+            product_objs = product_objs.filtered(lambda pp:pp.product_variant_count <= 1)
             self._cr.commit()
             for product in product_objs:
                 try:
-                    _logger.info("BigCommerce Product ID: {0} Product Template ID:{1}".format(product.bigcommerce_product_id,product))
+                    template_id = product
                     api_operation = "/v3/catalog/products/{}/options".format(product.bigcommerce_product_id)
-                    time.sleep(5)
-                    response_data = bigcommerce_store_id.with_user(1).send_get_request_from_odoo_to_bigcommerce(api_operation)
+                    response_data = bigcommerce_store_id.send_get_request_from_odoo_to_bigcommerce(api_operation)
+                    _logger.info("BigCommerce Get Product Attribute Response : {0}".format(response_data))
+                    _logger.info("Response Status: {0}".format(response_data.status_code))
                     if response_data and response_data.status_code in [200, 201]:
-                        _logger.info("Status Code :{0}".format(response_data.status_code))
                         response_data = response_data.json()
-                        _logger.info("response data :{0}".format(response_data))
+                        _logger.info("Product attribute Response Data : {0}".format(response_data))
                         records = response_data.get('data')
-                        _logger.info("Attribute Record:{}".format(records))
                         if records:
-                            self.with_user(1).create_bigcommerce_operation_detail('product_attribute', 'import', api_operation, records,operation_id, warehouse_id, False, records)
+                            self.create_bigcommerce_operation_detail('product_attribute', 'import', api_operation, records,operation_id, warehouse_id, False, records)
                         for record in records:
-                            attribute_id = self.env['product.attribute'].with_user(1).search([('bigcommerce_attribute_id','=',record.get('id'))],limit=1) 
+                            template_id = product
+                            attribute_id = self.env['product.attribute'].search([('bigcommerce_attribute_id','=',record.get('id'))],limit=1) 
                             if not attribute_id:
                                 vals = {}
                                 if record.get('type')=='swatch':
@@ -162,36 +158,36 @@ class product_attribute(models.Model):
                                 else:
                                     vals.update({'display_type':'select'})
                                 vals.update({'name':record.get('display_name') + "-" + str(record.get('id')),'create_variant':'always','bigcommerce_attribute_id':str(record.get('id'))})
-                                attribute_id = self.env['product.attribute'].with_user(1).create(vals)
+                                attribute_id = self.env['product.attribute'].create(vals)
                             else:
-                                attribute_id.with_user(1).write({'bigcommerce_attribute_id':record.get('id')})
+                                attribute_id.write({'bigcommerce_attribute_id':record.get('id')})
                                 
                             attribute_value_ids = []
                             for option_value in record.get('option_values'):
-                                attribute_value_obj = self.env['product.attribute.value'].with_user(1).search([('name','=',option_value.get('label')),('attribute_id','=',attribute_id.id)],limit=1)
+                                attribute_value_obj = self.env['product.attribute.value'].search([('name','=',option_value.get('label')),('attribute_id','=',attribute_id.id)],limit=1)
                                 if not attribute_value_obj:
                                     attribute_value = {'name':option_value.get('label'),"bigcommerce_value_id":option_value.get("id"),"attribute_id":attribute_id.id}
                                     if option_value.get("value_data"):
                                         # attribute_value.update({"html_color":option_value.get("value_data").get("colors")[0]})
                                         attribute_value.update({"html_color": option_value.get("label")})
-                                    attribute_value_obj = self.env['product.attribute.value'].with_user(1).create(attribute_value)
+                                    attribute_value_obj = self.env['product.attribute.value'].create(attribute_value)
                                 else:
-                                    attribute_value_obj.with_user(1).write({'bigcommerce_value_id':option_value.get('id')})
+                                    attribute_value_obj.write({'bigcommerce_value_id':option_value.get('id')})
                                 attribute_value_ids.append(attribute_value_obj.id)
-                            attribute_line = self.env['product.template.attribute.line'].with_user(1).search([('attribute_id','=',attribute_id.id),("product_tmpl_id",'=',product.id)])
+                            attribute_line = self.env['product.template.attribute.line'].search([('attribute_id','=',attribute_id.id),("product_tmpl_id",'=',template_id.id)])
                             if attribute_line:
                                 vals = {"attribute_id":attribute_id.id,"value_ids":[(6,0,attribute_value_ids)]}
-                                attribute_line.with_user(1).write(vals)
+                                attribute_line.write(vals)
                             else:
-                                vals = {"attribute_id":attribute_id.id,"value_ids":[(6,0,attribute_value_ids)],"product_tmpl_id":product.id}
-                                attribute_line = self.env['product.template.attribute.line'].with_user(1).create(vals)
+                                vals = {"attribute_id":attribute_id.id,"value_ids":[(6,0,attribute_value_ids)],"product_tmpl_id":template_id.id}
+                                attribute_line = self.env['product.template.attribute.line'].create(vals)
                                 self._cr.commit()
                         
-                        product.with_user(1)._create_variant_ids()
-                        self._cr.commit()
+                        template_id._create_variant_ids()
                         api_operation_variant = "/v3/catalog/products/{}/variants".format(product.bigcommerce_product_id)
-                        api_operation_variant_response_data = bigcommerce_store_id.with_user(1).send_get_request_from_odoo_to_bigcommerce(
+                        api_operation_variant_response_data = bigcommerce_store_id.send_get_request_from_odoo_to_bigcommerce(
                             api_operation_variant)
+                        _logger.info("BigCommerce Get Product Variant Response : {0}".format(api_operation_variant_response_data))
                         _logger.info("Response Status: {0}".format(api_operation_variant_response_data.status_code))
                         if api_operation_variant_response_data.status_code in [200, 201]:
                             api_operation_variant_response_data = api_operation_variant_response_data.json()
@@ -203,22 +199,25 @@ class product_attribute(models.Model):
                                     option_labales.append(option_value.get('label'))
                                 v_id = variant_data.get('id')
                                 product_sku = variant_data.get('sku')
-                                _logger.info("Total Product Variant : {0} Option Label : {1}".format(product.product_variant_ids,option_labales))
                                 for product_variant_id in product.product_variant_ids:
-                                    if product_variant_id.mapped(lambda pv: pv.with_user(1).product_template_attribute_value_ids.mapped('name') == option_labales)[0]:
-                                        _logger.info("Inside If Condition option Label =====> {0} Product Template Attribute Value ====> {1} variant_id====>{2}".format(option_labales,product_variant_id.with_user(1).mapped('product_template_attribute_value_ids').mapped('name'),product_variant_id))
-                                        if variant_data.get('price'):
-                                            price = variant_data.get('price')
-                                        else:
-                                            price = variant_data.get('calculated_price')
-                                        vals = {'default_code':product_sku,'lst_price':price,'bigcommerce_product_variant_id':v_id,'standard_price':variant_data.get('cost_price',0.0)} 
+                                    if product_variant_id.mapped(lambda pv: pv.product_template_attribute_value_ids.mapped('name') == option_labales)[0]:
+                                        product_variant_id.default_code = product_sku
+                                        product_variant_id.lst_price = variant_data.get('price','calculated_price') 
+                                        product_variant_id.bigcommerce_product_variant_id = v_id
                                         variant_product_img_url = variant_data.get('image_url')
                                         if variant_product_img_url:
                                             image = base64.b64encode(requests.get(variant_product_img_url).content)
-                                            vals.update({'image_1920':image})
-                                        product_variant_id.with_user(1).write(vals)
-                                        _logger.info("Product Variant Updated : {0}".format(product_variant_id.default_code))
+                                            product_variant_id.image_1920 = image
                                         self._cr.commit()
+#                                         product_qty = variant_data.get('inventory_level')
+#                                         if product_qty > 0:
+#                                             quant_id = self.env['stock.quant'].search([('product_id','=',product_variant_id.id),('location_id','=',location_id.id)],limit=1)
+#                                             if not quant_id:
+#                                                 quant_vals = {'product_tmpl_id':product_variant_id.product_tmpl_id.id,'location_id':location_id.id,'inventory_quantity':product_qty,'product_id':product_variant_id.id,'quantity':product_qty}
+#                                                 self.env['stock.quant'].sudo().create(quant_vals)
+#                                             else:
+#                                                 quant_id.sudo().write({'inventory_quantity':product_qty,'quantity':product_qty})
+#                                            self._cr.commit()
                         else:
                             api_operation_variant_response_data = api_operation_variant_response_data.json()
                             error_msg = api_operation_variant_response_data.get('errors')
@@ -233,9 +232,8 @@ class product_attribute(models.Model):
                 except Exception as e:
                     product_process_message = "Product : {0} Process Is Not Completed Yet!  {1}".format(product,e)
                     self.create_bigcommerce_operation_detail('product_attribute','export',"",response_data,operation_id,warehouse_id,True,product_process_message)
-            if process_complete:
-                operation_id and operation_id.write({'bigcommerce_message': product_process_message})
-                bigcommerce_store_id.bigcommerce_operation_message = "Import Product Attribute Process Completed."
+            operation_id and operation_id.write({'bigcommerce_message': product_process_message})
+            bigcommerce_store_id.bigcommerce_operation_message = "Import Product Attribute Process Completed."
             self._cr.commit()        
         
 class product_attribute_value(models.Model):
