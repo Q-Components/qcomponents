@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
     <data>
-        <record id="ups_view_stock_quant_package_details" model="ir.ui.view">
+        <record id="bc_webhook_config_details" model="ir.ui.view">
             <field name="name">Bigcommerce Webhook Configuration</field>
             <field name="model">bigcommerce.store.configuration</field>
             <field name="type">form</field>
@@ -14,12 +14,14 @@
                                 <field name="bigcommerce_webhook_version"/>
                                 <field name="bigcommerce_webhook_url"/>
                                 <field name="bigcommerce_webhook_scope"/>
+                                <field name="webhook_id" />
                                 <button type="object" name="create_bigcommerce_wegbhook"
                             string="Create Webhook"  class="oe_highlight"/>
+                            	<button type="object" name="delete_bigcommerce_wegbhook"
+                            string="Delete Webhook"  class="oe_highlight"/>
                             </tree>
                         </field>
                     </page>
-
                 </xpath>
             </field>
         </record>
