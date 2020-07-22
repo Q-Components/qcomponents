@@ -49,7 +49,7 @@ class WebHook(http.Controller):
             if not product_template_id:                
                 status, product_template_id = http.request.env['product.template'].create_product_template(response.get('data'),bigcommerce_store_id)
                 _logger.info("Status : {0} Product Template : {1}".format(status,product_template_id))
-                http.request.env['product.attribute'].with_user(1).import_product_attribute_from_bigcommerce(warehouse_id,bigcommerce_store_id,product_template_id,operation_id=operation_id)
+                http.request.env['product.attribute'].with_user(1).import_product_attribute_from_bigcommerce(bigcommerce_store_id.warehouse_id,bigcommerce_store_id,product_template_id)
                 if product_template_id:
                     product_id = http.request.env['product.product'].with_user(1).search([('product_tmpl_id','=',product_template_id.id)],limit=1)
                     quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_template_id.id),('location_id','=',location_id.id)],limit=1)
