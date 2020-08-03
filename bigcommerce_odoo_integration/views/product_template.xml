@@ -13,7 +13,7 @@
             </field>
             <field name="context">{'is_exported_to_bigcommerce':True}</field>
         </record>
-        <record id="view_product_template_field_ept" model="ir.ui.view">
+        <record id="add_bigcommerce_detail_view_product_template_field" model="ir.ui.view">
             <field name="name">product.template.fields</field>
             <field name="model">product.template</field>
             <field name="inherit_id" ref="product.product_template_form_view"/>
