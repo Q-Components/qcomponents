@@ -13,7 +13,6 @@ class WebsiteSaleSearch(WebsiteSale):
                 subdomains = [
                     [('name', 'ilike', srch)],
                     [('x_studio_alternate_number', 'ilike', srch)],
-                    [('x_studio_manufacturer', 'ilike', srch)],
                     [('description_sale', 'ilike', srch)],
                     [('product_variant_ids.default_code', 'ilike', srch)]
                 ]
