@@ -209,6 +209,7 @@ class WebHook(http.Controller):
         if method == "absolute":
             product_template_obj = http.request.env['product.template']
             product_id = product_template_obj.sudo().search([('bigcommerce_product_id', '=', product)])
+            _logger.info("Product : {0}".format(product_id))
             if product_id:
                 quant_id = http.request.env['stock.quant'].with_user(1).search([('product_tmpl_id','=',product_id.id),('location_id','in',location)])
                 _logger.info("Quant : {0}".format(quant_id))
@@ -223,6 +224,7 @@ class WebHook(http.Controller):
                     http.request.env['stock.quant'].with_user(1).create(vals)
                 else:
                     quant_id.with_user(1).write({'inventory_quantity':product_qty,'quantity':product_qty})
+                http.request.env.cr.commit()
                 user_id = http.request.env['res.users'].with_user(1).search([('login','=','quote@qcomponents.com')],limit=1)
                 _logger.info("USER : {0}".format(user_id))
                 email_id = http.request.env['mail.mail'].with_user(1).create({
