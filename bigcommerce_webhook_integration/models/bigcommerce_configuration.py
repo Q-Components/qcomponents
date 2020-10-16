@@ -13,4 +13,4 @@ class BigcommerceWebhookIds(models.Model):
             for webhook in store_id.bigcommerce_webhook_ids:
                 webhook.delete_bigcommerce_wegbhook()
                 webhook.create_bigcommerce_wegbhook()
-                self.cr_commit()
+                self._cr.commit()
