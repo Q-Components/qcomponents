@@ -18,6 +18,17 @@ class WebHook(http.Controller):
         inventory_data_dict = http.request.httprequest.data
         inventory_product_dict = inventory_data_dict.get('data')
         _logger.warning('>>>>>>>>>>>>>>> \n \n \n Final data >>>>>>>%s' % (inventory_product_dict))
+
+    @http.route('/store/order/created', type='json', auth="none", methods=['POST'])
+    def create_order_using_webhook(self, **kw):
+        create_order_dict = http.request.httprequest.data.decode("utf-8")
+        order_data = json.loads(create_order_dict)
+        _logger.warning('>>>>>>>>>>>>>>> \n \n \n  Order Response >>>>>>>%s' % (create_order_dict))
+        store = order_data.get('producer').replace("stores/","")
+        bigcommerce_store_id = http.request.env['bigcommerce.store.configuration'].sudo().search([('bigcommerce_store_hash','=',store)])
+        warehouse_id = bigcommerce_store_id.warehouse_id
+        bigcommerce_order_id = order_data.get('data').get('id')
+        http.request.env['sale.order'].with_user(1).bigcommerce_to_odoo_import_orders_from_webhook(bigcommerce_order_id,warehouse_id,bigcommerce_store_id)
     
     
     @http.route('/store/product/created', type='json', auth="none", methods=['POST'])

@@ -40,6 +40,62 @@ class StockPicking(models.Model):
         except Exception as e:
             self.with_user(1).message_post(body="Getting an Error in Import Shipment Information : {0}".format(e))
 
+    def export_shipment_to_bigcommerce(self):
+        if not self.sale_id.big_commerce_order_id:
+            raise ValidationError("Order Not Exported in BC you can't Export Shipment")
+        bigcommerce_store_hash = self.sale_id.bigcommerce_store_id.bigcommerce_store_hash
+        api_url = "%s%s/v2/orders/%s/shipments"%(self.sale_id.bigcommerce_store_id.bigcommerce_api_url,bigcommerce_store_hash,self.sale_id.big_commerce_order_id)
+        bigcommerce_auth_token = self.sale_id.bigcommerce_store_id.bigcommerce_x_auth_token
+        bigcommerce_auth_client = self.sale_id.bigcommerce_store_id.bigcommerce_x_auth_client
+ 
+        headers ={ 'Accept'       : 'application/json',
+                   'Content-Type' : 'application/json',
+                   'X-Auth-Token' : "{}".format(bigcommerce_auth_token),
+                   'X-Auth-Client':  "{}".format(bigcommerce_auth_client) }
+        ls = []
+        for line in self.move_lines:
+            order_product_id = line.sale_line_id.order_product_id
+            line_data = {
+                "order_product_id":int(order_product_id),
+                #"product_id": int(line.sale_line_id.product_id.bigcommerce_product_id),
+                "quantity": line.product_uom_qty,
+            }
+            _logger.info("Product Data {0}".format(line_data))
+            ls.append(line_data)
+ 
+        request_data= {
+            'tracking_number' : self.carrier_tracking_ref,
+            'order_address_id':self.sale_id.bigcommerce_shipment_address_id,
+            'shipping_provider':'fedex',
+            'tracking_carrier':'fedex',
+            'items': ls
+            }
+        operation_id = self.sale_id.create_bigcommerce_operation('shipment', 'export', self.sale_id.bigcommerce_store_id, 'Processing...',
+                                                         False)
+        self._cr.commit()
+        try:
+            response = request(method="POST",url=api_url,data=json.dumps(request_data),headers=headers)
+            _logger.info("Sending Post Request To {}".format(api_url))
+            if response.status_code in [200,201]:
+                response_data = response.json()
+                self.message_post(body="Shipment Created in Bigcommerce : {}".format(response_data.get('id')))
+                process_message="Shipment Created in Bigcommerce : {}".format(response_data.get('id'))
+                self.sale_id.create_bigcommerce_operation_detail('order', 'export', False, response_data,
+                                                         operation_id, False, False,
+                                                         process_message)
+                self.bigcommerce_shimpment_id = response_data.get('id')
+        except Exception as e:
+            _logger.info(" Getting an Issue in Export Shipment Response {}".format(response.content))
+            raise ValidationError(e)
+        return {
+            'effect': {
+                'fadeout': 'slow',
+                'message': "Yeah! Successfully Export Order .",
+                'img_url': '/web/static/src/img/smile.svg',
+                'type': 'rainbow_man',
+            }
+        }
+
 class StockInventory(models.Model):
     _inherit = 'stock.inventory'
 

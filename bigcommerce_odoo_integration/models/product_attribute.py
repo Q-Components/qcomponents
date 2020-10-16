@@ -192,6 +192,7 @@ class product_attribute(models.Model):
                         api_operation_variant = "/v3/catalog/products/{}/variants".format(product.bigcommerce_product_id)
                         api_operation_variant_response_data = bigcommerce_store_id.with_user(1).send_get_request_from_odoo_to_bigcommerce(
                             api_operation_variant)
+                        _logger.info("BigCommerce Get Product Variant Response : {0}".format(api_operation_variant_response_data))
                         _logger.info("Response Status: {0}".format(api_operation_variant_response_data.status_code))
                         if api_operation_variant_response_data.status_code in [200, 201]:
                             api_operation_variant_response_data = api_operation_variant_response_data.json()
@@ -219,6 +220,15 @@ class product_attribute(models.Model):
                                         product_variant_id.with_user(1).write(vals)
                                         _logger.info("Product Variant Updated : {0}".format(product_variant_id.default_code))
                                         self._cr.commit()
+#                                         product_qty = variant_data.get('inventory_level')
+#                                         if product_qty > 0:
+#                                             quant_id = self.env['stock.quant'].search([('product_id','=',product_variant_id.id),('location_id','=',location_id.id)],limit=1)
+#                                             if not quant_id:
+#                                                 quant_vals = {'product_tmpl_id':product_variant_id.product_tmpl_id.id,'location_id':location_id.id,'inventory_quantity':product_qty,'product_id':product_variant_id.id,'quantity':product_qty}
+#                                                 self.env['stock.quant'].sudo().create(quant_vals)
+#                                             else:
+#                                                 quant_id.sudo().write({'inventory_quantity':product_qty,'quantity':product_qty})
+#                                            self._cr.commit()
                         else:
                             api_operation_variant_response_data = api_operation_variant_response_data.json()
                             error_msg = api_operation_variant_response_data.get('errors')

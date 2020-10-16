@@ -28,6 +28,7 @@
                             <field name="warehouse_id" required="1" />
                             <field name="last_modification_date" />
                             <field name="bigcommerce_operation_message"  readonly="1"/>
+			    <field name="auto_import_orders" />
                         </group>
                         <group>
                         	<field name="bigcommerce_product_id" />
