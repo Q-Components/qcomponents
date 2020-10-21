@@ -138,8 +138,8 @@ class StockWarehouse(models.Model):
     def skuvault_inventory_crone(self):
         for current_record_id in self.search([]):
             if current_record_id.skuvault_UserToken and current_record_id.skuvault_tenantToken:
-                before_date = datetime.now()
-                after_date = before_date - relativedelta(hours=6)
+                before_date = datetime.now() + relativedelta(hours=10)
+                after_date = before_date - relativedelta(days=1)
                 current_record_id.get_item_quantities(afterdate=after_date, beforedate=before_date)
             else:
                 _logger.info(">>>> Authentication token not found")
