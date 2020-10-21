@@ -8,10 +8,12 @@
     'description': """""",
     'depends': ['delivery', 'import_inventory'],
     'data': [
+            'security/ir.model.access.csv',
             'view/stock_warehouse.xml',
             'view/product_template.xml',
             'data/skuvault_inventory_crone.xml',
-            'data/skuvault_import_product_crone.xml'
+            'data/skuvault_import_product_crone.xml',
+            'view/skuvault_operation_details.xml',
             #  'views/sale_order.xml',
             #  'views/product_template.xml',
             #  'views/stock_picking.xml',

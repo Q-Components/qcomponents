@@ -6,10 +6,16 @@
     'version': '13.0',
     'summary': """ """,
     'description': """""",
-    'depends': ['delivery'],
+    'depends': ['delivery', 'import_inventory'],
     'data': [
             'view/stock_warehouse.xml',
-            'data/skuvault_inventory_cron.xml'
+            'view/product_template.xml',
+            'data/skuvault_inventory_crone.xml',
+            'data/skuvault_import_product_crone.xml'
+            #  'views/sale_order.xml',
+            #  'views/product_template.xml',
+            #  'views/stock_picking.xml',
+
              ],
     'images': [''],
     'maintainer': 'Vraja Technologies',

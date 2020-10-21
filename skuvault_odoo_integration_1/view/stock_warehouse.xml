@@ -31,8 +31,10 @@
                                     <group>
                                             <button name="get_authentication_tokens" string="Get Authentication Token" type="object" />
                                             <br />
-
+                                            <button name="import_product_from_skuvault" string="Import Product" type="object" />
+                                            <br />
                                             <button name="get_item_quantities" string="Get Product Quantities" type="object" />
+
                                     </group>
                                 </group>
                             </page>
