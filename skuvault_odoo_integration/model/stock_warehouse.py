@@ -123,6 +123,7 @@ class StockWarehouse(models.Model):
                         process_message = ">>> Stock Quant Created Product Name : {0} and Quantity: {1} ".format(product_id.name,available_qty)
                         _logger.info(process_message)
                         self.create_skuvault_operation_detail('product','import',data,items_data,operation_id,self,False,process_message)
+                        self._cr.commit()
                     else:
                         #total_available_quantity = available_qty + quant_id.reserved_quantity
                         if quant_id.quantity != available_qty:
@@ -131,6 +132,7 @@ class StockWarehouse(models.Model):
                             process_message = ">>> Stock Quant Updated Product Name : {0} and OLD Quantity: {1} and New Qty : {2}".format(product_id.name,old_qty,available_qty)
                             _logger.info(process_message)
                             self.create_skuvault_operation_detail('product','import',data,items_data,operation_id,self,False,process_message)
+                            self._cr.commit()
         except Exception as error:
             _logger.info(error)
             self.create_skuvault_operation_detail('product','import',False,False,operation_id,self,True,error)
@@ -202,6 +204,7 @@ class StockWarehouse(models.Model):
                                 elif attribute_data.get('Name') == 'RoHS':
                                     product_id.write({'x_studio_rohs': attribute_data.get('Value')})
                                 process_message = "Product Updated {0}".format(product_id)
+                            self._cr.commit()
                         else:
                             process_message = "Product Not Found"
                         self.create_skuvault_operation_detail('product','import',request_data,product_data,operation_id,self,False,process_message)

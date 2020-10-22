@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_res_company_fedex_configuration" model="ir.ui.view">
+        <field name="name">Fedex Configuration</field>
+        <field name="model">res.company</field>
+        <field name="type">form</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[last()]" position="after">
+                <page string="FedEx Configuration">
+                    <group>
+                        <field name="use_fedex_shipping_provider"/>
+                    </group>
+                    <group attrs="{'invisible': [('use_fedex_shipping_provider', '!=', True)]}">
+                        <field name="fedex_key"
+                               attrs="{'required':[('use_fedex_shipping_provider','=',True)]}"/>
+                        <field name="fedex_password"
+                               attrs="{'required':[('use_fedex_shipping_provider','=',True)]}" password="True"/>
+                        <field name="fedex_account_number"
+                               attrs="{'required':[('use_fedex_shipping_provider','=',True)]}"/>
+                        <field name="fedex_meter_number"
+                               attrs="{'required':[('use_fedex_shipping_provider','=',True)]}"/>
+                        <field name="fedex_integration_id"
+                               attrs="{'required':[('use_fedex_shipping_provider','=',True)]}"/>
+                    </group>
+                    <group attrs="{'invisible': [('use_fedex_shipping_provider', '!=', True)]}">
+                        <field name="use_address_validation_service"/>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
