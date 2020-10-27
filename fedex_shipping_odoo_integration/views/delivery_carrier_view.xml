@@ -18,6 +18,7 @@
 								attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}" />
 							<field name="fedex_onerate"
 								attrs="{'invisible': [('fedex_service_type','not in',['FIRST_OVERNIGHT','PRIORITY_OVERNIGHT','STANDARD_OVERNIGHT','FEDEX_2_DAY','FEDEX_2_DAY_AM','FEDEX_EXPRESS_SAVER'])]}"/>
+							<!--<field name="fedex_payment_type" />-->
 							<field name="is_cod"/>
 							<field name="fedex_collection_type" attrs="{'required': [('is_cod', '!=', 'False')]}"/>
 						</group>

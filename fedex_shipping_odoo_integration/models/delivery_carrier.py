@@ -66,6 +66,13 @@ class DeliveryCarrier(models.Model):
                                               ('PERSONAL_CHECK', 'PERSONAL_CHECK'),
                                               ], default='ANY', string="FedEx Collection Type",
                                              help="FedEx Collection Type")
+
+    # fedex_payment_type = fields.Selection([('SENDER', 'SENDER'),
+    #                                        ('RECIPIENT', 'RECIPIENT'),
+    #                                        ('THIRD_PARTY', 'THIRD_PARTY')], default='SENDER',
+    #                                       string="FedEx Payment Type",
+    #                                       help="FedEx Payment Type")
+
     fedex_shipping_label_stock_type = fields.Selection([
         # These values display a thermal format label
         ('PAPER_4X6', 'Paper 4X6 '),
@@ -180,8 +187,8 @@ class DeliveryCarrier(models.Model):
         # include estimated duties and taxes in rate quote, can be ALL or NONE
         request_obj.RequestedShipment.EdtRequestType = 'NONE'
 
-        request_obj.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = order.fedex_third_party_account_number_sale_order if order.fedex_third_party_account_number_sale_order else instance.fedex_account_number
-        request_obj.RequestedShipment.ShippingChargesPayment.PaymentType = "SENDER"
+        request_obj.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = order.fedex_third_party_account_number_sale_order if order.fedex_third_party_account_number_sale_order  else instance.fedex_account_number
+        request_obj.RequestedShipment.ShippingChargesPayment.PaymentType = "THIRD_PARTY" if order.fedex_third_party_account_number_sale_order else "SENDER"
         return request_obj
 
     def manage_fedex_packages(self, rate_request, weight, number=1):
@@ -345,7 +352,7 @@ class DeliveryCarrier(models.Model):
                 #                 rate_request.RequestedShipment.PackageCount = total_package
                 if self.fedex_onerate:
                     rate_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['FEDEX_ONE_RATE']
-                if self.is_cod:
+                if self.is_cod and not order.fedex_third_party_account_number_sale_order:
                     rate_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['COD']
                     cod_vals = {'Amount': order.amount_total,
                                 'Currency': order.company_id.currency_id.name}
@@ -400,7 +407,8 @@ class DeliveryCarrier(models.Model):
             cod_details = ship_request.response.CompletedShipmentDetail.AssociatedShipments[0] and \
                           ship_request.response.CompletedShipmentDetail.AssociatedShipments[0].Label and \
                           ship_request.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[0] and \
-                          ship_request.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[0].Image or False
+                          ship_request.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[
+                              0].Image or False
             if cod_details:
                 cod_details = binascii.a2b_base64(cod_details)
         label_binary_data = binascii.a2b_base64(ascii_label_data)
@@ -475,12 +483,13 @@ class DeliveryCarrier(models.Model):
                     # ship_request = self.add_fedex_package(picking,ship_request, package_weight, package_count, number=sequence, master_tracking_id=fedex_master_tracking_id,package=package)
                     if self.fedex_onerate:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['FEDEX_ONE_RATE']
-                    if self.is_cod:
+                    if self.is_cod and not picking.sale_id and picking.sale_id.fedex_third_party_account_number_sale_order:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['COD']
                         cod_vals = {'Amount': picking.sale_id.amount_total,
                                     'Currency': picking.sale_id.company_id.currency_id.name}
                         ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = cod_vals
-                        ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType.value = "%s"%(self.fedex_collection_type)
+                        ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType.value = "%s" % (
+                            self.fedex_collection_type)
 
                         ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Contact.PersonName = shipper_address.name if not shipper_address.is_company else ''
                         ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Contact.CompanyName = shipper_address.name if shipper_address.is_company else ''
@@ -532,8 +541,8 @@ class DeliveryCarrier(models.Model):
                             Commodity.Quantity = operation.qty_done
                             Commodity.QuantityUnits = 'EA'
                             ship_request.RequestedShipment.CustomsClearanceDetail.Commodities.append(Commodity)
-                        ship_request.RequestedShipment.CustomsClearanceDetail.DutiesPayment.PaymentType = 'SENDER'
-                        ship_request.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.AccountNumber = self.company_id and self.company_id.fedex_account_number
+                        ship_request.RequestedShipment.CustomsClearanceDetail.DutiesPayment.PaymentType = "THIRD_PARTY" if order.fedex_bill_by_third_party_sale_order else "SENDER"
+                        ship_request.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.AccountNumber = order.fedex_third_party_account_number_sale_order if order.fedex_bill_by_third_party_sale_order else self.company_id and self.company_id.fedex_account_number
                         ship_request.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Address.CountryCode = picking.picking_type_id.warehouse_id.partner_id.country_id.code
                         ship_request.RequestedShipment.CustomsClearanceDetail.CustomsValue.Amount = total_commodities_amount
                         ship_request.RequestedShipment.CustomsClearanceDetail.CustomsValue.Currency = picking.sale_id.currency_id.name or picking.company_id.currency_id.name
@@ -543,12 +552,13 @@ class DeliveryCarrier(models.Model):
                                                           master_tracking_id=fedex_master_tracking_id)
                     if self.fedex_onerate:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['FEDEX_ONE_RATE']
-                    if self.is_cod:
+                    if self.is_cod and not order.fedex_bill_by_third_party_sale_order:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['COD']
                         cod_vals = {'Amount': picking.sale_id.amount_total,
                                     'Currency': picking.sale_id.company_id.currency_id.name}
                         ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = cod_vals
-                        ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType.value = "%s"%(self.fedex_collection_type)
+                        ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType.value = "%s" % (
+                            self.fedex_collection_type)
 
                         ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Contact.PersonName = shipper_address.name if not shipper_address.is_company else ''
                         ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Contact.CompanyName = shipper_address.name if shipper_address.is_company else ''
