@@ -392,7 +392,7 @@ class DeliveryCarrier(models.Model):
         return {'success': True, 'price': float(shipping_charge) + self.add_custom_margin, 'error_message': False,
                 'warning_message': False}
 
-    def get_fedex_tracking_and_label(self, ship_request):
+    def get_fedex_tracking_and_label(self, ship_request,is_cod=False):
         self.ensure_one()
         CompletedPackageDetails = ship_request.response.CompletedShipmentDetail.CompletedPackageDetails[0]
         shipping_charge = 0.0
@@ -403,16 +403,20 @@ class DeliveryCarrier(models.Model):
         tracking_number = CompletedPackageDetails.TrackingIds[0].TrackingNumber
         ascii_label_data = ship_request.response.CompletedShipmentDetail.CompletedPackageDetails[0].Label.Parts[0].Image
         cod_details = False
-        if self.is_cod:
-            cod_details = ship_request.response.CompletedShipmentDetail.AssociatedShipments[0] and \
-                          ship_request.response.CompletedShipmentDetail.AssociatedShipments[0].Label and \
-                          ship_request.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[0] and \
-                          ship_request.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[
-                              0].Image or False
-            if cod_details:
-                cod_details = binascii.a2b_base64(cod_details)
+        cod_error_message = False
+        try:
+            if is_cod:
+                cod_details = ship_request.response.CompletedShipmentDetail.AssociatedShipments[0] and \
+                              ship_request.response.CompletedShipmentDetail.AssociatedShipments[0].Label and \
+                              ship_request.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[0] and \
+                              ship_request.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[
+                                  0].Image or False
+                if cod_details:
+                    cod_details = binascii.a2b_base64(cod_details)
+        except Exception as e:
+            cod_error_message = e
         label_binary_data = binascii.a2b_base64(ascii_label_data)
-        return shipping_charge, tracking_number, label_binary_data, cod_details
+        return shipping_charge, tracking_number, label_binary_data, cod_details, cod_error_message
 
     # require changes in this module
 
@@ -483,7 +487,7 @@ class DeliveryCarrier(models.Model):
                     # ship_request = self.add_fedex_package(picking,ship_request, package_weight, package_count, number=sequence, master_tracking_id=fedex_master_tracking_id,package=package)
                     if self.fedex_onerate:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['FEDEX_ONE_RATE']
-                    if self.is_cod and not picking.sale_id and picking.sale_id.fedex_third_party_account_number_sale_order:
+                    if self.is_cod and picking.sale_id and picking.sale_id.fedex_third_party_account_number_sale_order == False:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['COD']
                         cod_vals = {'Amount': picking.sale_id.amount_total,
                                     'Currency': picking.sale_id.company_id.currency_id.name}
@@ -502,8 +506,9 @@ class DeliveryCarrier(models.Model):
                         ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Address.CountryCode = shipper_address.country_id.code
 
                     ship_request.send_request()
-                    shipping_charge, tracking_number, label_binary_data, cod_details = self.get_fedex_tracking_and_label(
-                        ship_request)
+                    shipping_charge, tracking_number, label_binary_data, cod_details, cod_error_message = self.get_fedex_tracking_and_label(
+                        ship_request,self.is_cod and picking.sale_id and picking.sale_id.fedex_third_party_account_number_sale_order == False)
+                    picking.message_post(body=cod_error_message if cod_error_message else "")
                     if cod_details:
                         attachments.append(
                             ('Fedex_COD_RETURN%s.%s' % (tracking_number, self.fedex_shipping_label_file_type),
@@ -516,10 +521,10 @@ class DeliveryCarrier(models.Model):
                     if sequence == 1 and package_count > 1:
                         fedex_master_tracking_id = ship_request.response.CompletedShipmentDetail.MasterTrackingId.TrackingNumber
                 if total_bulk_weight:
+                    order = picking.sale_id
                     if self.fedex_service_type in ['INTERNATIONAL_ECONOMY', 'INTERNATIONAL_FIRST',
                                                    'INTERNATIONAL_PRIORITY'] or (
                             picking.partner_id.country_id.code == 'IN' and picking.picking_type_id.warehouse_id.partner_id.country_id.code == 'IN'):
-                        order = picking.sale_id
                         company = order.company_id or picking.company_id or self.env.user.company_id
                         order_currency = picking.sale_id.currency_id or picking.company_id.currency_id
                         commodity_country_of_manufacture = picking.picking_type_id.warehouse_id.partner_id.country_id.code
@@ -552,7 +557,7 @@ class DeliveryCarrier(models.Model):
                                                           master_tracking_id=fedex_master_tracking_id)
                     if self.fedex_onerate:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['FEDEX_ONE_RATE']
-                    if self.is_cod and not order.fedex_bill_by_third_party_sale_order:
+                    if self.is_cod and order.fedex_bill_by_third_party_sale_order == False:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['COD']
                         cod_vals = {'Amount': picking.sale_id.amount_total,
                                     'Currency': picking.sale_id.company_id.currency_id.name}
@@ -571,9 +576,9 @@ class DeliveryCarrier(models.Model):
                         ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Address.CountryCode = shipper_address.country_id.code
 
                     ship_request.send_request()
-                    shipping_charge, tracking_number, label_binary_data, cod_details = self.get_fedex_tracking_and_label(
-                        ship_request)
-
+                    shipping_charge, tracking_number, label_binary_data, cod_details, cod_error_message = self.get_fedex_tracking_and_label(
+                        ship_request,self.is_cod and order.fedex_bill_by_third_party_sale_order == False)
+                    picking.message_post(body=cod_error_message if cod_error_message else "")
                     if cod_details:
                         attachments.append(
                             ('Fedex_COD_RETURN%s.%s' % (tracking_number, self.fedex_shipping_label_file_type),
