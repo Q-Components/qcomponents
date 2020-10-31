@@ -483,7 +483,7 @@ class DeliveryCarrier(models.Model):
                     # Note: The maximum number of packages in an MPS request is 200.
                     package_weight = self.company_id.weight_convertion(self.fedex_weight_uom, package.shipping_weight)
                     ship_request = self.add_fedex_package(ship_request, package_weight, package_count, number=sequence,
-                                                          master_tracking_id=fedex_master_tracking_id,package=package)
+                                                          master_tracking_id=fedex_master_tracking_id,package_id=package)
                     # ship_request = self.add_fedex_package(picking,ship_request, package_weight, package_count, number=sequence, master_tracking_id=fedex_master_tracking_id,package=package)
                     if self.fedex_onerate:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['FEDEX_ONE_RATE']
@@ -554,7 +554,7 @@ class DeliveryCarrier(models.Model):
 
                     ship_request = self.add_fedex_package(ship_request, total_bulk_weight, 1,
                                                           number=1,
-                                                          master_tracking_id=fedex_master_tracking_id,package=False)
+                                                          master_tracking_id=fedex_master_tracking_id,package_id=False)
                     if self.fedex_onerate:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['FEDEX_ONE_RATE']
                     if self.is_cod and order.fedex_bill_by_third_party_sale_order == False:
