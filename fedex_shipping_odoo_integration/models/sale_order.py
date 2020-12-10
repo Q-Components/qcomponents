@@ -131,13 +131,3 @@ class SaleOrder(models.Model):
             }
         }
     
-    def action_confirm(self):
-        immediate_payment_term_id = self.env.ref('account.account_payment_term_immediate').id
-        if self.payment_term_id and self.payment_term_id.id == immediate_payment_term_id:
-            if self.carrier_id and self.carrier_id.delivery_type == 'fedex_shipping_provider' and self.delivery_price <= 0.0 or not self.order_line.filtered(lambda x: not x.is_delivery):
-                raise UserError("Before Confirm Sale Order Please Get Delivery Rate and Set Delivery Price in Order Line .Go To Fedex Page --> Click On Get Rate Button")
-#             elif self.carrier_id and self.carrier_id.delivery_type == 'fedex' :
-#                 self.get_fedex_rate()
-#                 self.delivery_rating_sucess = True
-#                 self.set_delivery_line()
-        return super(SaleOrder, self).action_confirm()
