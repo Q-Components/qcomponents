@@ -208,16 +208,16 @@ class DeliveryCarrier(models.Model):
             package.SequenceNumber = number
         return package
 
-    def add_fedex_package(self, ship_request, weight, package_count, number=1, master_tracking_id=False,package_id=False):
+    def add_fedex_package(self, ship_request, weight, package_count, number=1, master_tracking_id=False):
         package_weight = ship_request.create_wsdl_object_of_type('Weight')
         package_weight.Value = weight
         package_weight.Units = self.fedex_weight_uom
         package = ship_request.create_wsdl_object_of_type('RequestedPackageLineItem')
         package.Weight = package_weight
         if self.fedex_default_product_packaging_id.shipper_package_code == 'YOUR_PACKAGING':
-            package.Dimensions.Length = package_id and package_id.packaging_id.length if package_id and package_id.packaging_id.length else self.fedex_default_product_packaging_id.length
-            package.Dimensions.Width = package_id and package_id.packaging_id.width if package_id and package_id.packaging_id.width else self.fedex_default_product_packaging_id.width
-            package.Dimensions.Height =package_id and package_id.packaging_id.height if package_id and package_id.packaging_id.height else self.fedex_default_product_packaging_id.height
+            package.Dimensions.Length = self.fedex_default_product_packaging_id.length
+            package.Dimensions.Width = self.fedex_default_product_packaging_id.width
+            package.Dimensions.Height = self.fedex_default_product_packaging_id.height
             package.Dimensions.Units = 'IN' if self.fedex_weight_uom == 'LB' else 'CM'
         package.PhysicalPackaging = 'BOX'
         if number:
@@ -483,7 +483,7 @@ class DeliveryCarrier(models.Model):
                     # Note: The maximum number of packages in an MPS request is 200.
                     package_weight = self.company_id.weight_convertion(self.fedex_weight_uom, package.shipping_weight)
                     ship_request = self.add_fedex_package(ship_request, package_weight, package_count, number=sequence,
-                                                          master_tracking_id=fedex_master_tracking_id,package_id=package)
+                                                          master_tracking_id=fedex_master_tracking_id)
                     # ship_request = self.add_fedex_package(picking,ship_request, package_weight, package_count, number=sequence, master_tracking_id=fedex_master_tracking_id,package=package)
                     if self.fedex_onerate:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['FEDEX_ONE_RATE']
@@ -554,7 +554,7 @@ class DeliveryCarrier(models.Model):
 
                     ship_request = self.add_fedex_package(ship_request, total_bulk_weight, 1,
                                                           number=1,
-                                                          master_tracking_id=fedex_master_tracking_id,package_id=False)
+                                                          master_tracking_id=fedex_master_tracking_id)
                     if self.fedex_onerate:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['FEDEX_ONE_RATE']
                     if self.is_cod and order.fedex_bill_by_third_party_sale_order == False:
