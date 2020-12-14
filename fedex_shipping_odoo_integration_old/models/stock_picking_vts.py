@@ -1,4 +1,4 @@
-from odoo.exceptions import Warning,ValidationError, UserError
+from odoo.exceptions import Warning,ValidationError
 from odoo import models, fields, api, _
 from odoo.addons.fedex_shipping_odoo_integration.fedex.base_service import FedexError, FedexFailure
 from odoo.addons.fedex_shipping_odoo_integration.fedex.tools.conversion import basic_sobject_to_dict
@@ -6,26 +6,27 @@ from odoo.addons.fedex_shipping_odoo_integration.fedex.services.rate_service imp
 from odoo.addons.fedex_shipping_odoo_integration.fedex.services.ship_service import FedexDeleteShipmentRequest
 from odoo.addons.fedex_shipping_odoo_integration.fedex.services.ship_service import FedexProcessShipmentRequest
 from odoo.addons.fedex_shipping_odoo_integration.fedex.services.address_validation_service import FedexAddressValidationRequest
-import logging
 
-_logger = logging.getLogger(__name__)
+class FedExPackageDetails(models.Model):
+    _inherit = "stock.picking"
 
-class SaleOrder(models.Model):
-    _inherit = "sale.order"
+    def create_return_order(self):
+        for picking in self:
+            with_context = self._context.copy()
+            with_context.update({'use_fedex_return': True})
+            res = self.carrier_id.with_context(with_context).fedex_shipping_provider_send_shipping(picking)
+            picking.write({'carrier_tracking_ref': res[0].get('tracking_number', ''),
+                           'carrier_price': res[0].get('exact_price', 0.0)})
 
-    fedex_third_party_account_number_sale_order = fields.Char(copy=False, string='FexEx Third-Party Account Number',
-                                                              help="Please Enter the Third Party account number ")
-    fedex_bill_by_third_party_sale_order = fields.Boolean(string="FedEx Third Party Payment", copy=False, default=False,
-                                                          help="when this fields is true,then we can visible fedex_third party account number")
+    # @api.multi
+    # def button_validate(self):
+    #     self.ensure_one()
+    #     for move_id in self.move_ids_without_package:
+    #         if move_id.picking_id.picking_type_code == 'outgoing':
+    #             move_id.quantity_done=move_id.reserved_availability
+    #     return super(FedExPackageDetails, self).button_validate()
 
-    @api.depends('order_line')
-    def _compute_bulk_weight(self):
-        weight = 0.0
-        for line in self.order_line:
-                weight += line.product_uom_id._compute_quantity(line.product_uom_qty, line.product_id.uom_id) * line.product_id.weight
-        self.weight_bulk = weight
-    
-    
+
     def manage_fedex_packages(self, rate_request, package_data, number=1,total_weight=0.0):
         package_weight = rate_request.create_wsdl_object_of_type('Weight')
         package_weight.Value = total_weight
@@ -44,23 +45,17 @@ class SaleOrder(models.Model):
         return package
 
     def fedex_shipping_provider_get_shipping_charges(self):
-        res=self.get_fedex_rate()
-        self.set_delivery_line()
-        return res
+        return self.get_fedex_rate()
 
 
     def get_fedex_rate(self):
         self.ensure_one()
-        immediate_payment_term_id = self.env.ref('account.account_payment_term_immediate').id
+        total_weight=0.0
         if self.carrier_id.delivery_type=='fedex_shipping_provider':
             shipping_charge = 0.0
-            weight = 0.0
-            for line in self.order_line:
-                weight += line.product_uom._compute_quantity(line.product_uom_qty, line.product_id.uom_id) * line.product_id.weight
-            
-            _logger.info('Product Weight : %s ' % (weight))
+
             # Shipper and Recipient Address
-            shipper_address = self.warehouse_id.partner_id
+            shipper_address =  self.sale_id if self.sale_id and self.sale_id.is_dropship else self.picking_type_id.warehouse_id.partner_id
             recipient_address = self.partner_id
             shipping_credential = self.carrier_id.company_id
 
@@ -77,19 +72,13 @@ class SaleOrder(models.Model):
                 rate_request = FedexRateServiceRequest(FedexConfig)
                 package_type = self.carrier_id.fedex_default_product_packaging_id.shipper_package_code
                 rate_request = self.carrier_id.prepare_shipment_request(shipping_credential, rate_request, shipper_address,
-                                                             recipient_address, package_type,self)
+                                                             recipient_address, package_type,self.sale_id)
                 rate_request.RequestedShipment.PreferredCurrency = self.company_id and self.company_id.currency_id and self.company_id.currency_id.name
-                
-                _logger.info('Fedex Package Details : %s ' % (self.custom_package_ids))
+
                 if not self.custom_package_ids:
-                    
-                    total_weight=self.company_id.weight_convertion(self.carrier_id and self.carrier_id.fedex_weight_uom,weight)
+                    total_weight=self.company_id.weight_convertion(self.carrier_id and self.carrier_id.fedex_weight_uom,self.weight)
                     package = self.carrier_id.manage_fedex_packages(rate_request, total_weight)
                     rate_request.add_package(package)
-                
-                    _logger.info('Total Weight : %s ' % (total_weight))
-                    _logger.info('Package : %s ' % (package))
-                
 
                 for sequence, package in enumerate(self.custom_package_ids, start=1):
                     total_weight = self.company_id.weight_convertion(
@@ -118,10 +107,14 @@ class SaleOrder(models.Model):
                                                                         limit=1)
                         if rate_currency:
                             shipping_charge = rate_currency.compute(float(shipping_charge), self.company_id and self.company_id.currency_id and self.company_id.currency_id)
-            self.delivery_price=float(shipping_charge) + self.carrier_id.add_custom_margin
-            self.delivery_rating_success = True
-            if self.payment_term_id and self.payment_term_id.id == immediate_payment_term_id:
-                self.set_delivery_line()
+            self.carrier_price=float(shipping_charge) + self.carrier_id.add_custom_margin
+            immediate_payment_term_id = self.env.ref('account.account_payment_term_immediate').id            
+            if self.payment_term_id and self.payment_term_id.id != immediate_payment_term_id:
+                self.sale_id and self.sale_id.sudo().action_unlock()
+                line = self.env['sale.order.line'].search([('is_delivery','=',True),('order_id','=',self.sale_id.id)],limit=1)
+                if line:
+                    line.price_unit = float(shipping_charge) + self.carrier_id.add_custom_margin
+            self.sale_id and self.sale_id.sudo().action_done()
         return {
             'effect': {
                 'fadeout': 'slow',
@@ -130,4 +123,8 @@ class SaleOrder(models.Model):
                 'type': 'rainbow_man',
             }
         }
-    
+
+
+class FedExPackageDetails(models.Model):
+    _inherit = "stock.quant.package"
+    custom_tracking_number = fields.Char(string = "FedEx Tracking Number", help = "If tracking number available print it in this field.")

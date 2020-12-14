@@ -424,7 +424,6 @@ class DeliveryCarrier(models.Model):
         res = []
         fedex_master_tracking_id = False
         for picking in pickings:
-            picking.get_fedex_rate()
             exact_price = 0.0
             traking_number = []
             attachments = []
@@ -453,7 +452,7 @@ class DeliveryCarrier(models.Model):
                 ship_request = FedexProcessShipmentRequest(FedexConfig)
 
                 # checking for Identical packages in same shipment.
-                # picking.check_packages_are_identical()
+                picking.check_packages_are_identical()
 
                 package_type = self.fedex_default_product_packaging_id.shipper_package_code
                 ship_request = self.prepare_shipment_request(shipping_credential, ship_request, shipper_address,
@@ -490,7 +489,7 @@ class DeliveryCarrier(models.Model):
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['FEDEX_ONE_RATE']
                     if self.is_cod and picking.sale_id and picking.sale_id.fedex_third_party_account_number_sale_order == False:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['COD']
-                        cod_vals = {'Amount': picking.sale_id.amount_total + picking.carrier_price,
+                        cod_vals = {'Amount': picking.sale_id.amount_total,
                                     'Currency': picking.sale_id.company_id.currency_id.name}
                         ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = cod_vals
                         ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType.value = "%s" % (
@@ -560,7 +559,7 @@ class DeliveryCarrier(models.Model):
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['FEDEX_ONE_RATE']
                     if self.is_cod and order.fedex_bill_by_third_party_sale_order == False:
                         ship_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['COD']
-                        cod_vals = {'Amount': picking.sale_id.amount_total + picking.carrier_price,
+                        cod_vals = {'Amount': picking.sale_id.amount_total,
                                     'Currency': picking.sale_id.company_id.currency_id.name}
                         ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = cod_vals
                         ship_request.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType.value = "%s" % (

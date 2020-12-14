@@ -33,6 +33,7 @@ class FedExPackageDetails(models.Model):
         package_weight.Units = self.carrier_id.fedex_weight_uom
         package = rate_request.create_wsdl_object_of_type('RequestedPackageLineItem')
         package.Weight = package_weight
+        package_data = package_data.packaging_id
         if self.carrier_id.fedex_default_product_packaging_id.shipper_package_code == 'YOUR_PACKAGING':
             package.Dimensions.Length = package_data and package_data.length
             package.Dimensions.Width = package_data and package_data.width
@@ -55,7 +56,7 @@ class FedExPackageDetails(models.Model):
             shipping_charge = 0.0
 
             # Shipper and Recipient Address
-            shipper_address =  self.sale_id if self.sale_id and self.sale_id.is_dropship else self.picking_type_id.warehouse_id.partner_id
+            shipper_address = self.picking_type_id.warehouse_id.partner_id
             recipient_address = self.partner_id
             shipping_credential = self.carrier_id.company_id
 
@@ -75,12 +76,12 @@ class FedExPackageDetails(models.Model):
                                                              recipient_address, package_type,self.sale_id)
                 rate_request.RequestedShipment.PreferredCurrency = self.company_id and self.company_id.currency_id and self.company_id.currency_id.name
 
-                if not self.custom_package_ids:
+                if not self.package_ids:
                     total_weight=self.company_id.weight_convertion(self.carrier_id and self.carrier_id.fedex_weight_uom,self.weight)
                     package = self.carrier_id.manage_fedex_packages(rate_request, total_weight)
                     rate_request.add_package(package)
 
-                for sequence, package in enumerate(self.custom_package_ids, start=1):
+                for sequence, package in enumerate(self.package_ids, start=1):
                     total_weight = self.company_id.weight_convertion(
                         self.carrier_id and self.carrier_id.fedex_weight_uom, package.shipping_weight)
                     package = self.manage_fedex_packages(rate_request, package, sequence,total_weight)
@@ -88,6 +89,24 @@ class FedExPackageDetails(models.Model):
 
                 if self.carrier_id.fedex_onerate:
                     rate_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['FEDEX_ONE_RATE']
+                if self.carrier_id.is_cod and self.sale_id and self.sale_id.fedex_third_party_account_number_sale_order == False:
+                    rate_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['COD']
+                    cod_vals = {'Amount': self.sale_id.amount_total + self.carrier_price,
+                                'Currency': self.sale_id.company_id.currency_id.name}
+                    rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = cod_vals
+                    rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType.value = "%s" % (
+                        self.carrier_id.fedex_collection_type)
+
+                    rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Contact.PersonName = shipper_address.name if not shipper_address.is_company else ''
+                    rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Contact.CompanyName = shipper_address.name if shipper_address.is_company else ''
+                    rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Contact.PhoneNumber = shipper_address.phone
+                    rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Address.StreetLines = shipper_address.street and shipper_address.street2 and [
+                        shipper_address.street, shipper_address.street2] or [shipper_address.street]
+                    rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Address.City = shipper_address.city or None
+                    rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Address.StateOrProvinceCode = shipper_address.state_id and shipper_address.state_id.code or None
+                    rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Address.PostalCode = shipper_address.zip
+                    rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodRecipient.Address.CountryCode = shipper_address.country_id.code
+
                 rate_request.send_request()
             except FedexError as ERROR:
                 raise Warning(_("Request Data Is Not Correct! %s "%(ERROR.value)))
@@ -108,13 +127,6 @@ class FedExPackageDetails(models.Model):
                         if rate_currency:
                             shipping_charge = rate_currency.compute(float(shipping_charge), self.company_id and self.company_id.currency_id and self.company_id.currency_id)
             self.carrier_price=float(shipping_charge) + self.carrier_id.add_custom_margin
-            immediate_payment_term_id = self.env.ref('account.account_payment_term_immediate').id            
-            if self.payment_term_id and self.payment_term_id.id != immediate_payment_term_id:
-                self.sale_id and self.sale_id.sudo().action_unlock()
-                line = self.env['sale.order.line'].search([('is_delivery','=',True),('order_id','=',self.sale_id.id)],limit=1)
-                if line:
-                    line.price_unit = float(shipping_charge) + self.carrier_id.add_custom_margin
-            self.sale_id and self.sale_id.sudo().action_done()
         return {
             'effect': {
                 'fadeout': 'slow',
