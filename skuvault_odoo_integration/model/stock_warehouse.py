@@ -179,6 +179,8 @@ class StockWarehouse(models.Model):
             for items_data in items_list:
                 product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
                 if not product_id:
+                    self.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, self,
+                                                      False,"Product Not Found : {}".format(items_data.get('Sku')))
                     continue
                 # create inventory line
                 available_qty = items_data.get('AvailableQuantity')
