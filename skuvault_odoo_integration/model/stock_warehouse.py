@@ -5,7 +5,7 @@ from odoo import fields, models, _
 import requests
 import logging
 import json
-
+import time
 _logger = logging.getLogger(__name__)
 
 
@@ -26,9 +26,10 @@ class StockWarehouse(models.Model):
     use_skuvault_warehouse_management = fields.Boolean(copy=False, string="Are You Using Skuvault?",
                                                        help="If use SKUVAULT warehouse management than value set TRUE.",
                                                        default=False)
-    
-    def create_skuvault_operation_detail(self, skuvault_operation, operation_type, req_data, response_data, operation_id,
-                                            warehouse_id=False, fault_operation=False, process_message=False):
+
+    def create_skuvault_operation_detail(self, skuvault_operation, operation_type, req_data, response_data,
+                                         operation_id,
+                                         warehouse_id=False, fault_operation=False, process_message=False):
         skuvault_operation_details_obj = self.env['skuvault.operation.details']
         vals = {
             'skuvault_operation': skuvault_operation,
@@ -82,11 +83,66 @@ class StockWarehouse(models.Model):
         except Exception as error:
             raise ValidationError(_(error))
 
+    def get_inventory_by_location(self):
+        if not self.skuvault_tenantToken and self.skuvault_UserToken:
+            raise ValidationError(_("Please generate authentication code"))
+        api_url = "%s/api/inventory/getInventoryByLocation" % (self.skuvault_api_url)
+        operation_id = self.env['skuvault.operation'].create(
+            {'skuvault_operation': 'product', 'skuvault_operation_type': 'import', 'warehouse_id': self.id,
+             'company_id': self.env.user.company_id.id, 'skuvault_message': 'Processing...'})
+        total_pages = 100
+        for pageNumber in total_pages:
+            data = {
+                "TenantToken": "{}".format(self.skuvault_tenantToken),
+                "UserToken": "{}".format(self.skuvault_UserToken),
+                "pagesize": 10000,
+                "PageNumber": pageNumber
+            }
+        try:
+            response_data = self.skuvault_api_calling(api_url, data)
+            items_list = response_data.get('Items')
+            if len(items_list) == 0:
+                raise ValidationError("Product Not Found in the Response")
+            _logger.info(">>>> Product data {}".format(items_list))
+            for items_data in items_list:
+                product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
+                available_qty = items_data.get('AvailableQuantity')
+                if product_id:
+                    quant_id = self.env['stock.quant'].with_user(1).search(
+                        [('product_id', '=', product_id.id), ('location_id', '=', self.lot_stock_id.id)], limit=1)
+                    if not quant_id:
+                        vals = {'product_tmpl_id': product_id.product_tmpl_id.id, 'location_id': self.lot_stock_id.id,
+                                'inventory_quantity': available_qty, 'product_id': product_id.id,
+                                'quantity': available_qty}
+                        self.env['stock.quant'].with_user(1).create(vals)
+                        process_message = ">>> Stock Quant Created Product Name : {0} and Quantity: {1} ".format(
+                            product_id.name, available_qty)
+                        _logger.info(process_message)
+                        self.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, self,
+                                                              False, process_message)
+                        self._cr.commit()
+                    else:
+                        # total_available_quantity = available_qty + quant_id.reserved_quantity
+                        if quant_id.quantity != available_qty:
+                            old_qty = quant_id.quantity
+                            quant_id.sudo().write({'inventory_quantity': available_qty, 'quantity': available_qty})
+                            process_message = ">>> Stock Quant Updated Product Name : {0} and OLD Quantity: {1} and New Qty : {2}".format(
+                                product_id.name, old_qty, available_qty)
+                            _logger.info(process_message)
+                            self.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id,
+                                                                  self, False, process_message)
+                            self._cr.commit()
+        except Exception as error:
+            _logger.info(error)
+            self.create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, True, error)
+
     def get_item_quantities(self, afterdate=False, beforedate=False):
         if not self.skuvault_tenantToken and self.skuvault_UserToken:
             raise ValidationError(_("Please generate authentication code"))
         api_url = "%s/api/inventory/getItemQuantities" % (self.skuvault_api_url)
-        operation_id = self.env['skuvault.operation'].create({'skuvault_operation':'product','skuvault_operation_type':'import','warehouse_id':self.id,'company_id':self.env.user.company_id.id,'skuvault_message':'Processing...'})
+        operation_id = self.env['skuvault.operation'].create(
+            {'skuvault_operation': 'product', 'skuvault_operation_type': 'import', 'warehouse_id': self.id,
+             'company_id': self.env.user.company_id.id, 'skuvault_message': 'Processing...'})
         if afterdate and beforedate:
             data = {
                 "ModifiedAfterDateTimeUtc": "{}".format(afterdate),
@@ -109,33 +165,38 @@ class StockWarehouse(models.Model):
             if len(items_list) == 0:
                 raise ValidationError("Product Not Found in the Response")
             _logger.info(">>>> Product data {}".format(items_list))
+            inventory_name = "SKuvault_Inventory_%s" % (str(datetime.now().date()))
+            inventory_vals = {
+                'name': inventory_name,
+                'location_ids': [(6, 0, self.lot_stock_id.ids)],
+                'date': time.strftime("%Y-%m-%d %H:%M:%S"),
+                'company_id': self.company_id.id,
+                'prefill_counted_quantity': 'zero'
+            }
+            inventory_id = self.env['stock.inventory'].sudo().create(inventory_vals)
+            _logger.info("Inventory Created : {}".format(inventory_id))
+            inventroy_line_obj = self.env['stock.inventory.line']
             for items_data in items_list:
                 product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
+                # create inventory line
                 available_qty = items_data.get('AvailableQuantity')
-                if product_id:
-                    quant_id = self.env['stock.quant'].with_user(1).search(
-                        [('product_id', '=', product_id.id), ('location_id', '=', self.lot_stock_id.id)], limit=1)
-                    if not quant_id:
-                        vals = {'product_tmpl_id': product_id.product_tmpl_id.id, 'location_id': self.lot_stock_id.id,
-                                'inventory_quantity': available_qty, 'product_id': product_id.id,
-                                'quantity': available_qty}
-                        self.env['stock.quant'].with_user(1).create(vals)
-                        process_message = ">>> Stock Quant Created Product Name : {0} and Quantity: {1} ".format(product_id.name,available_qty)
-                        _logger.info(process_message)
-                        self.create_skuvault_operation_detail('product','import',data,items_data,operation_id,self,False,process_message)
-                        self._cr.commit()
-                    else:
-                        #total_available_quantity = available_qty + quant_id.reserved_quantity
-                        if quant_id.quantity != available_qty:
-                            old_qty = quant_id.quantity
-                            quant_id.sudo().write({'inventory_quantity': available_qty, 'quantity': available_qty})
-                            process_message = ">>> Stock Quant Updated Product Name : {0} and OLD Quantity: {1} and New Qty : {2}".format(product_id.name,old_qty,available_qty)
-                            _logger.info(process_message)
-                            self.create_skuvault_operation_detail('product','import',data,items_data,operation_id,self,False,process_message)
-                            self._cr.commit()
+                inventroy_line_obj.sudo().create({'product_id': product_id.id,
+                                                  'inventory_id': inventory_id and inventory_id.id,
+                                                  'location_id': self.lot_stock_id.id,
+                                                  'product_qty': items_data.get('AvailableQuantity', 0.0),
+                                                  'product_uom_id': product_id.uom_id and product_id.uom_id.id,
+                                                  'company_id': self.env.user.company_id.id
+                                                  })
+                process_message = ">>> Inventory Line Created Product Name : {0} and Quantity: {1} ".format(
+                    product_id.name, available_qty)
+                _logger.info(process_message)
+                self.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, self,
+                                                      False, process_message)
+                
+            operation_id.skuvault_message = "Inventory Update Process Completed Between {0} To {1}".format(beforedate,afterdate)
         except Exception as error:
             _logger.info(error)
-            self.create_skuvault_operation_detail('product','import',False,False,operation_id,self,True,error)
+            self.create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, True, error)
 
     def skuvault_inventory_crone(self):
         for current_record_id in self.search([]):
@@ -158,17 +219,21 @@ class StockWarehouse(models.Model):
         :return: this method return product from skuvault
         """
         api_url = "%s/api/products/getProducts" % (self.skuvault_api_url)
-        operation_id = self.env['skuvault.operation'].create({'skuvault_operation':'product','skuvault_operation_type':'import','warehouse_id':self.id,'company_id':self.env.user.company_id.id,'skuvault_message':'Processing...'})
+        operation_id = self.env['skuvault.operation'].create(
+            {'skuvault_operation': 'product', 'skuvault_operation_type': 'import', 'warehouse_id': self.id,
+             'company_id': self.env.user.company_id.id, 'skuvault_message': 'Processing...'})
         try:
             headers = {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             }
-            before_date = datetime.now() + relativedelta(hours=10)
-            after_date = before_date - relativedelta(days=4)
+            before_date = datetime.now() + relativedelta(hours=4) if not self.skuvault_modify_before_date else self.skuvault_modify_before_date
+            after_date = before_date - relativedelta(days=4) if not self.skuvault_modify_after_date else self.skuvault_modify_after_date
             request_data = {
-                "ModifiedAfterDateTimeUtc": "{}".format(after_date),#self.skuvault_modify_after_date.strftime("%Y-%m-%dT%H:%M:%S")
-                "ModifiedBeforeDateTimeUtc": "{}".format(before_date), #self.skuvault_modify_before_date.strftime("%Y-%m-%dT%H:%M:%S")
+                "ModifiedAfterDateTimeUtc": "{}".format(after_date),
+                # self.skuvault_modify_after_date.strftime("%Y-%m-%dT%H:%M:%S")
+                "ModifiedBeforeDateTimeUtc": "{}".format(before_date),
+                # self.skuvault_modify_before_date.strftime("%Y-%m-%dT%H:%M:%S")
                 "TenantToken": "{}".format(self.skuvault_tenantToken),
                 "UserToken": "{}".format(self.skuvault_UserToken)
             }
@@ -178,44 +243,52 @@ class StockWarehouse(models.Model):
                 response_data = response_data.json()
                 if response_data.get('Products'):
                     for product_data in response_data.get('Products'):
-                        product_id = self.env['product.template'].sudo().search(
-                            [('default_code', '=', '{}'.format(product_data.get('Sku')))])
+                        product_id = self.env['product.template'].sudo().search([('default_code', '=',product_data.get('Sku'))])
+                        vals = {
+                            'description': product_data.get('Description'),
+                            'default_code':product_data.get('Sku'),
+                            'name':product_data.get('PartNumber','') or product_data.get('Sku'),
+                            'lst_price': product_data.get('SalePrice'),
+                            'weight': product_data.get('WeightValue'),
+                            'standard_price': product_data.get('Cost')}
+                        for attribute_data in product_data.get('Attributes'):
+                            if attribute_data.get('Name') == 'Category':
+                                vals.update({'x_studio_category': attribute_data.get('Value')})
+                            elif attribute_data.get('Name') == 'Alt Manufacturer':
+                                vals.update({'x_studio_manufacturer': attribute_data.get('Value')})
+                            elif attribute_data.get('Name') == 'Alt Number':
+                                vals.update({'x_studio_alternate_number': attribute_data.get('Value')})
+                            elif attribute_data.get('Name') == 'Date Code':
+                                vals.update({'x_studio_date_code_1': attribute_data.get('Value')})
+                            elif attribute_data.get('Name') == 'Origin':
+                                vals.update({'x_studio_origin_code': attribute_data.get('Value')})
+                            elif attribute_data.get('Name') == 'Condition':
+                                vals.update({'x_studio_condition_1': attribute_data.get('Value')})
+                            elif attribute_data.get('Name') == 'Package':
+                                vals.update({'x_studio_package': attribute_data.get('Value')})
+                            elif attribute_data.get('Name') == 'RoHS':
+                                vals.update({'x_studio_rohs': attribute_data.get('Value')})
                         if product_id:
-                            product_id.write({
-                                            'description':product_data.get('Description'),
-                                            'lst_price':product_data.get('SalePrice'),
-                                            'weight':product_data.get('WeightValue'),
-                                            'standard_price':product_data.get('Cost')})
-                            for attribute_data in product_data.get('Attributes'):
-                                if attribute_data.get('Name') == 'Category':
-                                    product_id.write({'x_studio_category': attribute_data.get('Value')})
-                                elif attribute_data.get('Name') == 'Alt Manufacturer':
-                                    product_id.write({'x_studio_manufacturer': attribute_data.get('Value')})
-                                elif attribute_data.get('Name') == 'Alt Number':
-                                    product_id.write({'x_studio_alternate_number': attribute_data.get('Value')})
-                                elif attribute_data.get('Name') == 'Date Code':
-                                    product_id.write({'x_studio_date_code_1': attribute_data.get('Value')})
-                                elif attribute_data.get('Name') == 'Origin':
-                                    product_id.write({'x_studio_origin_code': attribute_data.get('Value')})
-                                elif attribute_data.get('Name') == 'Condition':
-                                    product_id.write({'x_studio_condition_1': attribute_data.get('Value')})
-                                elif attribute_data.get('Name') == 'Package':
-                                    product_id.write({'x_studio_package': attribute_data.get('Value')})
-                                elif attribute_data.get('Name') == 'RoHS':
-                                    product_id.write({'x_studio_rohs': attribute_data.get('Value')})
-                                process_message = "Product Updated {0}".format(product_id)
-                            self._cr.commit()
+                            product_id.write(vals)
+                            process_message = "Product Updated {0}".format(product_id.name)
                         else:
-                            process_message = "Product Not Found"
-                        self.create_skuvault_operation_detail('product','import',request_data,product_data,operation_id,self,False,process_message)
+                            product_id = self.env['product.template'].create(vals)
+                            process_message = "Product Created : {0}".format(product_id.name)
+                        self.create_skuvault_operation_detail('product', 'import', request_data, product_data,
+                                                              operation_id, self, False, process_message)
                         self._cr.commit()
                 else:
                     _logger.info('>>>>> Product not found in response ')
             else:
                 process_message = ">>>>> get some error from{}".format(response_data.text)
                 _logger.info(process_message)
-                self.create_skuvault_operation_detail('product','import',False,False,operation_id,self,False,process_message)
+                self.create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, False,
+                                                      process_message)
+            operation_id.sudo().write({'skuvault_message' :"Product Imported Sucessfully Between {0} TO {1}".format(before_date,after_date)})
+            self.skuvault_modify_before_date = False
+            self.self.skuvault_modify_after_date = False
         except Exception as error:
             _logger.info(error)
             process_message = "{}".format(error)
-            self.create_skuvault_operation_detail('product','import',False,False,operation_id,self,False,process_message)
+            self.create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, False,
+                                                  process_message)
