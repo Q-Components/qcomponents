@@ -178,6 +178,8 @@ class StockWarehouse(models.Model):
             inventroy_line_obj = self.env['stock.inventory.line']
             for items_data in items_list:
                 product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
+                if not product_id:
+                    continue
                 # create inventory line
                 available_qty = items_data.get('AvailableQuantity')
                 inventroy_line_obj.sudo().create({'product_id': product_id.id,
