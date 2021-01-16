@@ -195,6 +195,8 @@ class StockWarehouse(models.Model):
                 self.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, self,
                                                       False, process_message)
                 
+            inventory_id.sudo().action_start()
+            inventory_id.sudo().action_validate()
             operation_id.skuvault_message = "Inventory Update Process Completed Between {0} To {1}".format(beforedate,afterdate)
         except Exception as error:
             _logger.info(error)
