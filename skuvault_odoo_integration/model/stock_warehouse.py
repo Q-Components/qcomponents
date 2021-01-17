@@ -183,6 +183,9 @@ class StockWarehouse(models.Model):
                                                       False,"Product Not Found : {}".format(items_data.get('Sku')))
                     continue
                 # create inventory line
+                quant_ids = self.env['stock.quant'].sudo().search([('product_id','=',product_id.id),('location_id','!=',8),('location_id.usage','=','internal')])
+                if quant_ids:
+                    quant_ids.sudo().unlink()
                 available_qty = items_data.get('AvailableQuantity')
                 inventroy_line_obj.sudo().create({'product_id': product_id.id,
                                                   'inventory_id': inventory_id and inventory_id.id,
