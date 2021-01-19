@@ -199,7 +199,7 @@ class StockWarehouse(models.Model):
                             product_response_data = response_data.json()
                             _logger.info(">>> get successfully response from {}".format(product_response_data))
                             if product_response_data.get('Products'):
-                                for product_data in product_response_data.get('Products'):
+                                for product_data in product_response_data.get('Product'):
                                     product_tmpl_id = self.env['product.template'].sudo().search([('default_code', '=',product_data.get('Sku'))])
                                     vals = {
                                         'description': product_data.get('Description'),
