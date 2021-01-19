@@ -251,7 +251,7 @@ class StockWarehouse(models.Model):
                 inventroy_line_obj.sudo().create({'product_id': product_id.id,
                                                   'inventory_id': inventory_id and inventory_id.id,
                                                   'location_id': self.lot_stock_id.id,
-                                                  'product_qty': items_data.get('AvailableQuantity', 0.0),
+                                                  'product_qty': items_data.get('AvailableQuantity', 0.0) if items_data.get('AvailableQuantity', 0.0) > 0.0 else 0.0,
                                                   'product_uom_id': product_id.uom_id and product_id.uom_id.id,
                                                   'company_id': self.env.user.company_id.id
                                                   })
