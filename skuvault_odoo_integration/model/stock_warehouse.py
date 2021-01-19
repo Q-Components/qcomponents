@@ -179,7 +179,7 @@ class StockWarehouse(models.Model):
             for items_data in items_list:
                 product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
                 if not product_id:
-                    _logger.info("Product Not Found")
+                    _logger.info("Product Not Found : {0}".format(item_data.get('Sku')))
                     product_api_url = "%s/api/products/getProducts" % (self.skuvault_api_url)
                     try:
                         headers = {
@@ -199,7 +199,7 @@ class StockWarehouse(models.Model):
                             _logger.info(">>> get successfully response from {}".format(product_response_data))
                             if product_response_data.get('Products'):
                                 for product_data in product_response_data.get('Products'):
-                                    #product_tmpl_id = self.env['product.template'].sudo().search([('default_code', '=',product_data.get('Sku'))])
+                                    product_tmpl_id = self.env['product.template'].sudo().search([('default_code', '=',product_data.get('Sku'))])
                                     vals = {
                                         'description': product_data.get('Description'),
                                         'default_code':product_data.get('Sku'),
@@ -224,6 +224,7 @@ class StockWarehouse(models.Model):
                                             vals.update({'x_studio_package': attribute_data.get('Value')})
                                         elif attribute_data.get('Name') == 'RoHS':
                                             vals.update({'x_studio_rohs': attribute_data.get('Value')})
+                                    if not product_tmpl_id:
                                         product_tmpl_id = self.env['product.template'].create(vals)
                                         product_id = product_tmpl_id.product_variant_id
                                         process_message = "Product Created : {0}".format(product_id.name)
