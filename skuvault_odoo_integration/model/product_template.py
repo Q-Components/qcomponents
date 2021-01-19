@@ -117,7 +117,7 @@ class SkuvaultPorductTemplate(models.Model):
             "ProductCodes":[self.default_code]
         }
         try:
-            response_data = self.skuvault_api_calling(api_url, data)
+            response_data = warehouse_id.skuvault_api_calling(api_url, data)
             items_list = response_data.get('Items')
             if len(items_list) == 0:
                 raise ValidationError("Product Not Found in the Response")
