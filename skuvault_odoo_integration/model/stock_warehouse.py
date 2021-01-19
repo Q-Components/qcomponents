@@ -189,10 +189,11 @@ class StockWarehouse(models.Model):
                         before_date = datetime.now() + relativedelta(hours=4) if not self.skuvault_modify_before_date else self.skuvault_modify_before_date
                         after_date = before_date - relativedelta(days=4) if not self.skuvault_modify_after_date else self.skuvault_modify_after_date
                         product_request_data = {
-                            "ProductCode":"{}".format(items_data.get('Code')),
+                            "ProductCode":items_data.get('Code'),
                             "TenantToken": "{}".format(self.skuvault_tenantToken),
                             "UserToken": "{}".format(self.skuvault_UserToken)
                         }
+                        _logger.info("{0}{1}".format(product_api_url,product_request_data))
                         response_data = requests.post(url=product_api_url, data=json.dumps(product_request_data), headers=headers)
                         if response_data.status_code in [200, 201]:
                             product_response_data = response_data.json()
