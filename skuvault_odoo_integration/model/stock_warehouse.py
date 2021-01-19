@@ -179,6 +179,7 @@ class StockWarehouse(models.Model):
             for items_data in items_list:
                 product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
                 if not product_id:
+                    _logger.info("Product Not Found")
                     product_api_url = "%s/api/products/getProducts" % (self.skuvault_api_url)
                     try:
                         headers = {
@@ -198,7 +199,7 @@ class StockWarehouse(models.Model):
                             _logger.info(">>> get successfully response from {}".format(product_response_data))
                             if product_response_data.get('Products'):
                                 for product_data in product_response_data.get('Products'):
-                                    product_id = self.env['product.template'].sudo().search([('default_code', '=',product_data.get('Sku'))])
+                                    product_tmpl_id = self.env['product.template'].sudo().search([('default_code', '=',product_data.get('Sku'))])
                                     vals = {
                                         'description': product_data.get('Description'),
                                         'default_code':product_data.get('Sku'),
@@ -223,20 +224,21 @@ class StockWarehouse(models.Model):
                                             vals.update({'x_studio_package': attribute_data.get('Value')})
                                         elif attribute_data.get('Name') == 'RoHS':
                                             vals.update({'x_studio_rohs': attribute_data.get('Value')})
-                                        product_id = self.env['product.template'].create(vals)
+                                        product_tmpl_id = self.env['product.template'].create(vals)
+                                        product_id = product_tmpl_id.product_variant_id
                                         process_message = "Product Created : {0}".format(product_id.name)
-                                    self.create_skuvault_operation_detail('product', 'import', product_request_data, product_data,
+                                    self.sudo().create_skuvault_operation_detail('product', 'import', product_request_data, product_data,
                                                                           operation_id, self, False, process_message)
                                     self._cr.commit()
                         else:
                             process_message = ">>>>> get some error from{}".format(response_data.text)
                             _logger.info(process_message)
-                            self.create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, False,
+                            self.sudo().create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, False,
                                                                   process_message)
                     except Exception as error:
                         _logger.info(error)
                         process_message = "{}".format(error)
-                        self.create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, False,
+                        self.sudo().create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, False,
                                                               process_message)
                 # create inventory line
                 quant_ids = self.env['stock.quant'].sudo().search([('product_id','=',product_id.id),('location_id','!=',8),('location_id.usage','=','internal')])
