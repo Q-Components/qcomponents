@@ -13,6 +13,7 @@
         'view/stock_warehouse.xml',
         'view/skuvault_operation_details.xml',
         'view/product_template.xml',
+        'view/stock_picking.xml',
         'data/skuvault_inventory_crone.xml',
         'data/skuvault_import_product_crone.xml'
         #  'views/sale_order.xml',

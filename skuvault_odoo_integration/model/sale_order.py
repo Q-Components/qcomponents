@@ -92,6 +92,7 @@ class SkuvaultSaleOrder(models.Model):
             order_id = response_data.get('OrderId')
             if status == "OK":
                 _logger.info("Successfully export the order")
+                self.message_post(body=_('Order Exported to Skuvault %s' % (order_id)))
                 self.skuvault_order_id = order_id
             else:
                 raise ValidationError(_('error to export order \n {}').format(response_data))
