@@ -180,7 +180,7 @@ class StockWarehouse(models.Model):
                 product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
                 if not product_id:
                     _logger.info("Product Not Found : {0}".format(items_data.get('Sku')))
-                    product_api_url = "%s/api/products/getProducts" % (self.skuvault_api_url)
+                    product_api_url = "%s/api/products/getProduct" % (self.skuvault_api_url)
                     try:
                         headers = {
                             'Content-Type': 'application/json',
