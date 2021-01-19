@@ -179,7 +179,7 @@ class StockWarehouse(models.Model):
             for items_data in items_list:
                 product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
                 if not product_id:
-                    _logger.info("Product Not Found : {0}".format(item_data.get('Sku')))
+                    _logger.info("Product Not Found : {0}".format(items_data.get('Sku')))
                     product_api_url = "%s/api/products/getProducts" % (self.skuvault_api_url)
                     try:
                         headers = {
