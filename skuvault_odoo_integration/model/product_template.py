@@ -136,7 +136,7 @@ class SkuvaultPorductTemplate(models.Model):
             for items_data in items_list:
                 product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
                 if not product_id:
-                    self.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, warehouse_id,
+                    warehouse_id.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, warehouse_id,
                                                       False,"Product Not Found : {}".format(items_data.get('Sku')))
                     continue
                 # create inventory line
@@ -154,7 +154,7 @@ class SkuvaultPorductTemplate(models.Model):
                 process_message = ">>> Inventory Line Created Product Name : {0} and Quantity: {1} ".format(
                     product_id.name, available_qty)
                 _logger.info(process_message)
-                self.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, warehouse_id,
+                warehouse_id.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, warehouse_id,
                                                       False, process_message)
                 
             inventory_id.sudo().action_start()
@@ -163,4 +163,4 @@ class SkuvaultPorductTemplate(models.Model):
             operation_id.skuvault_message = "Inventory Update Process Completed"
         except Exception as error:
             _logger.info(error)
-            self.create_skuvault_operation_detail('product', 'import', False, False, operation_id, warehouse_id, True, error)
+            warehouse_id.create_skuvault_operation_detail('product', 'import', False, False, operation_id, warehouse_id, True, error)
