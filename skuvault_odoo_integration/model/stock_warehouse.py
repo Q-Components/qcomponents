@@ -199,7 +199,7 @@ class StockWarehouse(models.Model):
                             _logger.info(">>> get successfully response from {}".format(product_response_data))
                             if product_response_data.get('Products'):
                                 for product_data in product_response_data.get('Products'):
-                                    product_tmpl_id = self.env['product.template'].sudo().search([('default_code', '=',product_data.get('Sku'))])
+                                    #product_tmpl_id = self.env['product.template'].sudo().search([('default_code', '=',product_data.get('Sku'))])
                                     vals = {
                                         'description': product_data.get('Description'),
                                         'default_code':product_data.get('Sku'),
