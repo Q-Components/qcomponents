@@ -111,56 +111,57 @@ class SkuvaultPorductTemplate(models.Model):
         operation_id = self.env['skuvault.operation'].create(
             {'skuvault_operation': 'product', 'skuvault_operation_type': 'import', 'warehouse_id': warehouse_id.id,
              'company_id': self.env.user.company_id.id, 'skuvault_message': 'Processing...'})
-        data = {
-            "TenantToken": "{}".format(warehouse_id.skuvault_tenantToken),
-            "UserToken": "{}".format(warehouse_id.skuvault_UserToken),
-            "ProductCodes":[self.default_code]
-        }
-        try:
-            response_data = warehouse_id.skuvault_api_calling(api_url, data)
-            items_list = response_data.get('Items')
-            if len(items_list) == 0:
-                raise ValidationError("Product Not Found in the Response")
-            _logger.info(">>>> Product data {}".format(items_list))
-            inventory_name = "SKuvault_Inventory_%s" % (str(datetime.now().date()))
-            inventory_vals = {
-                'name': inventory_name,
-                'location_ids': [(6, 0, warehouse_id.lot_stock_id.ids)],
-                'date': time.strftime("%Y-%m-%d %H:%M:%S"),
-                'company_id': warehouse_id.company_id.id,
-                'prefill_counted_quantity': 'zero'
+        for product in self:
+            data = {
+                "TenantToken": "{}".format(warehouse_id.skuvault_tenantToken),
+                "UserToken": "{}".format(warehouse_id.skuvault_UserToken),
+                "ProductCodes":[product.default_code]
             }
-            inventory_id = self.env['stock.inventory'].sudo().create(inventory_vals)
-            _logger.info("Inventory Created : {}".format(inventory_id))
-            inventroy_line_obj = self.env['stock.inventory.line']
-            for items_data in items_list:
-                product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
-                if not product_id:
+            try:
+                response_data = warehouse_id.skuvault_api_calling(api_url, data)
+                items_list = response_data.get('Items')
+                if len(items_list) == 0:
+                    raise ValidationError("Product Not Found in the Response")
+                _logger.info(">>>> Product data {}".format(items_list))
+                inventory_name = "SKuvault_Inventory_%s" % (str(datetime.now().date()))
+                inventory_vals = {
+                    'name': inventory_name,
+                    'location_ids': [(6, 0, warehouse_id.lot_stock_id.ids)],
+                    'date': time.strftime("%Y-%m-%d %H:%M:%S"),
+                    'company_id': warehouse_id.company_id.id,
+                    'prefill_counted_quantity': 'zero'
+                }
+                inventory_id = self.env['stock.inventory'].sudo().create(inventory_vals)
+                _logger.info("Inventory Created : {}".format(inventory_id))
+                inventroy_line_obj = self.env['stock.inventory.line']
+                for items_data in items_list:
+                    product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
+                    if not product_id:
+                        warehouse_id.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, warehouse_id,
+                                                          False,"Product Not Found : {}".format(items_data.get('Sku')))
+                        continue
+                    # create inventory line
+                    quant_ids = self.env['stock.quant'].sudo().search([('product_id','=',product_id.id),('location_id','!=',8),('location_id.usage','=','internal')])
+                    if quant_ids:
+                        quant_ids.sudo().unlink()
+                    available_qty = items_data.get('AvailableQuantity')
+                    inventroy_line_obj.sudo().create({'product_id': product_id.id,
+                                                      'inventory_id': inventory_id and inventory_id.id,
+                                                      'location_id': warehouse_id.lot_stock_id.id,
+                                                      'product_qty': items_data.get('AvailableQuantity', 0.0),
+                                                      'product_uom_id': product_id.uom_id and product_id.uom_id.id,
+                                                      'company_id': self.env.user.company_id.id
+                                                      })
+                    process_message = ">>> Inventory Line Created Product Name : {0} and Quantity: {1} ".format(
+                        product_id.name, available_qty)
+                    _logger.info(process_message)
                     warehouse_id.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, warehouse_id,
-                                                      False,"Product Not Found : {}".format(items_data.get('Sku')))
-                    continue
-                # create inventory line
-                quant_ids = self.env['stock.quant'].sudo().search([('product_id','=',product_id.id),('location_id','!=',8),('location_id.usage','=','internal')])
-                if quant_ids:
-                    quant_ids.sudo().unlink()
-                available_qty = items_data.get('AvailableQuantity')
-                inventroy_line_obj.sudo().create({'product_id': product_id.id,
-                                                  'inventory_id': inventory_id and inventory_id.id,
-                                                  'location_id': warehouse_id.lot_stock_id.id,
-                                                  'product_qty': items_data.get('AvailableQuantity', 0.0) if items_data.get('AvailableQuantity', 0.0) > 0.0 else 0.0,
-                                                  'product_uom_id': product_id.uom_id and product_id.uom_id.id,
-                                                  'company_id': self.env.user.company_id.id
-                                                  })
-                process_message = ">>> Inventory Line Created Product Name : {0} and Quantity: {1} ".format(
-                    product_id.name, available_qty)
-                _logger.info(process_message)
-                warehouse_id.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, warehouse_id,
-                                                      False, process_message)
-                
-            inventory_id.sudo().action_start()
-            inventory_id.sudo().action_validate()
-            self.message_post("Inventory Updated : {0}".format(available_qty))
-            operation_id.skuvault_message = "Inventory Update Process Completed"
-        except Exception as error:
-            _logger.info(error)
-            warehouse_id.create_skuvault_operation_detail('product', 'import', False, False, operation_id, warehouse_id, True, error)
+                                                          False, process_message)
+                    
+                inventory_id.sudo().action_start()
+                inventory_id.sudo().action_validate()
+                self.message_post("Inventory Updated : {0}".format(available_qty))
+                operation_id.skuvault_message = "Inventory Update Process Completed"
+            except Exception as error:
+                _logger.info(error)
+                warehouse_id.create_skuvault_operation_detail('product', 'import', False, False, operation_id, warehouse_id, True, error)
