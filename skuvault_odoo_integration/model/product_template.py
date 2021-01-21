@@ -126,7 +126,8 @@ class SkuvaultPorductTemplate(models.Model):
         data = {
             "TenantToken": "{}".format(warehouse_id.skuvault_tenantToken),
             "UserToken": "{}".format(warehouse_id.skuvault_UserToken),
-            "ProductCodes":list(self.mapped('default_code'))
+            "IsReturnByCodes": "False",
+            "ProductSKUs":list(self.mapped('default_code'))
         }
         try:
             _logger.info("{}".format(data))
