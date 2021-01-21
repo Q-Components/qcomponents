@@ -128,6 +128,7 @@ class SkuvaultPorductTemplate(models.Model):
             "UserToken": "{}".format(warehouse_id.skuvault_UserToken),
             "ProductCodes":list(self.mapped('default_code'))
         }
+	_logger.info("{}".format(data))
         try:
             response_data = warehouse_id.skuvault_api_calling(get_inventory_by_location_url, data)
             inventory_location_list = response_data.get('Items')
@@ -140,7 +141,7 @@ class SkuvaultPorductTemplate(models.Model):
                     _logger.info(">> Location Code : {}".format(location_code))
                 product_template_id.sku_location = ','.join(location_code)
         except Exception as error:
-                    _logger.info(error)
+            _logger.info(error)
         try:
             response_data = warehouse_id.skuvault_api_calling(api_url, data)
             items_list = response_data.get('Items')
