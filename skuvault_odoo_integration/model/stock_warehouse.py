@@ -61,7 +61,7 @@ class StockWarehouse(models.Model):
                 response_data = response_data.json()
                 return response_data
             else:
-                raise ValidationError(_("Getting some issue from {}".format(api_url)))
+                raise ValidationError(_("Getting some issue from {}".format(response_data.content)))
 
         except Exception as error:
             raise ValidationError(_("Getting some issue from {}".format(api_url)))
