@@ -56,7 +56,7 @@ class StockWarehouse(models.Model):
         }
         try:
             response_data = requests.post(url=api_url, data=json.dumps(request_data), headers=headers)
-            _logger.info("{0}{1}{2}".format(response_data.status_code,data,headers))
+            _logger.info("{0}{1}{2}".format(response_data.status_code,response_data,headers))
             if response_data.status_code in [200, 201]:
                 _logger.info("Get Successfully Response From {}".format(api_url))
                 response_data = response_data.json()
