@@ -131,11 +131,13 @@ class SkuvaultPorductTemplate(models.Model):
         try:
             response_data = warehouse_id.skuvault_api_calling(get_inventory_by_location_url, data)
             inventory_location_list = response_data.get('Items')
+            _logger.info(">> Inventory Location List : {}".format(inventory_location_list))
             location_code = []
             for sku,location_data in inventory_location_list.items():
                 product_template_id = self.env['product.template'].search([('default_code', '=', sku)], limit=1)
                 for location_data in location_data:
                     location_code.apped(location_data.get('location'))
+                    _logger.info(">> Location Code : {}".format(location_code))
                 product_template_id.sku_location = ','.join(location_code)
         except Exception as error:
                     _logger.info(error)
@@ -148,7 +150,7 @@ class SkuvaultPorductTemplate(models.Model):
             inventroy_line_obj = self.env['stock.inventory.line']
             for items_data in items_list:
                 product_tmpl_id = self.env['product.template'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
-                product_api_url = "%s/api/products/getProduct" % (self.skuvault_api_url)
+                product_api_url = "%s/api/products/getProduct" % (warehouse_id.skuvault_api_url)
                 try:
                     headers = {
                         'Content-Type': 'application/json',
