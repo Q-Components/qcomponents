@@ -128,8 +128,8 @@ class SkuvaultPorductTemplate(models.Model):
             "UserToken": "{}".format(warehouse_id.skuvault_UserToken),
             "ProductCodes":list(self.mapped('default_code'))
         }
-	_logger.info("{}".format(data))
         try:
+            _logger.info("{}".format(data))
             response_data = warehouse_id.skuvault_api_calling(get_inventory_by_location_url, data)
             inventory_location_list = response_data.get('Items')
             _logger.info(">> Inventory Location List : {}".format(inventory_location_list))
