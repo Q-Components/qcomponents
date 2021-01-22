@@ -127,12 +127,12 @@ class PorductProduct(models.Model):
                 quant_ids = self.env['stock.quant'].sudo().search([('product_id', '=', product_id.id), ('location_id', '!=', 8), ('location_id.usage', '=', 'internal')])
                 if quant_ids:
                     quant_ids.sudo().unlink()
-                available_qty = items_data.get('TotalOnHand')
+                available_qty = items_data.get('TotalOnHand',0.0)
                 if product_id:
                     inventroy_line_obj.sudo().create({'product_id': product_id.id,
                                                       'inventory_id': inventory_id and inventory_id.id,
                                                       'location_id': warehouse_id.lot_stock_id.id,
-                                                      'product_qty': items_data.get('AvailableQuantity', 0.0),
+                                                      'product_qty': available_qty,
                                                       'product_uom_id': product_id.uom_id and product_id.uom_id.id,
                                                       'company_id': self.env.user.company_id.id
                                                       })
