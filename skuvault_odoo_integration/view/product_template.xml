@@ -38,6 +38,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='list_price']" position="before">
     				<field name="sku_location"/>
+    				<field name="supplier_name" />
   				</xpath>
             </field>
         </record>

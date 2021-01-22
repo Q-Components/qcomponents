@@ -42,8 +42,8 @@ class PorductProduct(models.Model):
             response_data = warehouse_id.skuvault_api_calling(get_inventory_by_location_url, data)
             inventory_location_list = response_data.get('Items')
             _logger.info(">> Inventory Location List : {}".format(inventory_location_list))
-            location_code = []
             for sku, location_datas in inventory_location_list.items():
+                location_code = []
                 product_template_id = self.env['product.template'].search([('default_code', '=', sku)], limit=1)
                 _logger.info(">>>>>>>> {0}".format(product_template_id))
                 for location_data in location_datas:
@@ -53,19 +53,19 @@ class PorductProduct(models.Model):
         except Exception as error:
             _logger.info(error)
         try:
-            qty_data = {
-                "TenantToken": "{}".format(warehouse_id.skuvault_tenantToken),
-                "UserToken": "{}".format(warehouse_id.skuvault_UserToken),
-                "ProductCodes":list(self.mapped('default_code'))
-                }
-            response_data = warehouse_id.skuvault_api_calling(api_url, qty_data)
-            items_list = response_data.get('Items')
-            if len(items_list) == 0:
-                raise ValidationError("Product Not Found in the Response")
-            # _logger.info(">>>> Product data {}".format(items_list))
+#             qty_data = {
+#                 "TenantToken": "{}".format(warehouse_id.skuvault_tenantToken),
+#                 "UserToken": "{}".format(warehouse_id.skuvault_UserToken),
+#                 "ProductCodes":list(self.mapped('default_code'))
+#                 }
+#             response_data = warehouse_id.skuvault_api_calling(api_url, qty_data)
+#             items_list = response_data.get('Items')
+#             if len(items_list) == 0:
+#                 raise ValidationError("Product Not Found in the Response")
+#             # _logger.info(">>>> Product data {}".format(items_list))
             inventroy_line_obj = self.env['stock.inventory.line']
-            for items_data in items_list:
-                product_tmpl_id = self.env['product.template'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
+            for items_data in self.mapped('default_code'):
+                product_tmpl_id = self.env['product.template'].search([('default_code', '=', items_data)], limit=1)
                 product_api_url = "%s/api/products/getProduct" % (warehouse_id.skuvault_api_url)
                 try:
                     headers = {
@@ -92,27 +92,46 @@ class PorductProduct(models.Model):
                                 'lst_price': product_data.get('SalePrice'),
                                 'weight': product_data.get('WeightValue'),
                                 'type':'product',
+                                'supplier_name':product_data.get('Supplier'),
                                 'standard_price': product_data.get('Cost')}
                             for attribute_data in product_data.get('Attributes'):
-                                for attribute_data in product_data.get('Attributes'):
-                                    if attribute_data.get('Name') == 'Category' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_category': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'Alt Manufacturer' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_manufacturer': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'Alt Number' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_alternate_number': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'Date Code' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_date_code_1': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'Origin' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_origin_code': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'Condition' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_condition_1': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'Package' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_package': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'RoHS' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_rohs': attribute_data.get('Value')})
+                                if attribute_data.get('Name') == 'Category' and attribute_data.get('Value'):
+                                    vals.update({'x_studio_category': attribute_data.get('Value')})
+                                elif attribute_data.get('Name') == 'Alt Manufacturer' and attribute_data.get('Value'):
+                                    vals.update({'x_studio_manufacturer': attribute_data.get('Value')})
+                                elif attribute_data.get('Name') == 'Alt Number' and attribute_data.get('Value'):
+                                    vals.update({'x_studio_alternate_number': attribute_data.get('Value')})
+                                elif attribute_data.get('Name') == 'Date Code' and attribute_data.get('Value'):
+                                    vals.update({'x_studio_date_code_1': attribute_data.get('Value')})
+                                elif attribute_data.get('Name') == 'Origin' and attribute_data.get('Value'):
+                                    vals.update({'x_studio_origin_code': attribute_data.get('Value')})
+                                elif attribute_data.get('Name') == 'Condition' and attribute_data.get('Value'):
+                                    vals.update({'x_studio_condition_1': attribute_data.get('Value')})
+                                elif attribute_data.get('Name') == 'Package' and attribute_data.get('Value'):
+                                    vals.update({'x_studio_package': attribute_data.get('Value')})
+                                elif attribute_data.get('Name') == 'RoHS' and attribute_data.get('Value'):
+                                    vals.update({'x_studio_rohs': attribute_data.get('Value')})
                             
                             product_tmpl_id.write(vals)
+                            _logger.info("Product Vals : {}".format(vals))
+                            product_id = self.env['product.product'].search([('product_tmpl_id', '=', product_tmpl_id.id)], limit=1)
+                            _logger.info("Product >>>>>>>>> {0}{1}".format(product_tmpl_id, product_id))
+                            quant_ids = self.env['stock.quant'].sudo().search([('product_id', '=', product_id.id), ('location_id', '!=', 8), ('location_id.usage', '=', 'internal')])
+                            if quant_ids:
+                                quant_ids.sudo().unlink()
+                            available_qty = product_data.get('QuantityOnHand')
+                            if product_id:
+                                inventroy_line_obj.sudo().create({'product_id': product_id.id,
+                                                                  'inventory_id': inventory_id and inventory_id.id,
+                                                                  'location_id': warehouse_id.lot_stock_id.id,
+                                                                  'product_qty': available_qty,
+                                                                  'product_uom_id': product_id.uom_id and product_id.uom_id.id,
+                                                                  'company_id': self.env.user.company_id.id
+                                                                  })
+                                process_message = ">>> Inventory Line Created Product Name : {0} and Quantity: {1} ".format(product_id.name, available_qty)
+                                _logger.info(process_message)
+                                product_tmpl_id.message_post(body="Inventory Updated : {0}".format(available_qty))
+                                warehouse_id.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, warehouse_id, False, process_message)
                         else:
                             process_message = ">>>>> get some error from{}".format(response_data.text)
                             _logger.info(process_message)
@@ -121,27 +140,8 @@ class PorductProduct(models.Model):
                     _logger.info(error)
                     process_message = "{}".format(error)
                     warehouse_id.sudo().create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, False, process_message)
-                # create inventory line
-                product_id = self.env['product.product'].search([('product_tmpl_id', '=', product_tmpl_id.id)], limit=1)
-                _logger.info("Product >>>>>>>>> {0}{1}".format(product_tmpl_id, product_id))
-                quant_ids = self.env['stock.quant'].sudo().search([('product_id', '=', product_id.id), ('location_id', '!=', 8), ('location_id.usage', '=', 'internal')])
-                if quant_ids:
-                    quant_ids.sudo().unlink()
-                available_qty = items_data.get('TotalOnHand',0.0)
-                if product_id:
-                    inventroy_line_obj.sudo().create({'product_id': product_id.id,
-                                                      'inventory_id': inventory_id and inventory_id.id,
-                                                      'location_id': warehouse_id.lot_stock_id.id,
-                                                      'product_qty': available_qty,
-                                                      'product_uom_id': product_id.uom_id and product_id.uom_id.id,
-                                                      'company_id': self.env.user.company_id.id
-                                                      })
-                    process_message = ">>> Inventory Line Created Product Name : {0} and Quantity: {1} ".format(product_id.name, available_qty)
-                    _logger.info(process_message)
-                    warehouse_id.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, warehouse_id, False, process_message)
             inventory_id.sudo().action_start()
             inventory_id.sudo().action_validate()
-            self.message_post(body="Inventory Updated : {0}".format(available_qty))
             operation_id.skuvault_message = "Inventory Update Process Completed"
         except Exception as error:
             _logger.info(error)

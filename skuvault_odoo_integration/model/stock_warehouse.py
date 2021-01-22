@@ -209,6 +209,7 @@ class StockWarehouse(models.Model):
                                     'lst_price': product_data.get('SalePrice'),
                                     'weight': product_data.get('WeightValue'),
                                     'type':'product',
+                                    'supplier_name':product_data.get('Supplier'),
                                     'standard_price': product_data.get('Cost')}
                                 for attribute_data in product_data.get('Attributes'):
                                     if attribute_data.get('Name') == 'Category' and attribute_data.get('Value'):
