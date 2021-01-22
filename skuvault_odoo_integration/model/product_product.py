@@ -127,7 +127,7 @@ class PorductProduct(models.Model):
                 quant_ids = self.env['stock.quant'].sudo().search([('product_id', '=', product_id.id), ('location_id', '!=', 8), ('location_id.usage', '=', 'internal')])
                 if quant_ids:
                     quant_ids.sudo().unlink()
-                available_qty = items_data.get('AvailableQuantity')
+                available_qty = items_data.get('TotalOnHand')
                 if product_id:
                     inventroy_line_obj.sudo().create({'product_id': product_id.id,
                                                       'inventory_id': inventory_id and inventory_id.id,
@@ -141,7 +141,7 @@ class PorductProduct(models.Model):
                     warehouse_id.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, warehouse_id, False, process_message)
             inventory_id.sudo().action_start()
             inventory_id.sudo().action_validate()
-            self.message_post("Inventory Updated : {0}".format(available_qty))
+            self.message_post(body="Inventory Updated : {0}".format(available_qty))
             operation_id.skuvault_message = "Inventory Update Process Completed"
         except Exception as error:
             _logger.info(error)

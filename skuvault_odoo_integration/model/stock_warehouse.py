@@ -324,21 +324,21 @@ class StockWarehouse(models.Model):
                             'type':'product',
                             'standard_price': product_data.get('Cost')}
                         for attribute_data in product_data.get('Attributes'):
-                            if attribute_data.get('Name') == 'Category':
+                            if attribute_data.get('Name') == 'Category' and attribute_data.get('Value'):
                                 vals.update({'x_studio_category': attribute_data.get('Value')})
-                            elif attribute_data.get('Name') == 'Alt Manufacturer':
+                            elif attribute_data.get('Name') == 'Alt Manufacturer' and attribute_data.get('Value'):
                                 vals.update({'x_studio_manufacturer': attribute_data.get('Value')})
-                            elif attribute_data.get('Name') == 'Alt Number':
+                            elif attribute_data.get('Name') == 'Alt Number' and attribute_data.get('Value'):
                                 vals.update({'x_studio_alternate_number': attribute_data.get('Value')})
-                            elif attribute_data.get('Name') == 'Date Code':
+                            elif attribute_data.get('Name') == 'Date Code' and attribute_data.get('Value'):
                                 vals.update({'x_studio_date_code_1': attribute_data.get('Value')})
-                            elif attribute_data.get('Name') == 'Origin':
+                            elif attribute_data.get('Name') == 'Origin' and attribute_data.get('Value'):
                                 vals.update({'x_studio_origin_code': attribute_data.get('Value')})
-                            elif attribute_data.get('Name') == 'Condition':
+                            elif attribute_data.get('Name') == 'Condition' and attribute_data.get('Value'):
                                 vals.update({'x_studio_condition_1': attribute_data.get('Value')})
-                            elif attribute_data.get('Name') == 'Package':
+                            elif attribute_data.get('Name') == 'Package' and attribute_data.get('Value'):
                                 vals.update({'x_studio_package': attribute_data.get('Value')})
-                            elif attribute_data.get('Name') == 'RoHS':
+                            elif attribute_data.get('Name') == 'RoHS' and attribute_data.get('Value'):
                                 vals.update({'x_studio_rohs': attribute_data.get('Value')})
                         if product_id:
                             product_id.write(vals)
