@@ -166,7 +166,7 @@ class StockWarehouse(models.Model):
             if len(items_list) == 0:
                 raise ValidationError("Product Not Found in the Response")
             _logger.info(">>>> Product data {}".format(items_list))
-            inventory_name = "SKuvault_Inventory_%s" % (str(datetime.now().date()))
+            inventory_name = "SKuvault_Inventory_From_Warehouse_%s" % (str(datetime.now().date()))
             inventory_vals = {
                 'name': inventory_name,
                 'location_ids': [(6, 0, self.lot_stock_id.ids)],
@@ -215,7 +215,10 @@ class StockWarehouse(models.Model):
                                     if attribute_data.get('Name') == 'Category' and attribute_data.get('Value'):
                                         vals.update({'x_studio_category': attribute_data.get('Value')})
                                     elif attribute_data.get('Name') == 'Alt Manufacturer' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_manufacturer': attribute_data.get('Value')})
+                                        brand_id = self.env['bc.product.brand'].search([('name','=',attribute_data.get('Value'))])
+                                        if not brand_id:
+                                            brand_id = self.env['bc.product.brand'].create({'name':attribute_data.get('Value')})
+                                        vals.update({'x_studio_manufacturer': brand_id.id})
                                     elif attribute_data.get('Name') == 'Alt Number' and attribute_data.get('Value'):
                                         vals.update({'x_studio_alternate_number': attribute_data.get('Value')})
                                     elif attribute_data.get('Name') == 'Date Code' and attribute_data.get('Value'):
@@ -328,7 +331,10 @@ class StockWarehouse(models.Model):
                             if attribute_data.get('Name') == 'Category' and attribute_data.get('Value'):
                                 vals.update({'x_studio_category': attribute_data.get('Value')})
                             elif attribute_data.get('Name') == 'Alt Manufacturer' and attribute_data.get('Value'):
-                                vals.update({'x_studio_manufacturer': attribute_data.get('Value')})
+                                brand_id = self.env['bc.product.brand'].search([('name','=',attribute_data.get('Value'))])
+                                if not brand_id:
+                                    brand_id = self.env['bc.product.brand'].create({'name':attribute_data.get('Value')})
+                                vals.update({'x_studio_manufacturer': brand_id.id})
                             elif attribute_data.get('Name') == 'Alt Number' and attribute_data.get('Value'):
                                 vals.update({'x_studio_alternate_number': attribute_data.get('Value')})
                             elif attribute_data.get('Name') == 'Date Code' and attribute_data.get('Value'):

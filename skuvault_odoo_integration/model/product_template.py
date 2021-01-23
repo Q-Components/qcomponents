@@ -113,7 +113,7 @@ class SkuvaultPorductTemplate(models.Model):
         operation_id = self.env['skuvault.operation'].create(
             {'skuvault_operation': 'product', 'skuvault_operation_type': 'import', 'warehouse_id': warehouse_id.id,
              'company_id': self.env.user.company_id.id, 'skuvault_message': 'Processing...'})
-        inventory_name = "SKuvault_Inventory_%s" % (str(datetime.now().date()))
+        inventory_name = "SKuvault_Inventory_From_Template_%s" % (str(datetime.now().date()))
         inventory_vals = {
             'name': inventory_name,
             'location_ids': [(6, 0, warehouse_id.lot_stock_id.ids)],
@@ -190,7 +190,10 @@ class SkuvaultPorductTemplate(models.Model):
                                 if attribute_data.get('Name') == 'Category' and attribute_data.get('Value'):
                                     vals.update({'x_studio_category': attribute_data.get('Value')})
                                 elif attribute_data.get('Name') == 'Alt Manufacturer' and attribute_data.get('Value'):
-                                    vals.update({'x_studio_manufacturer': attribute_data.get('Value')})
+                                    brand_id = self.env['bc.product.brand'].search([('name','=',attribute_data.get('Value'))])
+                                    if not brand_id:
+                                        brand_id = self.env['bc.product.brand'].create({'name':attribute_data.get('Value')})
+                                    vals.update({'x_studio_manufacturer': brand_id.id})
                                 elif attribute_data.get('Name') == 'Alt Number' and attribute_data.get('Value'):
                                     vals.update({'x_studio_alternate_number': attribute_data.get('Value')})
                                 elif attribute_data.get('Name') == 'Date Code' and attribute_data.get('Value'):
