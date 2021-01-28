@@ -94,6 +94,14 @@ class SkuvaultSaleOrder(models.Model):
                 _logger.info("Successfully export the order")
                 self.message_post(body=_('Order Exported to Skuvault %s' % (order_id)))
                 self.skuvault_order_id = order_id
+                return {
+                    'effect': {
+                        'fadeout': 'slow',
+                        'message': "Yeah! Successfully Export Order in Skuvault .",
+                        'img_url': '/web/static/src/img/smile.svg',
+                        'type': 'rainbow_man',
+                    }
+                }
             else:
                 raise ValidationError(_('error to export order \n {}').format(response_data))
         else:
