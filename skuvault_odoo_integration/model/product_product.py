@@ -89,7 +89,7 @@ class PorductProduct(models.Model):
                                 'description': product_data.get('Description'),
                                 'default_code':product_data.get('Sku'),
                                 'name':product_data.get('PartNumber', '') or product_data.get('Sku'),
-                                'lst_price': product_data.get('SalePrice'),
+                                #'lst_price': product_data.get('SalePrice'),
                                 'weight': product_data.get('WeightValue'),
                                 'type':'product',
                                 'supplier_name':product_data.get('Supplier'),
