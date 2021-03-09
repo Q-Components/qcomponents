@@ -365,7 +365,7 @@ class StockWarehouse(models.Model):
                                                       process_message)
             operation_id.sudo().write({'skuvault_message' :"Product Imported Sucessfully Between {0} TO {1}".format(before_date,after_date)})
             self.skuvault_modify_before_date = False
-            self.self.skuvault_modify_after_date = False
+            self.skuvault_modify_after_date = False
         except Exception as error:
             _logger.info(error)
             process_message = "{}".format(error)
