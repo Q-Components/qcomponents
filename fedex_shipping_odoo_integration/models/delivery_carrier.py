@@ -188,7 +188,7 @@ class DeliveryCarrier(models.Model):
         request_obj.RequestedShipment.EdtRequestType = 'NONE'
 
         request_obj.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = order.fedex_third_party_account_number_sale_order if order.fedex_third_party_account_number_sale_order  else instance.fedex_account_number
-        request_obj.RequestedShipment.ShippingChargesPayment.PaymentType = "THIRD_PARTY" if order.fedex_third_party_account_number_sale_order else "SENDER"
+        request_obj.RequestedShipment.ShippingChargesPayment.PaymentType = "RECIPIENT" if order.fedex_third_party_account_number_sale_order else "SENDER"
         return request_obj
 
     def manage_fedex_packages(self, rate_request, weight, number=1):
@@ -548,7 +548,7 @@ class DeliveryCarrier(models.Model):
                             Commodity.Quantity = operation.qty_done
                             Commodity.QuantityUnits = 'EA'
                             ship_request.RequestedShipment.CustomsClearanceDetail.Commodities.append(Commodity)
-                        ship_request.RequestedShipment.CustomsClearanceDetail.DutiesPayment.PaymentType = "THIRD_PARTY" if order.fedex_bill_by_third_party_sale_order else "SENDER"
+                        ship_request.RequestedShipment.CustomsClearanceDetail.DutiesPayment.PaymentType = "RECIPIENT" if order.fedex_bill_by_third_party_sale_order else "SENDER"
                         ship_request.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.AccountNumber = order.fedex_third_party_account_number_sale_order if order.fedex_bill_by_third_party_sale_order else self.company_id and self.company_id.fedex_account_number
                         ship_request.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Address.CountryCode = picking.picking_type_id.warehouse_id.partner_id.country_id.code
                         ship_request.RequestedShipment.CustomsClearanceDetail.CustomsValue.Amount = total_commodities_amount
