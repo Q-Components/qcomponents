@@ -23,7 +23,7 @@ class ResCompany(models.Model):
     def weight_convertion(self, weight_unit, weight):
         pound_for_kg = 2.20462
         ounce_for_kg = 35.274
-        if weight_unit in ["LB", "LBS"]:
+        if weight_unit in ["LB", "LBS","lb","lbs"]:
             return round(weight * pound_for_kg, 3)
         elif weight_unit in ["OZ", "OZS"]:
             return round(weight * ounce_for_kg, 3)
