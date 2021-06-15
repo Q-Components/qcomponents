@@ -215,7 +215,7 @@ class StockWarehouse(models.Model):
                                     if attribute_data.get('Name') == 'Category' and attribute_data.get('Value'):
                                         vals.update({'x_studio_category': attribute_data.get('Value')})
                                     elif attribute_data.get('Name') == 'Alt Manufacturer' and attribute_data.get('Value'):
-                                        brand_id = self.env['bc.product.brand'].search([('name','=',attribute_data.get('Value'))])
+                                        brand_id = self.env['bc.product.brand'].search([('name','=',attribute_data.get('Value'))],limit=1)
                                         if not brand_id:
                                             brand_id = self.env['bc.product.brand'].create({'name':attribute_data.get('Value')})
                                         vals.update({'x_studio_manufacturer': brand_id.id})
@@ -234,7 +234,7 @@ class StockWarehouse(models.Model):
                                 if not product_tmpl_id:
                                     product_tmpl_id = self.env['product.template'].create(vals)
                                     product_id = product_tmpl_id.product_variant_id
-                                    process_message = "Product Created : {0}".format(product_id.name)
+                                    process_message = "Product Created:{0} Name : {1}".format(product_id.default_code,product_id.name)
                                 self.sudo().create_skuvault_operation_detail('product', 'import', product_request_data, product_data,
                                                                       operation_id, self, False, process_message)
                                 self._cr.commit()
