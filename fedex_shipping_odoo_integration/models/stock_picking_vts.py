@@ -90,7 +90,7 @@ class FedExPackageDetails(models.Model):
                 if self.carrier_id.fedex_onerate:
                     rate_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['FEDEX_ONE_RATE']
                 if self.carrier_id.is_cod and self.sale_id and self.sale_id.fedex_third_party_account_number_sale_order == False:
-                    rate_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['COD']
+                    #rate_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = ['COD']
                     cod_vals = {'Amount': self.sale_id.amount_total + self.carrier_price,
                                 'Currency': self.sale_id.company_id.currency_id.name}
                     rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = cod_vals
