@@ -1,0 +1,38 @@
+<odoo>
+    <data>
+        <record id="ups_location_page" model="ir.ui.view">
+            <field name="name">Sales Order</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[last()]" position="after">
+                    <page string="UPS Locations">
+                        <group>
+                            <field name="ups_service_rate" readonly="1"/>
+                        </group>
+                        <field name="ups_shipping_location_ids" readonly="1">
+                            <tree nolabel="1" readonly="1">
+                                <field name="location_name" />
+                                <field name="location_id" />
+                                <field name="street"/>
+                                <field name="street2"/>
+                                <field name="city"/>
+                                <field name="state_code"/>
+                                <field name="zip"/>
+                                <field name="country_code"/>
+                                <button type='object' class="fa fa-arrow-right oe_link" name="set_location"
+                                        string="Use Location"/>
+                            </tree>
+                        </field>
+                        <group>
+                            <field name="ups_shipping_location_id" readonly="1"/>
+                            <button type='object' class="fa fa-arrow-right oe_link" name="get_locations"
+                                    string="Get Locations"/>
+
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
