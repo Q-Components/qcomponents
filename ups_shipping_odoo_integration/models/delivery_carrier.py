@@ -14,8 +14,7 @@ _logger = logging.getLogger("UPS")
 class DeliveryCarrier(models.Model):
     _inherit = "delivery.carrier"
 
-    delivery_type = fields.Selection(selection_add=[("ups_shipping_provider", "UPS")],
-                                     ondelete={'ups_shipping_provider': 'set default'})
+    delivery_type = fields.Selection(selection_add=[("ups_shipping_provider", "UPS")])
     ups_service_type = fields.Selection([('01', '01-Next Day Air'),
                                          ('02', '02-2nd Day Air'),
                                          ('03', '03-Ground'),
@@ -157,7 +156,7 @@ class DeliveryCarrier(models.Model):
                     package_dimention = etree.SubElement(package_info, "Dimensions")
 
                     etree.SubElement(package_dimention, "Length").text = "%s" % (
-                            self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.packaging_length or "0")
+                            self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.length or "0")
                     etree.SubElement(package_dimention, "Width").text = "%s" % (
                             self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.width or "0")
                     etree.SubElement(package_dimention, "Height").text = "%s" % (
@@ -179,7 +178,7 @@ class DeliveryCarrier(models.Model):
                     package_dimention = etree.SubElement(package_info, "Dimensions")
 
                     etree.SubElement(package_dimention, "Length").text = "%s" % (
-                                self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.packaging_length or "0")
+                                self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.length or "0")
                     etree.SubElement(package_dimention, "Width").text = "%s" % (
                                 self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.width or "0")
                     etree.SubElement(package_dimention, "Height").text = "%s" % (
@@ -220,7 +219,7 @@ class DeliveryCarrier(models.Model):
                     package_dimention = etree.SubElement(package_info, "Dimensions")
 
                     etree.SubElement(package_dimention, "Length").text = "%s" % (
-                            self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.packaging_length or "0")
+                            self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.length or "0")
                     etree.SubElement(package_dimention, "Width").text = "%s" % (
                             self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.width or "0")
                     etree.SubElement(package_dimention, "Height").text = "%s" % (
@@ -477,7 +476,7 @@ class DeliveryCarrier(models.Model):
                 dimension = etree.SubElement(package_node, "Dimensions")
                 dimension_uom = etree.SubElement(dimension, "UnitOfMeasurement")
                 etree.SubElement(dimension_uom, "Code").text = str("IN" if self.ups_weight_uom != "KGS" else "CM")
-                etree.SubElement(dimension, "Length").text = str(shipping_box.packaging_length)
+                etree.SubElement(dimension, "Length").text = str(shipping_box.length)
                 etree.SubElement(dimension, "Width").text = str(shipping_box.width)
                 etree.SubElement(dimension, "Height").text = str(shipping_box.height)
                 package_weight = etree.SubElement(package_node, "PackageWeight")
@@ -502,7 +501,7 @@ class DeliveryCarrier(models.Model):
                 dimension = etree.SubElement(package_node, "Dimensions")
                 dimension_uom = etree.SubElement(dimension, "UnitOfMeasurement")
                 etree.SubElement(dimension_uom, "Code").text = str("IN" if self.ups_weight_uom != "KGS" else "CM")
-                etree.SubElement(dimension, "Length").text = str(shipping_box.packaging_length)
+                etree.SubElement(dimension, "Length").text = str(shipping_box.length)
                 etree.SubElement(dimension, "Width").text = str(shipping_box.width)
                 etree.SubElement(dimension, "Height").text = str(shipping_box.height)
                 package_weight = etree.SubElement(package_node, "PackageWeight")

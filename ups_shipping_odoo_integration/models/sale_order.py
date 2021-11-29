@@ -2,7 +2,7 @@ from odoo.exceptions import ValidationError
 from odoo import models, fields, api, _
 import xml.etree.ElementTree as etree
 import logging
-from odoo.addons.ups_shipping_odoo_integration.models.ups_response import Response
+from odoo.addons.ups_shipping_odoo_integration.ups_api.ups_response import Response
 _logger = logging.getLogger(__name__)
 import requests
 

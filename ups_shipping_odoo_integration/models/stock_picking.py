@@ -14,8 +14,8 @@ class StockPicking(models.Model):
             self.write({'carrier_tracking_ref': res[0].get('tracking_number', ''),
                         'carrier_price': res[0].get('exact_price', 0.0)})
 
-    def action_put_in_pack(self):
-        res = super(StockPicking, self).action_put_in_pack()
+    def put_in_pack(self):
+        res = super(StockPicking, self).put_in_pack()
         cod_value = 0.0
         if self.carrier_id and self.carrier_id.ups_cod_parcel:
            for move_line in self.move_line_ids:
