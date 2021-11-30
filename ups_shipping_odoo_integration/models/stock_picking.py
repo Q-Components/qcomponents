@@ -1,11 +1,7 @@
 from odoo import fields, models, api, _
-from requests import request
-import requests
-
 
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
-    ups_third_party_account_id = fields.Many2one('ups.thirdparty.account', string='UPS Third Party Account')
     ups_cod_bulk_value = fields.Float(string='UPS Bulk Shipment COD Value', compute='_compute_ups_bulk_value', store=True)
 
     def create_ups_label(self):

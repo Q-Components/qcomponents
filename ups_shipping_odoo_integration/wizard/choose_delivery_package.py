@@ -3,7 +3,7 @@ from odoo.addons.delivery.wizard.choose_delivery_package import ChooseDeliveryPa
 from odoo.tools.float_utils import float_compare
 
 
-def action_put_in_pack(self):
+def put_in_pack(self):
     picking_move_lines = self.picking_id.move_line_ids
     if not self.picking_id.picking_type_id.show_reserved:
         picking_move_lines = self.picking_id.move_line_nosuggest_ids
@@ -23,15 +23,17 @@ def action_put_in_pack(self):
     # write shipping weight and product_packaging on 'stock_quant_package' if needed
     if self.delivery_packaging_id:
         delivery_package.packaging_id = self.delivery_packaging_id
-    if self.shipping_weight:
-        delivery_package.shipping_weight = self.shipping_weight
-    if self.ups_cod_parcel:
-        delivery_package.ups_cod_parcel = self.ups_cod_parcel
-    if self.ups_cod_amount:
-        delivery_package.ups_cod_amount = self.ups_cod_amount
+        if self.shipping_weight:
+            delivery_package.shipping_weight = self.shipping_weight
+        if self.ups_cod_parcel:
+            delivery_package.ups_cod_parcel = self.ups_cod_parcel
+        if self.ups_cod_amount:
+            delivery_package.ups_cod_amount = self.ups_cod_amount
 
 
-ChooseDeliveryPackage.action_put_in_pack = action_put_in_pack
+
+
+ChooseDeliveryPackage.put_in_pack = put_in_pack
 
 
 class ChooseDeliveryPackage(models.TransientModel):

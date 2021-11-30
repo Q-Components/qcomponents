@@ -432,13 +432,13 @@ class DeliveryCarrier(models.Model):
                 etree.SubElement(to_shipper_node, 'LocationID').text = "{}".format(
                     picking.sale_id.ups_shipping_location_id.location_id)
             payment_information = etree.SubElement(shipment_node, "PaymentInformation")
-            if not picking.ups_third_party_account_id:
+            if not picking and picking.sale_id and picking.sale_id.ups_shipping_location_id:
                 prepaid_node = etree.SubElement(payment_information, "Prepaid")
                 billshipper_node = etree.SubElement(prepaid_node, "BillShipper")
                 etree.SubElement(billshipper_node, "AccountNumber").text = str(
                     self.company_id and self.company_id.ups_shipper_number)
             else:
-                account_id_obj = picking and picking.ups_third_party_account_id
+                account_id_obj = picking and picking.sale_id and picking.sale_id.ups_third_party_account_id
                 account_number = account_id_obj and account_id_obj.account_no
                 party_zip = account_id_obj and account_id_obj.zip
                 party_country = account_id_obj and account_id_obj.country_id and account_id_obj.country_id and account_id_obj.country_id.code

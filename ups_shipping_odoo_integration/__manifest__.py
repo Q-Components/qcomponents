@@ -4,7 +4,7 @@
     # App information
     'name': 'UPS Shipping Odoo Integration',
     'category': 'Website',
-    'version': '13.29.10.21',
+    'version': '13.30.11.21',
     'summary': """ """,
     'description': """
     	UPS Integration helps you integrate & manage your ups account in odoo. manage your Delivery/shipping operations directly from odoo.
@@ -49,3 +49,4 @@
 # 14.29.10.21 Latest version
 # justin custom changes
 # add cod feature for justin
+# 13.30.11.21 move third party delivery level to sale level
