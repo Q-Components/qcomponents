@@ -49,4 +49,4 @@
 # 14.29.10.21 Latest version
 # justin custom changes
 # add cod feature for justin
-# 13.30.11.21 move third party delivery level to sale level
+# 13.30.11.21 move third party delivery level to sale level(shyam)
