@@ -444,11 +444,11 @@ class DeliveryCarrier(models.Model):
                 party_country = account_id_obj and account_id_obj.country_id and account_id_obj.country_id and account_id_obj.country_id.code
                 if not party_zip and party_country:
                     raise ValidationError(_("Please set Third Party country and zip"))
-                bill_third_party_root = etree.SubElement(payment_information, 'BillThirdParty')
+                bill_third_party_root = etree.SubElement(payment_information, 'FreightCollect')
                 bill_third_party_shipper =  etree.SubElement(bill_third_party_root, 'BillThirdPartyShipper')
                 etree.SubElement(bill_third_party_shipper, 'AccountNumber').text = '{}'.format(account_number)
-                third_party = etree.SubElement(bill_third_party_shipper, 'ThirdParty')
-                third_party_address = etree.SubElement(third_party, 'Address')
+                # third_party = etree.SubElement(bill_third_party_shipper, 'ThirdParty')
+                third_party_address = etree.SubElement(bill_third_party_shipper, 'Address')
                 etree.SubElement(third_party_address, 'PostalCode').text ='{}'.format(party_zip)
                 etree.SubElement(third_party_address, 'CountryCode').text = '{}'.format(party_country)
             service_node = etree.SubElement(shipment_node, "Service")
