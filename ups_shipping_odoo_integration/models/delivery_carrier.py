@@ -376,6 +376,7 @@ class DeliveryCarrier(models.Model):
                 picking_company_id = picking.picking_type_id.warehouse_id.partner_id
 
             receiver_street = picking.sale_id.ups_shipping_location_id.street if picking.sale_id.ups_shipping_location_id.street else picking_partner_id.street or ""
+            receiver_street2 = picking.sale_id.ups_shipping_location_id.street2 if picking.sale_id.ups_shipping_location_id else picking_partner_id.street2 or " "
             receiver_city = picking.sale_id.ups_shipping_location_id.city if picking.sale_id.ups_shipping_location_id.city else picking_partner_id.city or ""
             receiver_zip = picking.sale_id.ups_shipping_location_id.zip if picking.sale_id.ups_shipping_location_id.zip else picking_partner_id.zip or ""
             receiver_country_code = picking.sale_id.ups_shipping_location_id.country_code if picking.sale_id.ups_shipping_location_id.country_code else picking_partner_id.country_id and picking_partner_id.country_id.code or ""
@@ -409,7 +410,8 @@ class DeliveryCarrier(models.Model):
                 etree.SubElement(address, "AddressLine1").text = str(picking_company_id.street)
             else:
                 raise ValidationError(_("AddressLine Is require in company address."))
-
+            if picking_company_id.street2:
+                etree.SubElement(address, "AddressLine2").text = str(picking_company_id.street2)
             etree.SubElement(address, "City").text = "{}".format(picking.company_id and picking.company_id.city)
             etree.SubElement(address, "StateProvinceCode").text = str(picking_company_id.state_id.code or "")
             etree.SubElement(address, "PostalCode").text = str(picking_company_id.zip or "")
@@ -426,6 +428,8 @@ class DeliveryCarrier(models.Model):
             to_address = etree.SubElement(to_shipper_node, "Address")
             if picking_partner_id.street or receiver_street:
                 etree.SubElement(to_address, "AddressLine1").text = str(receiver_street)
+            if picking_partner_id.street2 or receiver_street2:
+                etree.SubElement(to_address, "AddressLine2").text = str(receiver_street2)
             else:
                 raise ValidationError(_("AddressLine Is require in customer address."))
             etree.SubElement(to_address, "City").text = str(receiver_city)
@@ -448,11 +452,11 @@ class DeliveryCarrier(models.Model):
                 party_country = account_id_obj and account_id_obj.country_id and account_id_obj.country_id and account_id_obj.country_id.code
                 if not party_zip and party_country:
                     raise ValidationError(_("Please set Third Party country and zip"))
-                bill_third_party_root = etree.SubElement(payment_information, 'BillThirdParty')
-                bill_third_party_shipper =  etree.SubElement(bill_third_party_root, 'BillThirdPartyShipper')
+                bill_third_party_root = etree.SubElement(payment_information, 'FreightCollect')
+                bill_third_party_shipper =  etree.SubElement(bill_third_party_root, 'BillReceiver')
                 etree.SubElement(bill_third_party_shipper, 'AccountNumber').text = '{}'.format(account_number)
-                third_party = etree.SubElement(bill_third_party_shipper, 'ThirdParty')
-                third_party_address = etree.SubElement(third_party, 'Address')
+                # third_party = etree.SubElement(bill_third_party_shipper, 'ThirdParty')
+                third_party_address = etree.SubElement(bill_third_party_shipper, 'Address')
                 etree.SubElement(third_party_address, 'PostalCode').text ='{}'.format(party_zip)
                 etree.SubElement(third_party_address, 'CountryCode').text = '{}'.format(party_country)
             service_node = etree.SubElement(shipment_node, "Service")
