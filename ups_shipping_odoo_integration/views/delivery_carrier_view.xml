@@ -46,6 +46,7 @@
                                attrs="{'required': [('delivery_type', '=', 'ups_shipping_provider')]}"/>
                         <field name="location_required"/>
                         <field name="ups_cod_parcel" />
+                        <field name="insured_request" />
                         <field name="ups_request_option"
                                attrs="{'required': [('delivery_type', '=', 'ups_shipping_provider')]}"/>
                         <field name="ups_service_code"

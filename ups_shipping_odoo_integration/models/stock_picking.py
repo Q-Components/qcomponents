@@ -1,8 +1,11 @@
 from odoo import fields, models, api, _
 
+
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
     ups_cod_bulk_value = fields.Float(string='UPS Bulk Shipment COD Value', compute='_compute_ups_bulk_value', store=True)
+    insured_amount = fields.Float(string="UPS Insured Amount",
+                                  help="Use this Insured Request, It's affected on rate.")
 
     def create_ups_label(self):
         if self.delivery_type == "ups_shipping_provider":

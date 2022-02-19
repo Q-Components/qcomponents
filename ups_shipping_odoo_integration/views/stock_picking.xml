@@ -9,7 +9,8 @@
              	<button name="create_ups_label" string="UPS label" type="object" attrs="{'invisible': ['|','|',('picking_type_code', '=', 'outgoing'),('state','in',('done','cancel')),('carrier_tracking_ref','!=',False)]}"/>
              </xpath>
               <xpath expr="//field[@name='carrier_id']" position="after">
-                    <field name="ups_cod_bulk_value" readonly="False"/>
+                    <field name="ups_cod_bulk_value" readonly="False" attrs="{'invisible': [('delivery_type', '!=', 'ups_shipping_provider')]}"/>
+                    <field name="insured_amount" attrs="{'invisible': [('delivery_type', '!=', 'ups_shipping_provider')]}" />
              </xpath>
             </field>
         </record>

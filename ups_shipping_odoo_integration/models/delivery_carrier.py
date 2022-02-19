@@ -66,6 +66,10 @@ class DeliveryCarrier(models.Model):
     location_required = fields.Boolean('Location Required')
     ups_cod_parcel = fields.Boolean(string='COD')
 
+    insured_request = fields.Boolean(string="Insured Request",
+                                     help="Use this Insured Request required, UPS rate comes with signatured cost.",
+                                     default=False)
+
     def ups_shipment_accept(self, shipment_degits):
         service_root = etree.Element("ShipmentAcceptRequest")
         request_node = etree.SubElement(service_root, "Request")
@@ -486,6 +490,10 @@ class DeliveryCarrier(models.Model):
                 shipping_box = self.ups_default_product_packaging_id
                 package_node = etree.SubElement(shipment_node, "Package")
                 package_service_option = etree.SubElement(package_node, 'PackageServiceOptions')
+                if self.insured_request:
+                    insured_root = etree.SubElement(package_service_option, 'InsuredValue')
+                    etree.SubElement(insured_root, 'CurrencyCode').text = '{}'.format(self.company_id and self.company_id.currency_id and self.company_id.currency_id.name or " ")
+                    etree.SubElement(insured_root, 'MonetaryValue').text = '{}'.format(picking.insured_amount)
                 # pass cod parameter
                 if self.ups_cod_parcel:
                     cod = etree.SubElement(package_service_option, 'COD')
