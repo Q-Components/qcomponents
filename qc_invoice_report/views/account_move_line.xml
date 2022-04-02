@@ -14,6 +14,7 @@
                     <field name="supplier_name"/>
                     <field name="sku_location"/>
                     <field name="condition"/>
+                    <field name="type" invisible="1" />
                 </tree>
             </field>
         </record>
