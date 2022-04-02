@@ -8,8 +8,9 @@
                 <tree string="Invoice Report" create="false" expand="context.get('expand', False)"
                       multi_edit="1">
                     <field name="move_id"/>
+                    <field name="product_id"/>   
                     <field name="partner_id"/>
-                    <field name="origin"/>
+                    <field name="origin" invisible="1"/>
                     <field name="mfg"/>
                     <field name="supplier_name"/>
                     <field name="sku_location"/>
@@ -26,6 +27,7 @@
                     <field name="name" string="Invoice" filter_domain="[
                         '|', '|', '|',
                         ('name', 'ilike', self), ('ref', 'ilike', self), ('account_id', 'ilike', self), ('partner_id', 'ilike', self)]"/>
+                    <field name="product_id"/>
                     <field name="partner_id"/>
                     <field name="origin"/>
                     <field name="mfg"/>
