@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="qc_invoice_report_tree_view" model="ir.ui.view">
+            <field name="name">qc.invoice.report.tree.view</field>
+            <field name="model">account.move.line</field>
+            <field name="arch" type="xml">
+                <tree string="Invoice Report" create="false" expand="context.get('expand', False)"
+                      multi_edit="1">
+                    <field name="move_id"/>
+                    <field name="partner_id"/>
+                    <field name="origin"/>
+                    <field name="mfg"/>
+                    <field name="supplier_name"/>
+                    <field name="sku_location"/>
+                    <field name="condition"/>
+                </tree>
+            </field>
+        </record>
+        <record id="qc_invoice_report_search_view" model="ir.ui.view">
+            <field name="name">qc.invoice.report.search.view</field>
+            <field name="model">account.move.line</field>
+            <field name="arch" type="xml">
+                <search string="Search Invoices">
+                    <field name="name" string="Invoice" filter_domain="[
+                        '|', '|', '|',
+                        ('name', 'ilike', self), ('ref', 'ilike', self), ('account_id', 'ilike', self), ('partner_id', 'ilike', self)]"/>
+                    <field name="partner_id"/>
+                    <field name="origin"/>
+                    <field name="mfg"/>
+                    <field name="supplier_name"/>
+                    <field name="sku_location"/>
+                    <field name="condition"/>
+                    <field name="move_id" string="Journal Entry" filter_domain="[
+                        '|', '|', ('move_id.name', 'ilike', self), ('move_id.ref', 'ilike', self), ('move_id.partner_id', 'ilike', self)]"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Invoice" name="group_by_move" domain="[]" context="{'group_by': 'move_id'}"/>
+                        <filter string="Partner" name="group_by_partner" domain="[]" context="{'group_by': 'partner_id'}"/>
+                        <filter string="Condition" name="group_by_condition" domain="[]" context="{'group_by': 'condition'}"/>
+                        <filter string="Supplier" name="group_by_supplier_name" domain="[]" context="{'group_by': 'supplier_name'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        <record id="qc_invoice_report_action" model="ir.actions.act_window">
+            <field name="name">QC Invoice Report</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.move.line</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('type', '=', 'out_invoice')]</field>
+            <field name="view_id" ref="qc_invoice_report_tree_view"/>
+            <field name="search_view_id" ref="qc_invoice_report_search_view" />
+        </record>
+        <menuitem id="qc_invoice_report" name="QC Invoice Report"
+                  parent="account.menu_finance_reports"
+                  action="qc_invoice_report_action" sequence="3"/>
+    </data>
+</odoo>

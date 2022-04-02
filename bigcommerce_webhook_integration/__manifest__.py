@@ -15,7 +15,7 @@
         "data/ir_cron.xml",
         "views/bigcommerce_webhook_configuration_view.xml",
         "views/res_company.xml",
-        "views/sale_order.xml",
+        #"views/sale_order.xml",
         "views/stock_picking.xml",
     ],
 
