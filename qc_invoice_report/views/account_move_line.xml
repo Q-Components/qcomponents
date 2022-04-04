@@ -10,7 +10,8 @@
                     <field name="move_id"/>
                     <field name="product_id"/>
                     <field name="quantity" string="Quantity" sum="Quantity" optional="show"/>
-                    <field name="price_unit" string="Selling Price" sum="Selling Price" optional="show"/>   
+                    <field name="price_unit" string="Selling Price" sum="Selling Price" optional="show"/>
+                    <field name="price_subtotal" string="Total" sum="Total" optional="show"/>   
                     <field name="partner_id"/>
                     <field name="origin" invisible="1"/>
                     <field name="mfg"/>
@@ -53,7 +54,7 @@
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">account.move.line</field>
             <field name="view_mode">tree,form</field>
-            <field name="domain">[('type', '=', 'out_invoice')]</field>
+            <field name="domain">[('type', '=', 'out_invoice'),('product_id','!=',False)]</field>
             <field name="view_id" ref="qc_invoice_report_tree_view"/>
             <field name="search_view_id" ref="qc_invoice_report_search_view" />
         </record>
