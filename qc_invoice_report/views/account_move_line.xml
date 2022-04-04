@@ -8,7 +8,9 @@
                 <tree string="Invoice Report" create="false" expand="context.get('expand', False)"
                       multi_edit="1">
                     <field name="move_id"/>
-                    <field name="product_id"/>   
+                    <field name="product_id"/>
+                    <field name="quantity" string="Quantity" sum="Quantity" optional="show"/>
+                    <field name="price_unit" string="Selling Price" sum="Selling Price" optional="show"/>   
                     <field name="partner_id"/>
                     <field name="origin" invisible="1"/>
                     <field name="mfg"/>
