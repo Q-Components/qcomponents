@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 {
-    'name': "Website Search Filters",
+    'name': "QComponents: Website Search Filters",
 
     'summary': """
         Add alternate number, manufacturer, and descriptions as valid search criteria in website""",
@@ -12,7 +11,7 @@
     'author': "ODOO INC",
     'website': "http://www.odoo.com",
     'category': 'Uncategorized',
-    'version': '0.1',
-    'license': 'LGPL-3',
+    'version': '15.0.0',
+    'license': 'OPL-1',
     'depends': ['website'],
 }

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from odoo import fields, http, SUPERUSER_ID, tools, _
 from odoo.http import request
 from odoo.osv import expression
