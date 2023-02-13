@@ -9,4 +9,4 @@ class AccountMoveLine(models.Model):
     supplier_name = fields.Char(string='Supplier',related='product_id.supplier_name',store=True)
     sku_location = fields.Char(string='SKU Location',related='product_id.sku_location',store=True)
     condition = fields.Char(string='Condition',related='product_id.x_studio_condition_1',store=True)
-    type = fields.Selection(string='Type',related='move_id.type',store=True)
+    move_type = fields.Selection(string='Type',related='move_id.type',store=True)
