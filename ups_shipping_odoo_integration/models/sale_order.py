@@ -86,7 +86,7 @@ class UpsSaleOrder(models.Model):
                 _logger.info("Get Successfully Response From {}".format(api_url))
                 response_data = Response(response_data)
                 result = response_data.dict()
-                drop_location = result.get('LocatorResponse').get('SearchResults').get('DropLocation')
+                drop_location = result.get('LocatorResponse') and result.get('LocatorResponse').get('SearchResults') and result.get('LocatorResponse').get('SearchResults').get('DropLocation')
                 if not drop_location:
                     raise ValidationError("Drop Location Not Found {}".format(result))
                 ups_locations = self.env['ups.location']

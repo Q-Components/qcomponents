@@ -1,43 +1,39 @@
-# -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
+# -*- coding: utf-8 -*-pack
 {
-    # App information
 
-    'name': 'Fedex Odoo Shipping Connector',
-    'version': '12.0',
+    # App information
+    'name': 'FedEx Shipping Odoo Integration',
     'category': 'Website',
-    'summary': 'Connect, Integrate & Manage your FedEx Shipping Operations from Odoo',
-    'license': 'OPL-1',
+    'version': '16.0.12.11.2021',
+    'summary': """ """,
+    'description': """ Our Odoo FedEx Shipping Integration will help you connect with FedEx Shipping Carrier with Odoo. automatically submit order information from Odoo to FedEx and get Shipping label, and Order Tracking number from FedEx to Odoo.we also provide the ups,dhl,usps,stamp.com,shipstation shipping integration.""",
 
     # Dependencies
-
     'depends': ['delivery'],
 
-    # Views
+   # Views
     'data': [
+            'data/ir_cron.xml',
             'data/delivery_fedex.xml',
             'views/res_company.xml',
             'views/delivery_carrier_view.xml',
             'views/stock_picking_vts.xml',
-            'security/ir.model.access.csv',
             'views/sale_view.xml',
             ],
-
-    # Odoo Store Specific
-
-    'images': ['static/description/FedEx.jpg'],
 
     # Author
 
     'author': 'Vraja Technologies',
-    'website': '',
-    'maintainer': '',
-
+    'website': 'https://www.vrajatechnologies.com',
+    'maintainer': 'Vraja Technologies',
+    'live_test_url': 'https://www.vrajatechnologies.com/contactus',
+    'images': ['static/description/cover.jpg'],
     'demo': [],
     'installable': True,
     'application': True,
     'auto_install': False,
-    'price': '199' ,
+    'price': '99',
     'currency': 'EUR',
+    'license': 'OPL-1',
 
 }
