@@ -98,7 +98,7 @@ class SkuvaultSaleOrder(models.Model):
                     'effect': {
                         'fadeout': 'slow',
                         'message': "Yeah! Successfully Export Order in Skuvault .",
-                        'img_url': '/web/static/src/img/smile.svg',
+                        'img_url': '/web/static/img/smile.svg',
                         'type': 'rainbow_man',
                     }
                 }
