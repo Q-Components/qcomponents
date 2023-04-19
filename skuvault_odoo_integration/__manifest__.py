@@ -6,7 +6,7 @@
     'version': '15.0.21.02.2023',
     'summary': """ """,
     'description': """""",
-    'depends': ['delivery', 'import_inventory'],
+    'depends': ['delivery'],
     'data': [
         'security/ir.model.access.csv',
         'view/sale_order.xml',
