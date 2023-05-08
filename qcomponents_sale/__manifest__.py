@@ -28,7 +28,7 @@
 
     # always loaded
     'data': [
-        'data/qcomponents_action.xml',
+        #'data/qcomponents_action.xml',
     ],
     'license': 'OPL-1',
 }

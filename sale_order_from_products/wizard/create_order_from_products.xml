@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_create_sale_order_from_products_form" model="ir.ui.view">
+        <field name="name">Create Sale Order</field>
+        <field name="model">create.order.from.products</field>
+        <field name="arch" type="xml">
+            <form string="Create sale order">
+                <group>
+                    <field name="partner_id" required="1"/>
+                </group>
+                <footer>
+                    <button name="create_order_from_products" id="create_order_from_products"
+                            string="Create Order" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="create_sale_order_from_products_wizard" model="ir.actions.act_window">
+        <field name="name">Create Sale order</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">create.order.from.products</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="product.model_product_product"/>
+        <field name="binding_view_types">list</field>
+    </record>
+
+</odoo>
