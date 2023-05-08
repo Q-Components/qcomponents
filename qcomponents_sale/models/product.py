@@ -1,4 +1,7 @@
 from odoo import api, fields, models, _
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class ProductProduct(models.Model):
     _inherit = "product.product"
@@ -19,5 +22,6 @@ class ProductProduct(models.Model):
             'default_order_line': [(0, 0, {'product_id': r.id, 'product_template_id': r.product_tmpl_id.id,
                                            'price_unit': r.lst_price, 'product_uom_qty': 1.0}) for r in
                                    records]}
+        _logger.info("PRODUCT IDS : {0} Action : {1}".format(product_ids,action))
         return action
 
