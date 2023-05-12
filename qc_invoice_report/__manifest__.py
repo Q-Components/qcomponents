@@ -4,7 +4,7 @@
     'Summary': 'Invoice Report',
     'description': '',
     'license': 'OPL-1',
-    'depends': ['account', 'sale_stock','skuvault_odoo_integration'],
+    'depends': ['account', 'sale_stock','skuvault_odoo_integration','qcomponents_sale'],
     'data': [
         'views/account_move_line.xml'
     ],

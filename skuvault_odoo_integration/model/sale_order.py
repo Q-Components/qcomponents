@@ -39,7 +39,7 @@ class SkuvaultSaleOrder(models.Model):
             data = {
                 "Quantity": int(order.product_uom_qty),
                 "Sku": "{}".format(order.product_id and order.product_id.default_code),
-                "UnitPrice": order.price_unit #order.price_subtotal
+                "UnitPrice": order.price_subtotal
             }
             order_list.append(data)
         return order_list
@@ -98,7 +98,7 @@ class SkuvaultSaleOrder(models.Model):
                     'effect': {
                         'fadeout': 'slow',
                         'message': "Yeah! Successfully Export Order in Skuvault .",
-                        'img_url': '/web/static/src/img/smile.svg',
+                        'img_url': '/web/static/img/smile.svg',
                         'type': 'rainbow_man',
                     }
                 }
