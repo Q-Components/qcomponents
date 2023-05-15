@@ -3,7 +3,7 @@
     'name': 'SKUVAULT Integration',
     'category': 'Website',
     'author': "Vraja Technologies",
-    'version': '13.0.16.01.2020',
+    'version': '15.0.21.02.2023',
     'summary': """ """,
     'description': """""",
     'depends': ['delivery', 'import_inventory'],
@@ -15,11 +15,7 @@
         'view/product_template.xml',
         'view/stock_picking.xml',
         'data/skuvault_inventory_crone.xml',
-        'data/skuvault_import_product_crone.xml'
-        #  'views/sale_order.xml',
-        #  'views/product_template.xml',
-        #  'views/stock_picking.xml',
-
+        'data/skuvault_import_product_crone.xml',
     ],
     'images': [''],
     'maintainer': 'Vraja Technologies',
@@ -31,6 +27,3 @@
     'currency': 'EUR',
     'license': 'OPL-1',
 }
-# version changelog
-# 13.0.13.01.2020 add export order features
-# 13.0.16.01.2020 changes in update quantity
