@@ -4,7 +4,7 @@
     # App information
     'name': 'FedEx Shipping Odoo Integration',
     'category': 'Website',
-    'version': '16.0.12.11.2021',
+    'version': '16.0.14.05.2022',
     'summary': """ """,
     'description': """ Our Odoo FedEx Shipping Integration will help you connect with FedEx Shipping Carrier with Odoo. automatically submit order information from Odoo to FedEx and get Shipping label, and Order Tracking number from FedEx to Odoo.we also provide the ups,dhl,usps,stamp.com,shipstation shipping integration.""",
 
