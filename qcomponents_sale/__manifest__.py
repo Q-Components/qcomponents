@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 {
-    'name': "Qcomponents: Sale Action",
+    'name': "QComponents: Sale Action",
 
     'summary': """
         Server Action to select and add products to a new Sales Order.""",
@@ -22,15 +21,14 @@
     # Check https://github.com/odoo/odoo/blob/13.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Custom Development',
-    'version': '0.1',
+    'version': '1.0',
 
     # any module necessary for this one to work correctly
     'depends': ['sale', 'product', 'contacts'],
 
     # always loaded
     'data': [
-        'data/qcomponents_action.xml',
+        #'data/qcomponents_action.xml',
     ],
-    'license': 'OEEL-1',
-
+    'license': 'OPL-1',
 }
