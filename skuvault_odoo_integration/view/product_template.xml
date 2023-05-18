@@ -39,6 +39,14 @@
                 <xpath expr="//field[@name='list_price']" position="before">
     				<field name="sku_location"/>
     				<field name="supplier_name" />
+                    <field name="x_studio_category"/>
+                    <field name="x_studio_manufacturer"/>
+                    <field name="x_studio_alternate_number"/>
+                    <field name="x_studio_date_code_1"/>
+                    <field name="x_studio_origin_code"/>
+                    <field name="x_studio_condition_1"/>
+                    <field name="x_studio_package"/>
+                    <field name="x_studio_rohs"/>
   				</xpath>
             </field>
         </record>

@@ -17,6 +17,16 @@ class SkuvaultPorductTemplate(models.Model):
     sku_location = fields.Char(string='Sku Location')
     supplier_name = fields.Char(string='Supplier')
 
+    # X studio fields taken
+    x_studio_category = fields.Char(string='Category')
+    x_studio_manufacturer = fields.Char(string='manufacturer')
+    x_studio_alternate_number = fields.Char(string='Alternate Number')
+    x_studio_date_code_1 = fields.Char(string='Date Code')
+    x_studio_origin_code = fields.Char(string='Origin Code')
+    x_studio_condition_1 = fields.Char(string='condition')
+    x_studio_package = fields.Char(string='Package')
+    x_studio_rohs = fields.Char(string='Rohs')
+
     def skuvault_post_api_request_data(self):
         """
         :return: this method return request data for post api

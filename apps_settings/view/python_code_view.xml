@@ -21,16 +21,16 @@
              <form string="Execute Code">
              <sheet>
                  <field name="name"/>
-                 <group colspan="4">
-                 	<field name="py_code" colspan="4" nolabel="1" style="font-size:16px;"/>
+                 <group>
+                 	<field name="py_code" nolable="1"/>
                  </group>
-                 <group colspan="4">
-                 	<button special="cancel" string="Cancel"/>
+                 <group>
                  	<button name="execute" string="Execute" type="object"/>
-                 </group>
-                 <group colspan="4">
-                 	<field name="result" colspan="4" />
-                 </group>
+                 	<button special="cancel" string="Cancel"/>
+	             </group>
+                <group>
+                	 <field name="result"  />
+                </group>
             </sheet>
             </form>
             </field>
