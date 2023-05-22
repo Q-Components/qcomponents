@@ -358,7 +358,7 @@ class DeliveryCarrier(models.Model):
         for picking in pickings:
             total_weight = self.company_id.weight_convertion(self.ups_weight_uom, picking.shipping_weight)
             total_bulk_weight = self.company_id.weight_convertion(self.ups_weight_uom, picking.weight_bulk)
-            total_value = sum([(line.product_uom_qty * line.product_id.list_price) for line in pickings.move_lines])
+            total_value = sum([(line.product_uom_qty * line.product_id.list_price) for line in pickings.move_ids])
 
             if picking.picking_type_code == "incoming":
                 picking_company_id = picking.partner_id

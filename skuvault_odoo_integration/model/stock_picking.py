@@ -5,6 +5,6 @@ class StockPicking(models.Model):
     
     def forcefully_validate_picking(self):
         self._cr.execute("delete from stock_move_line where picking_id = %s"%self.id)
-        for move_line in self.move_lines:
+        for move_line in self.move_ids:
             move_line.quantity_done = move_line.product_uom_qty
-        self.action_done()
+        self._action_done()
