@@ -1,7 +1,7 @@
 {
     'name': 'Apps Setting',
-    'version': '12.0.1',
-    'summary': ''' Module for Manange and Execute Pyrhon code.''',
+    'version': '16.0.0',
+    'summary': ''' Module for Manange App Settings.''',
     'depends': [
         'base',
         ],

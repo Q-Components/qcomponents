@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="delivery.choose_delivery_package_view_form"/>
             <field name="arch" type="xml">
 
-                <xpath expr="//field[@name='delivery_packaging_id']" position="after">
+                <xpath expr="//field[@name='delivery_package_type_id']" position="after">
                     <field name="ups_cod_parcel"  widget="boolean_toggle"/>
                     <field name="ups_cod_amount" attrs="{'invisible': [('ups_cod_parcel', '=', False)]}"/>
                 </xpath>
