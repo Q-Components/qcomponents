@@ -331,7 +331,7 @@ class DeliveryCarrier(models.Model):
         res = ""
         for picking in pickings:
             link = "https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber="
-            res = '%s %s' % (link, picking.carrier_tracking_ref)
+            res = '%s%s' % (link, picking.carrier_tracking_ref)
         return res
 
     def fedex_shipping_provider_cancel_shipment(self, picking):

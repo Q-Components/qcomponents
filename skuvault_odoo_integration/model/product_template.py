@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 from odoo.exceptions import ValidationError
-from dateutil.relativedelta import relativedelta
-from odoo.exceptions import ValidationError
-from datetime import datetime
 import logging
 from odoo import models, fields, _
 import requests
