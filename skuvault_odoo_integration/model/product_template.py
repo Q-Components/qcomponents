@@ -34,44 +34,44 @@ class SkuvaultPorductTemplate(models.Model):
 
         for product_id in product_ids:
             data = {
-                        "Sku": "TPRD1",  # required
-                        "Description": "Test Product By API",
+                        "Sku": product_id.default_code,  # required
+                        "Description": product_id.name,
                         "ShortDescription": False,
                         "LongDescription": product_id.description,
-                        "Classification": False,  # 	If provided, classification must exist in SkuVault.
-                        "Supplier": False,
-                        "Brand": False,
+                        # "Classification": False,  # 	If provided, classification must exist in SkuVault.
+                        # "Supplier": False,
+                        # "Brand": False,
                         "Code": product_id.barcode,
                         "PartNumber": False,
-                        "Cost": 0,
+                        "Cost": product_id.list_price,
                         "SalePrice": product_id.list_price,
                         "RetailPrice": product_id.standard_price,
                         "Weight": "{}".format(product_id.weight),
                         "WeightUnit": product_id.weight_uom_name,
-                        "VariationParentSku": "String",
-                        "ReorderPoint": 0,
-                        "MinimumOrderQuantity": 0,
-                        "MinimumOrderQuantityInfo": "String",
-                        "Note": "String",
-                        "Statuses": [
-                            "String"
-                        ],
-                        "Pictures": [
-                            "String"
-                        ],
-                        "Attributes": {
-                            "Alt Number": "987654321"
-                        },
-                        "SupplierInfo": [
-                            {
-                                "SupplierName": "1610",
-                                "SupplierPartNumber": "String",
-                                "Cost": "String",
-                                "LeadTime": "String",
-                                "IsActive": "String",
-                                "IsPrimary": True
-                            }
-                        ]
+                        # "VariationParentSku": "String",
+                        # "ReorderPoint": 0,
+                        # "MinimumOrderQuantity": 0,
+                        # "MinimumOrderQuantityInfo": "String",
+                        # "Note": "String",
+                        # "Statuses": [
+                        #     "String"
+                        # ],
+                        # "Pictures": [
+                        #     "String"
+                        # ],
+                        # "Attributes": {
+                        #     "Alt Number": "987654321"
+                        # },
+                        # "SupplierInfo": [
+                        #     {
+                        #         "SupplierName": "1610",
+                        #         "SupplierPartNumber": "String",
+                        #         "Cost": "String",
+                        #         "LeadTime": "String",
+                        #         "IsActive": "String",
+                        #         "IsPrimary": True
+                        #     }
+                        # ]
                     }
 
             items.append(data)
@@ -83,6 +83,10 @@ class SkuvaultPorductTemplate(models.Model):
         """
         print("Thats Work")
         warehouse_id = self.warehouse_id.search([('use_skuvault_warehouse_management', '=', True)])
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
         request_data = {
                            "Items": self.skuvault_post_api_request_data(),
                            "TenantToken":warehouse_id and warehouse_id.skuvault_tenantToken,
@@ -90,7 +94,7 @@ class SkuvaultPorductTemplate(models.Model):
                         }
         try:
             api_url = "%s/api/products/updateProducts" % (warehouse_id.skuvault_api_url)
-            response_data = requests.post(url=api_url, data=json.dumps(request_data))
+            response_data = requests.post(url=api_url, json=request_data, headers=headers)
             if response_data.status_code in [200, 201, 202]:
                 _logger.info(">>>>>>>>>> get successfully response from {}".format(api_url))
                 response_data = response_data.json()

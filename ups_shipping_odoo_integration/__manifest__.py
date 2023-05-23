@@ -4,15 +4,15 @@
     # App information
     'name': 'UPS Shipping Odoo Integration',
     'category': 'Website',
-    'version': '13.17.12.21',
+    'version': '16.00.23.05.2023',
     'summary': """ """,
     'description': """
     	UPS Integration helps you integrate & manage your ups account in odoo. manage your Delivery/shipping operations directly from odoo.
-	Export Order To ups On Validate Delivery Order.
+	    Export Order To ups On Validate Delivery Order.
         Auto Import Tracking Detail From ups to odoo.
         Generate Label in Odoo..
         We also Provide the dhl,bigcommerce,shiphero,gls,fedex,usps,easyship,stamp.com,dpd,shipstation,manifest report
-""",
+        """,
 
     # Dependencies
     'depends': ['delivery'],
