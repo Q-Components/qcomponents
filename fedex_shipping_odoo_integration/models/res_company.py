@@ -1,44 +1,50 @@
+import requests
 from odoo import models, fields, api
-from odoo.addons.fedex_shipping_odoo_integration.fedex.config import FedexConfig
-
+from odoo.exceptions import ValidationError
 
 class ResCompany(models.Model):
     _inherit = "res.company"
     use_fedex_shipping_provider = fields.Boolean(copy=False, string="Are You Use FedEx Shipping Provider.?",
                                                  help="If use fedEx shipping provider than value set TRUE.",
                                                  default=False)
-    use_address_validation_service = fields.Boolean(copy=False, string="Use Address Validation Service",
-                                                    help="Use Address Validation service to identify residential area or not.\nTo use address validation services, client need to request fedex to enable this service for his account.By default, The service is disable and you will receive authentication failed.")
-    fedex_key = fields.Char(string="Developer Key", help="Developer key", copy=False)
-    fedex_password = fields.Char(copy=False, string='Password',
-                                 help="The Fedex-generated password for your Web Systems account. This is generally emailed to you after registration.")
+    fedex_api_url = fields.Char(string="FedEx API URL", copy=False, default="https://apis-sandbox.fedex.com")
+    fedex_client_id = fields.Char(string="FedEx Client ID", copy=False)
+    fedex_client_secret = fields.Char(string="FedEx Client Secret", copy=False)
     fedex_account_number = fields.Char(copy=False, string='Account Number',
                                        help="The account number sent to you by Fedex after registering for Web Services.")
-    fedex_meter_number = fields.Char(copy=False, string='Meter Number',
-                                     help="The meter number sent to you by Fedex after registering for Web Services.")
-    fedex_integration_id = fields.Char(copy=False, string='Integration ID',
-                                       help="The integrator string sent to you by Fedex after registering for Web Services.")
+    fedex_access_token = fields.Char(string="FedEx Access Token", copy=False)
 
-    def get_fedex_api_object(self, prod_environment=False):
-        return FedexConfig(key=self.fedex_key,
-                           password=self.fedex_password,
-                           account_number=self.fedex_account_number,
-                           meter_number=self.fedex_meter_number,
-                           integrator_id=self.fedex_integration_id,
-                           use_test_server=not prod_environment)
+    def auto_generate_fedex_access_token(self):
+        for company_id in self.search([('use_fedex_shipping_provider', '!=', False)]):
+            company_id.generate_fedex_access_token()
 
-    def weight_convertion(self, weight_unit, weight):
-        pound_for_kg = 2.20462
-        ounce_for_kg = 35.274
-        ounce_for_lb = 16
-        uom_id = self.env['product.template']._get_weight_uom_id_from_ir_config_parameter()
-        if weight_unit in ["LB", "LBS", "lb", "lbs"] and uom_id.name in ['lb', 'lbs']:
-            return round(weight, 3)
-        elif weight_unit in ["LB", "LBS", "lb", "lbs"] and uom_id.name in ['kg']:
-            return round(weight * pound_for_kg, 3)
-        elif weight_unit in ["OZ", "OZS"] and uom_id.name in ['kg']:
-            return round(weight * ounce_for_kg, 3)
-        elif weight_unit in ["OZ", "OZS"] and uom_id.name in ['lb', 'lbs']:
-            return round(weight * ounce_for_lb, 3)
-        else:
-            return round(weight, 3)
+    def generate_fedex_access_token(self):
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        api_url = "%s/oauth/token" % (self.fedex_api_url)
+        if not self.fedex_client_id or not self.fedex_client_secret:
+            raise ValidationError("Please enter correct credentials")
+        data = {
+            'client_id': self.fedex_client_id,
+            'client_secret': self.fedex_client_secret,
+            'grant_type': 'client_credentials',
+        }
+        try:
+            response_data = requests.request("POST", api_url, headers=headers, data=data)
+            if response_data.status_code in [200, 201]:
+                response_data = response_data.json()
+                if response_data.get('access_token'):
+                    self.fedex_access_token = response_data.get('access_token')
+                    return {
+                        'effect': {
+                            'fadeout': 'slow',
+                            'message': "Yeah! Token has been retrieved.",
+                            'img_url': '/web/static/src/img/smile.svg',
+                            'type': 'rainbow_man',
+                        }
+                    }
+                else:
+                    raise ValidationError(response_data)
+        except Exception as e:
+            raise ValidationError(e)

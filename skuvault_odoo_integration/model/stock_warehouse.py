@@ -166,17 +166,6 @@ class StockWarehouse(models.Model):
             if len(items_list) == 0:
                 raise ValidationError("Product Not Found in the Response")
             _logger.info(">>>> Product data {}".format(items_list))
-            inventory_name = "SKuvault_Inventory_From_Warehouse_%s" % (str(datetime.now().date()))
-            inventory_vals = {
-                'name': inventory_name,
-                'location_ids': [(6, 0, self.lot_stock_id.ids)],
-                'date': time.strftime("%Y-%m-%d %H:%M:%S"),
-                'company_id': self.company_id.id,
-                'prefill_counted_quantity': 'zero'
-            }
-            inventory_id = self.env['stock.inventory'].sudo().create(inventory_vals)
-            _logger.info("Inventory Created : {}".format(inventory_id))
-            inventroy_line_obj = self.env['stock.inventory.line']
             for items_data in items_list:
                 product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
                 if not product_id:
@@ -249,25 +238,30 @@ class StockWarehouse(models.Model):
                         self.sudo().create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, False,
                                                               process_message)
                 # create inventory line
-                quant_ids = self.env['stock.quant'].sudo().search([('product_id','=',product_id.id),('location_id','!=',8),('location_id.usage','=','internal')])
-                if quant_ids:
-                    quant_ids.sudo().unlink()
-                available_qty = items_data.get('AvailableQuantity')
-                inventroy_line_obj.sudo().create({'product_id': product_id.id,
-                                                  'inventory_id': inventory_id and inventory_id.id,
-                                                  'location_id': self.lot_stock_id.id,
-                                                  'product_qty': items_data.get('AvailableQuantity', 0.0) if items_data.get('AvailableQuantity', 0.0) > 0.0 else 0.0,
-                                                  'product_uom_id': product_id.uom_id and product_id.uom_id.id,
-                                                  'company_id': self.env.user.company_id.id
-                                                  })
+                stock_quant_obj = self.env['stock.quant']
+                location = self.lot_stock_id
+                if product_id and location:
+                    new_quantity = float(items_data.get('AvailableQuantity'))
+                    stock_quant = stock_quant_obj.search([('product_id', '=', product_id.id),
+                                                          ('location_id', '=', location.id)], limit=1)
+                    if stock_quant:
+                        new_quantity = stock_quant.quantity + new_quantity
+                        stock_quant.update({'inventory_quantity': new_quantity})
+                        stock_quant.action_apply_inventory()
+                        # stock_quant._update_available_quantity(product, location, float(qty_adjust), lot_id=None,
+                        #                                        package_id=None, owner_id=None, in_date=None)
+                    else:
+                        stock_quant_obj.create({
+                            'location_id': location.id,
+                            'product_id': product_id.id,
+                            'inventory_quantity': new_quantity
+                        }).action_apply_inventory()
+
                 process_message = ">>> Inventory Line Created Product Name : {0} and Quantity: {1} ".format(
-                    product_id.name, available_qty)
+                    product_id.name, new_quantity)
                 _logger.info(process_message)
                 self.create_skuvault_operation_detail('product', 'import', data, items_data, operation_id, self,
                                                       False, process_message)
-                
-            inventory_id.sudo().action_start()
-            inventory_id.sudo().action_validate()
             operation_id.skuvault_message = "Inventory Update Process Completed Between {0} To {1}".format(beforedate,afterdate)
         except Exception as error:
             _logger.info(error)

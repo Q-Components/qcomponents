@@ -1,11 +1,5 @@
 from odoo.exceptions import Warning,ValidationError
 from odoo import models, fields, api, _
-from odoo.addons.fedex_shipping_odoo_integration.fedex.base_service import FedexError, FedexFailure
-from odoo.addons.fedex_shipping_odoo_integration.fedex.tools.conversion import basic_sobject_to_dict
-from odoo.addons.fedex_shipping_odoo_integration.fedex.services.rate_service import FedexRateServiceRequest
-from odoo.addons.fedex_shipping_odoo_integration.fedex.services.ship_service import FedexDeleteShipmentRequest
-from odoo.addons.fedex_shipping_odoo_integration.fedex.services.ship_service import FedexProcessShipmentRequest
-from odoo.addons.fedex_shipping_odoo_integration.fedex.services.address_validation_service import FedexAddressValidationRequest
 
 class FedExPackageDetails(models.Model):
     _inherit = "stock.picking"
@@ -18,14 +12,6 @@ class FedExPackageDetails(models.Model):
             picking.write({'carrier_tracking_ref': res[0].get('tracking_number', ''),
                            'carrier_price': res[0].get('exact_price', 0.0)})
 
-    # @api.multi
-    # def button_validate(self):
-    #     self.ensure_one()
-    #     for move_id in self.move_ids_without_package:
-    #         if move_id.picking_id.picking_type_code == 'outgoing':
-    #             move_id.quantity_done=move_id.reserved_availability
-    #     return super(FedExPackageDetails, self).button_validate()
-
 
     def manage_fedex_packages(self, rate_request, package_data, number=1,total_weight=0.0):
         package_weight = rate_request.create_wsdl_object_of_type('Weight')
@@ -33,9 +19,9 @@ class FedExPackageDetails(models.Model):
         package_weight.Units = self.carrier_id.fedex_weight_uom
         package = rate_request.create_wsdl_object_of_type('RequestedPackageLineItem')
         package.Weight = package_weight
-        package_data = package_data.packaging_id
+        package_data = package_data.package_type_id
         if self.carrier_id.fedex_default_product_packaging_id.shipper_package_code == 'YOUR_PACKAGING':
-            package.Dimensions.Length = package_data and package_data.length
+            package.Dimensions.Length = package_data and package_data.packaging_length
             package.Dimensions.Width = package_data and package_data.width
             package.Dimensions.Height =  package_data and package_data.height
             package.Dimensions.Units = 'IN' if self.carrier_id.fedex_weight_uom == 'LB' else 'CM'
