@@ -47,8 +47,8 @@ class StockPicking(models.Model):
             if picking.location_dest_id.id == partner_location:
                 inv_id = picking.sale_id._create_invoices()
                 self.account_invoice_ids = [(4, inv_id.id)]
-                inv_id.with_user(1).action_post()
-                self.with_user(1).generate_account_payment(inv_id)
+                # inv_id.with_user(1).action_post()
+                # self.with_user(1).generate_account_payment(inv_id)
         return res
     def action_view_account_invoice(self):
         if self.sale_id:
