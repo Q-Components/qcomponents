@@ -29,6 +29,7 @@
     # always loaded
     'data': [
         #'data/qcomponents_action.xml',
+        'views/stock_picking.xml'
     ],
     'license': 'OPL-1',
 }

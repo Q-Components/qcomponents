@@ -440,11 +440,7 @@ class DeliveryCarrier(models.Model):
                 etree.SubElement(to_shipper_node, 'LocationID').text = "{}".format(
                     picking.sale_id.ups_shipping_location_id.location_id)
             payment_information = etree.SubElement(shipment_node, "PaymentInformation")
-            if picking and picking.sale_id and not picking.sale_id.ups_shipping_location_id:
-                prepaid_node = etree.SubElement(payment_information, "Prepaid")
-                billshipper_node = etree.SubElement(prepaid_node, "BillShipper")
-                etree.SubElement(billshipper_node, "AccountNumber").text = str(self.company_id and self.company_id.ups_shipper_number or "")
-            else:
+            if picking.sale_id and picking.sale_id.use_ups_third_party_account:
                 account_id_obj = picking and picking.sale_id and picking.sale_id.ups_third_party_account_id
                 account_number = account_id_obj and account_id_obj.account_no
                 party_zip = account_id_obj and account_id_obj.zip
@@ -453,11 +449,17 @@ class DeliveryCarrier(models.Model):
                     raise ValidationError(_("Please set Third Party country and zip"))
                 bill_third_party_root = etree.SubElement(payment_information, 'FreightCollect')
                 bill_third_party_shipper =  etree.SubElement(bill_third_party_root, 'BillReceiver')
-                etree.SubElement(bill_third_party_shipper, 'AccountNumber').text = '{}'.format(account_number or "")
+                etree.SubElement(bill_third_party_shipper, 'AccountNumber').text = '{}'.format(account_number)
                 # third_party = etree.SubElement(bill_third_party_shipper, 'ThirdParty')
                 third_party_address = etree.SubElement(bill_third_party_shipper, 'Address')
                 etree.SubElement(third_party_address, 'PostalCode').text ='{}'.format(party_zip)
                 etree.SubElement(third_party_address, 'CountryCode').text = '{}'.format(party_country)
+            else:
+                prepaid_node = etree.SubElement(payment_information, "Prepaid")
+                billshipper_node = etree.SubElement(prepaid_node, "BillShipper")
+                etree.SubElement(billshipper_node, "AccountNumber").text = str(
+                    self and self.ups_shipper_number)
+
             service_node = etree.SubElement(shipment_node, "Service")
             etree.SubElement(service_node, "Code").text = str(picking_carrier_id.ups_service_type)
             etree.SubElement(shipment_node, "NumOfPiecesInShipment").text = str(
