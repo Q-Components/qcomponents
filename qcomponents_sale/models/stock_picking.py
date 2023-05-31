@@ -50,10 +50,11 @@ class StockPicking(models.Model):
                 # inv_id.with_user(1).action_post()
                 # self.with_user(1).generate_account_payment(inv_id)
         return res
+        
     def action_view_account_invoice(self):
         if self.sale_id:
             invoices = self.mapped('account_invoice_ids')
-            action = self.env.ref('account.action_move_out_invoice_type').read()[0]
+            action = self.env.ref('account.action_move_out_invoice_type').sudo().read()[0]
             if len(invoices) > 1:
                 action['domain'] = [('id', 'in', invoices.ids)]
             elif len(invoices) == 1:
@@ -61,10 +62,10 @@ class StockPicking(models.Model):
                 action['res_id'] = invoices.ids[0]
             else:
                 action = {'type': 'ir.actions.act_window_close'}
-            return action
+            return action.sudo()
         elif self.purchase_id:
             action = self.env.ref('account.action_move_in_invoice_type')
-            result = action.read()[0]
+            result = action.sudo().read()[0]
             if self.purchase_id:
                 result['context'] = {'type': 'in_invoice', 'default_purchase_id': self.purchase_id.id}
             if self.sale_id:
@@ -89,4 +90,4 @@ class StockPicking(models.Model):
                 res = self.env.ref('account.view_move_form', False)
                 result['views'] = [(res and res.id or False, 'form')]
                 result['res_id'] = self.account_invoice_ids.id
-            return result
+            return result.sudo()
