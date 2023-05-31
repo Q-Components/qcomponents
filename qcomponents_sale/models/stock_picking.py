@@ -62,7 +62,7 @@ class StockPicking(models.Model):
                 action['res_id'] = invoices.ids[0]
             else:
                 action = {'type': 'ir.actions.act_window_close'}
-            return action.sudo()
+            return action
         elif self.purchase_id:
             action = self.env.ref('account.action_move_in_invoice_type')
             result = action.sudo().read()[0]
@@ -90,4 +90,4 @@ class StockPicking(models.Model):
                 res = self.env.ref('account.view_move_form', False)
                 result['views'] = [(res and res.id or False, 'form')]
                 result['res_id'] = self.account_invoice_ids.id
-            return result.sudo()
+            return result
