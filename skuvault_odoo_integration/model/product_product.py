@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo.exceptions import ValidationError
 import logging
-from odoo import models, _
+from odoo import models, fields, _
 import requests
 import json
 import time
@@ -10,6 +10,10 @@ _logger = logging.getLogger(__name__)
 
 class PorductProduct(models.Model):
     _inherit = 'product.product'
+
+    x_studio_manufacturer = fields.Char(string='manufacturer',related='product_tmpl_id.x_studio_manufacturer',readonly=False)
+    x_studio_condition_1 = fields.Char(string='condition',related='product_tmpl_id.x_studio_condition_1',readonly=False)
+    x_studio_package = fields.Char(string='Package',related='product_tmpl_id.x_studio_package',readonly=False)
 
     def update_inventory_from_variant_manually_to_odoo(self):
         warehouse_id = self.env['stock.warehouse'].search([('use_skuvault_warehouse_management', '=', True)])

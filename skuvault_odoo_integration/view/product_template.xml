@@ -50,5 +50,17 @@
   				</xpath>
             </field>
         </record>
+        <record id="added_extra_fields_product_product_form" model="ir.ui.view">
+            <field name="name">added.extra.fields.product.product.view</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_product_tree_view" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_tmpl_id']" position="before">
+                    <field name="x_studio_manufacturer"/>
+                    <field name="x_studio_condition_1"/>
+                    <field name="x_studio_package"/>
+                </xpath>
+            </field>
+        </record>
     </data>
 </odoo>
