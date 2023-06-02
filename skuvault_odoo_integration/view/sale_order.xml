@@ -8,6 +8,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//header" position="inside">
                     <button name="export_order_to_skuvault" string="Export order to Skuvault" type="object" attrs="{'invisible': ['|',('skuvault_order_id', '!=', False),('state', '!=', 'sale')]}" />
+                    <button name="export_order_to_skuvault" string="Update order to Skuvault" type="object" attrs="{'invisible': ['|',('skuvault_order_id', '=', False),('state', '!=', 'sale')]}" />
                 </xpath>
                 <xpath expr="//page[last()]" position="after">
                     <page string="Skuvault">
