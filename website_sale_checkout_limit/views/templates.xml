@@ -1,0 +1,38 @@
+<odoo>
+    <data>
+<!--        <template id="assets_frontend" inherit_id="website_sale.assets_frontend">-->
+<!--            <xpath expr="script[last()]" position="after">-->
+<!--                <script type="text/javascript" src="/website_sale_checkout_limit/static/src/js/category.js"/>-->
+<!--            </xpath>-->
+<!--        </template>-->
+
+        <template id="cart" inherit_id="website_sale.cart">
+            <xpath expr="//div[hasclass('row')]/div" position="after">
+                <t t-set="min_amount" t-value="website.check_cart_amount()"/>
+                <t t-set="message" t-value="website.info_message()"/>
+                <div id="message" t-attf-class="col-12 #{'d-none' if min_amount else ''}">
+                    <div class="alert alert-warning my-2">
+                        <em>
+                            <i class="fa fa-info-circle"/>
+                            <t t-esc="message"/>
+                        </em>
+                    </div>
+                </div>
+            </xpath>
+            <xpath expr="//div[@id='o_cart_summary']/div/a[2]" position="attributes">
+                <attribute name="t-attf-class">btn btn-primary float-right checkout_one #{"disabled" if not website.check_cart_amount() else ""}</attribute>
+            </xpath>
+
+            <xpath expr="//div[hasclass('row')]/div/a[2]" position="attributes">
+                <attribute name="t-attf-class">btn btn-primary float-right d-none d-xl-inline-block checkout_one #{"disabled" if not website.check_cart_amount() else ""}</attribute>
+                <attribute name="id">checkout_one</attribute>
+            </xpath>
+        </template>
+
+        <template id="short_cart_summary" inherit_id="website_sale.short_cart_summary">
+            <xpath expr="//a" position="attributes">
+                <attribute name="t-attf-class">btn btn-secondary float-right d-none d-xl-inline-block checkout_one #{"disabled" if not website.check_cart_amount() else ""}</attribute>
+            </xpath>
+        </template>
+    </data>
+</odoo>
