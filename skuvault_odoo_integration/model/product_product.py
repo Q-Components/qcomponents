@@ -15,7 +15,7 @@ class PorductProduct(models.Model):
     x_studio_condition_1 = fields.Char(string='condition',related='product_tmpl_id.x_studio_condition_1',readonly=False)
     x_studio_package = fields.Char(string='Package',related='product_tmpl_id.x_studio_package',readonly=False)
     brand_name = fields.Char(string='Brand',related='product_tmpl_id.brand_name',readonly=False)
-    supplier_name = fields.Char(string='Brand',related='product_tmpl_id.supplier_name',readonly=False)
+    supplier_name = fields.Char(string='Supplier',related='product_tmpl_id.supplier_name',readonly=False)
     sku_location = fields.Char(string='Sku Location',related='product_tmpl_id.sku_location',readonly=False)
 
     def update_inventory_from_variant_manually_to_odoo(self):
