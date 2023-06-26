@@ -204,10 +204,7 @@ class StockWarehouse(models.Model):
                                     if attribute_data.get('Name') == 'Category' and attribute_data.get('Value'):
                                         vals.update({'x_studio_category': attribute_data.get('Value')})
                                     elif attribute_data.get('Name') == 'Alt Manufacturer' and attribute_data.get('Value'):
-                                        brand_id = self.env['bc.product.brand'].search([('name','=',attribute_data.get('Value'))],limit=1)
-                                        if not brand_id:
-                                            brand_id = self.env['bc.product.brand'].create({'name':attribute_data.get('Value')})
-                                        vals.update({'x_studio_manufacturer': brand_id.id})
+                                        vals.update({'x_studio_manufacturer': attribute_data.get('Value')})
                                     elif attribute_data.get('Name') == 'Alt Number' and attribute_data.get('Value'):
                                         vals.update({'x_studio_alternate_number': attribute_data.get('Value')})
                                     elif attribute_data.get('Name') == 'Date Code' and attribute_data.get('Value'):
@@ -325,10 +322,7 @@ class StockWarehouse(models.Model):
                             if attribute_data.get('Name') == 'Category' and attribute_data.get('Value'):
                                 vals.update({'x_studio_category': attribute_data.get('Value')})
                             elif attribute_data.get('Name') == 'Alt Manufacturer' and attribute_data.get('Value'):
-                                brand_id = self.env['bc.product.brand'].search([('name','=',attribute_data.get('Value'))])
-                                if not brand_id:
-                                    brand_id = self.env['bc.product.brand'].create({'name':attribute_data.get('Value')})
-                                vals.update({'x_studio_manufacturer': brand_id.id})
+                                vals.update({'x_studio_manufacturer': attribute_data.get('Value')})
                             elif attribute_data.get('Name') == 'Alt Number' and attribute_data.get('Value'):
                                 vals.update({'x_studio_alternate_number': attribute_data.get('Value')})
                             elif attribute_data.get('Name') == 'Date Code' and attribute_data.get('Value'):

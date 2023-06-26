@@ -23,6 +23,7 @@ class SkuvaultPorductTemplate(models.Model):
     x_studio_condition_1 = fields.Char(string='condition')
     x_studio_package = fields.Char(string='Package')
     x_studio_rohs = fields.Char(string='Rohs')
+    brand_name = fields.Char(string='Brand')
 
     def skuvault_post_api_request_data(self):
         """
