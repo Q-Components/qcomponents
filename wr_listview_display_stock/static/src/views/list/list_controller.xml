@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-inherit="web.ListView.Selection" t-inherit-mode="extension" owl="1">
+        <xpath expr="div[hasclass('o_list_selection_box')]" position="after">
+            <div class="btn fw-bolder alert-info" t-if="isVisibleQuantity">
+                Total Quantities: <t t-esc="getProductQuantity()"/>
+            </div>
+        </xpath>
+    </t>
+
+</templates>
