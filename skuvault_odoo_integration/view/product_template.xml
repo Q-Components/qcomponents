@@ -31,7 +31,7 @@
                 records.update_inventory_from_variant_manually_to_odoo()
             </field>
         </record>
-        <record id="skuvault_update_products_sk_odoo_from_variant" model="ir.actions.server">
+        <!--<record id="skuvault_update_products_sk_odoo_from_variant" model="ir.actions.server">
             <field name="name">Update Products (Skuvault -> Odoo)</field>
             <field name="type">ir.actions.server</field>
             <field name="state">code</field>
@@ -40,7 +40,7 @@
             <field name="code">
                 records.update_product_data_from_variant_manually_to_odoo()
             </field>
-        </record>
+        </record>-->
         <record id="added_skuvault_location_product_template_form" model="ir.ui.view">
             <field name="name">added.skuvault.location.product.template.view</field>
             <field name="model">product.template</field>
