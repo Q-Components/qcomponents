@@ -54,5 +54,20 @@
                 </t>
             </xpath>
         </template>
+        <template id="add_extra_fields_on_product_main_form_view" inherit_id="website_sale.product"
+                  name="Show Extra Fields On Products Main View" priority="4">
+            <xpath expr="//p[@t-field='product.description_sale']" position="before">
+                <div>
+                    <a class="text-primary text-decoration-none" itemprop="x_studio_alternate_number" t-att-content="product.x_studio_alternate_number" t-field="product.x_studio_alternate_number"/>
+                </div>
+                <t t-if="product.sudo().qty_available">
+                    <div>
+                        <span class="fw-bold" t-esc="str(int(product.sudo().qty_available))"/>
+                        <span class="fw-bold" t-esc="product.sudo().uom_id.name"/>
+                        <span class="fw-bold">left in stock.</span>
+                    </div>
+                </t>
+            </xpath>
+        </template>
     </data>
 </odoo>

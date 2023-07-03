@@ -2,7 +2,7 @@
 
 from odoo import models, fields, api
 from odoo.http import request
-
+from odoo.addons.http_routing.models.ir_http import slug, unslug
 
 class Website(models.Model):
     _inherit = "website"
@@ -63,3 +63,66 @@ class ResConfigSettings(models.TransientModel):
             info_message=info_message,
         )
         return res
+
+class Product(models.Model):
+    _inherit = ["product.product", 'website.searchable.mixin']
+    _name = 'product.product'
+
+    @api.model
+    def _search_get_detail(self, website, order, options):
+        with_image = options['displayImage']
+        with_description = options['displayDescription']
+        with_category = options['displayExtraLink']
+        with_price = options['displayDetail']
+        domains = [website.sale_product_domain()]
+        category = options.get('category')
+        min_price = options.get('min_price')
+        max_price = options.get('max_price')
+        # attrib_values = options.get('attrib_values')
+        #domains.append([('default_code', '>=', min_price)])
+
+        if category:
+            domains.append([('public_categ_ids', 'child_of', unslug(category)[1])])
+        if min_price:
+            domains.append([('list_price', '>=', min_price)])
+        if max_price:
+            domains.append([('list_price', '<=', max_price)])
+        search_fields = ['x_studio_alternate_number']
+        fetch_fields = ['id', 'display_name', 'website_url']
+        mapping = {
+            'name': {'name': 'display_name', 'type': 'text', 'match': True},
+            'website_url': {'name': 'website_url', 'type': 'text', 'truncate': False},
+        }
+        mapping['image_url'] = {'name': 'image_url', 'type': 'html'}
+        mapping['detail'] = {'name': 'price', 'type': 'html', 'display_currency': options['display_currency']}
+        mapping['detail_strike'] = {'name': 'list_price', 'type': 'html',
+                                    'display_currency': options['display_currency']}
+
+        return {
+            'model': 'product.product',
+            'base_domain': domains,
+            'search_fields': search_fields,
+            'fetch_fields': fetch_fields,
+            'mapping': mapping,
+            'icon': 'fa-shopping-cart',
+        }
+class ProductTemplate(models.Model):
+    _inherit = "product.template"
+    _name = 'product.template'
+
+    @api.model
+    def _search_get_detail(self, website, order, options):
+    	res = super(ProductTemplate, self)._search_get_detail(website, order, options)
+    	res['search_fields'].append('x_studio_alternate_number')
+    	return res
+
+class Website(models.Model):
+    _inherit = 'website'
+    _name = "website"
+
+    def _search_get_details(self, search_type, order, options):
+        #afsfa
+        result = super(Website, self)._search_get_details(search_type, order, options)
+        if search_type in ['products', 'products_only', 'all']:
+            result.append(self.env['product.product']._search_get_detail(self, order, options))
+        return result
