@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="shippypro_shipment_form_view" model="ir.ui.view">
+            <field name="name">stock.picking</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+		        <header>
+                    <button type="object" name="generate_label_shippypro" string="Generate Shippypro Label"
+                    attrs="{'invisible': [('delivery_type','!=','shippypro')]}"/>
+                </header>
+                <xpath expr="//field[@name='carrier_id']" position='after'>
+                    <field name="shippypro_order_id" readonly="1"/>
+                    <field name="shippypro_tracking_url" widget="url"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="shippypro_deleivery_method_configuration" model="ir.ui.view">
+        <field name="name">Shippypro Information</field>
+        <field name="model">delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.view_delivery_carrier_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='destination']" position='before'>
+                <page string="Shippypro Configuration" name="spain_gls_configuration"
+                      attrs="{'invisible': [('delivery_type', '!=', 'shippypro')]}">
+                    <group>
+                        <group>
+                        	<field name="company_id"
+                                   attrs="{'required': [('delivery_type', '=', 'shippypro')]}"/>
+                            <field name="shippypro_carrier_id"
+                                   attrs="{'required': [('delivery_type', '=', 'shippypro')]}"/>
+                            <field name="shippypro_shipping_service"
+                                   attrs="{'required': [('delivery_type', '=', 'shippypro')]}"/>
+                            <field name="shippypro_package_id"
+                                   attrs="{'required': [('delivery_type', '=', 'shippypro')]}"/>
+                            <field name="shippypro_payment_method"  attrs="{'required': [('delivery_type', '=', 'shippypro')]}"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

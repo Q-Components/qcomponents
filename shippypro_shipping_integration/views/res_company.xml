@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="Shippypro_credential_configuration" model="ir.ui.view">
+        <field name="name">Shippypro Configuration</field>
+        <field name="model">res.company</field>
+        <field name="type">form</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[last()]" position="after">
+                <page string="Shippypro Configuration">
+                    <group>
+                        <field name="use_shippypro_shipping_service"/>
+                    </group>
+                    <group attrs="{'invisible': [('use_shippypro_shipping_service', '!=', True)]}">
+                        <group>
+                            <field name="shippypro_api_key"
+                               attrs="{'required':[('use_shippypro_shipping_service','=',True)]}"/>
+                            <field name="shippypro_api_url"
+                               attrs="{'required':[('use_shippypro_shipping_service','=',True)]}"/>
+                            <button type="object" class="btn-primary o_timesheet_validate" name="import_carrier_from_shippypro" string="Import Carrier"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
