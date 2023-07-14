@@ -18,6 +18,8 @@
                                    attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
                             <field name="fedex_service_type"
                                    attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
+                            <field name="fedex_payment_type"
+                                   attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
                             <field name="fedex_pickup_type"
                                    attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
                             <field name="fedex_default_product_packaging_id"
@@ -28,6 +30,11 @@
                                    attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
                             <field name="fedex_onerate"/>
                             <field name="is_cod"/>
+                            <field name="is_signature_required"/>
+                            <field name="signature_options"
+                                   attrs="{'invisible': [('is_signature_required', '=', False)], 'required': [('is_signature_required', '=', True)]}"/>
+                            <field name="insured_request"/>
+                            <field name="fedex_onerate"/>
                         </group>
                     </group>
                 </page>

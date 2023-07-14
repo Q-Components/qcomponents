@@ -35,3 +35,9 @@ class StockPicking(models.Model):
                     value += move_line.qty_done * move_line.move_id.sale_line_id.price_unit
             picking.ups_cod_bulk_value = value
             # self.ups_cod_bulk_value = sum(price) or 0.0
+
+    def export_order_to_ups(self):
+        if self.delivery_type == "ups_shipping_provider":
+            res = self.carrier_id.ups_shipping_provider_send_shipping(self)
+            self.write({'carrier_tracking_ref': res[0].get('tracking_number', ''),
+                        'carrier_price': res[0].get('exact_price', 0.0)})

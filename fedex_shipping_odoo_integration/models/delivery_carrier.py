@@ -28,6 +28,8 @@ class DeliveryCarrier(models.Model):
     fedex_service_type = fields.Selection(
         [('FEDEX_2_DAY', 'Fedex 2 Day'),  # for US Use: 33122 Florida Doral
          ('FEDEX_2_DAY_AM', 'Fedex 2 Day AM'),  # for US Use: 33122 Florida Doral
+         ('FEDEX_INTERNATIONAL_PRIORITY_EXPRESS', 'FEDEX_INTERNATIONAL_PRIORITY_EXPRESS'),
+         # ('FEDEX_INTERNATIONAL_PRIORITY', 'FEDEX_INTERNATIONAL_PRIORITY'),
          # ('FEDEX_CUSTOM_CRITICAL_CHARTER_AIR', 'FedEx Custom Critical Air'),
          # ('FEDEX_CUSTOM_CRITICAL_AIR_EXPEDITE', 'FedEx Custom Critical Air Expedite'),
          # ('FEDEX_CUSTOM_CRITICAL_AIR_EXPEDITE_EXCLUSIVE_USE', 'FedEx Custom Critical Air Expedite Exclusive Use'),
@@ -56,7 +58,7 @@ class DeliveryCarrier(models.Model):
          ('SAME_DAY', 'FedEx SameDay®'),
          ('SAME_DAY_CITY', 'FedEx SameDay® City'),
          # ('SMART_POST', 'Smart Post'),  # When Call the service given the error "Customer not eligible for service"
-         ('FEDEX_STANDARD_OVERNIGHT_EXTRA_HOURS', 'FedEx Standard Overnight® EH'), # WORKING FOR us ADDRESS
+         ('FEDEX_STANDARD_OVERNIGHT_EXTRA_HOURS', 'FedEx Standard Overnight® EH'),  # WORKING FOR us ADDRESS
          ('STANDARD_OVERNIGHT', 'Standard Overnight'),  # for US Use: 33122 Florida Doral
          ('TRANSBORDER_DISTRIBUTION_CONSOLIDATION', 'Temp-Assure Air®'),
          # ('FEDEX_CUSTOM_CRITICAL_TEMP_ASSURE_VALIDATED_AIR', 'Temp-Assure Validated Air®'),
@@ -109,16 +111,23 @@ class DeliveryCarrier(models.Model):
                                               ('PERSONAL_CHECK', 'PERSONAL_CHECK'),
                                               ], default='ANY', string="FedEx Collection Type",
                                              help="FedEx Collection Type")
-    # fedex_payment_type = fields.Selection([('SENDER', 'SENDER'),
-    #                                        ('RECIPIENT', 'RECIPIENT'),
-    #                                        ('THIRD_PARTY', 'THIRD_PARTY')], default='SENDER',
-    #                                       string="FedEx Payment Type",
-    #                                       help="FedEx Payment Type")
+    fedex_payment_type = fields.Selection([('SENDER', 'SENDER'),
+                                           ('RECIPIENT', 'RECIPIENT'),
+                                           ('THIRD_PARTY', 'THIRD_PARTY')], default='SENDER',
+                                          string="FedEx Payment Type",
+                                          help="FedEx Payment Type")
     fedex_onerate = fields.Boolean("Want To Use FedEx OneRate Service?", default=False)
 
     fedex_third_party_account_number = fields.Char(copy=False, string='FexEx Third-Party Account Number',
                                                    help="Please Enter the Third Party account number")
     is_cod = fields.Boolean('COD')
+    is_signature_required = fields.Boolean(string="Signature")
+    signature_options = fields.Selection([('INDIRECT', 'INDIRECT'),
+                                          ('DIRECT', 'DIRECT'),
+                                          ('ADULT', 'ADULT')], string="Signature Options")
+    insured_request = fields.Boolean(string="Insured Request",
+                                     help="Use this Insured Request required.",
+                                     default=False)
 
     def get_fedex_address_dict(self, address_id):
         return {
@@ -248,13 +257,30 @@ class DeliveryCarrier(models.Model):
             length = package_id.package_type_id.packaging_length if package_id.package_type_id.packaging_length else self.fedex_default_product_packaging_id.packaging_length or ""
             width = package_id.package_type_id.width if package_id.package_type_id.width else self.fedex_default_product_packaging_id.width or ""
             height = package_id.package_type_id.height if package_id.package_type_id.height else self.fedex_default_product_packaging_id.height or ""
-            package_list.append(self.manage_fedex_packages(package_count,package_id.shipping_weight,length,width,height,package_id.name))
+            package_list.append(
+                self.manage_fedex_packages(package_count, package_id.shipping_weight, length, width, height,
+                                           package_id.name))
+            if self.is_signature_required:
+                package_list[-1].update({"packageSpecialServices": {
+                    "specialServiceTypes": [
+                        "SIGNATURE_OPTION"
+                    ],
+                    "signatureOptionType": self.signature_options or ''
+                }})
         if total_bulk_weight:
             package_count = package_count + 1
             length = self.fedex_default_product_packaging_id.packaging_length or ""
             width = self.fedex_default_product_packaging_id.width or ""
             height = self.fedex_default_product_packaging_id.height or ""
-            package_list.append(self.manage_fedex_packages(package_count, total_bulk_weight, length, width, height,pickings.name))
+            package_list.append(
+                self.manage_fedex_packages(package_count, total_bulk_weight, length, width, height, pickings.name))
+            if self.is_signature_required:
+                package_list[-1].update({"packageSpecialServices": {
+                    "specialServiceTypes": [
+                        "SIGNATURE_OPTION"
+                    ],
+                    "signatureOptionType": self.signature_options or ''
+                }})
 
         try:
             order = pickings.sale_id
@@ -270,32 +296,127 @@ class DeliveryCarrier(models.Model):
                     "serviceType": self.fedex_service_type,
                     "packagingType": self.fedex_default_product_packaging_id.shipper_package_code,
                     "totalWeight": pickings.shipping_weight,
-                    "shippingChargesPayment": {"paymentType": "RECIPIENT" if order.fedex_third_party_account_number_sale_order else "SENDER"},
+                    "shippingChargesPayment": {
+                        "paymentType": self.fedex_payment_type},
                     "labelSpecification": {
                         "labelFormatType": "COMMON2D",
                         "labelOrder": "SHIPPING_LABEL_FIRST",
                         "labelStockType": self.fedex_shipping_label_stock_type,
                         "imageType": self.fedex_shipping_label_file_type
                     },
+                    # Insurance And Declared Value
+
                     "rateRequestType": ["{0}".format(self.fedex_request_type)],
                     "preferredCurrency": pickings.sale_id.company_id.currency_id.name,
                     "totalPackageCount": package_count,
                     "requestedPackageLineItems": package_list
                 }}
-            if order and order.fedex_third_party_account_number_sale_order:
+            # Insurance And Declared Value
+            if self.insured_request:
+                request_data.get("requestedShipment").update({"customsClearanceDetail": {
+                    "commodities": [
+                        {
+                            "totalCustomsValue": {
+                                "amount": order.tax_totals.get('amount_total'),
+                                "currency": pickings.sale_id and pickings.sale_id.company_id.currency_id.name or "USD"
+                            }
+                        }
+                    ],
+                    "insuranceCharge": {
+                        "amount": order.tax_totals.get('amount_total'),
+                        "currency": pickings.sale_id and pickings.sale_id.company_id.currency_id.name or "USD"
+                    }
+                }, })
+
+            if self.fedex_payment_type != 'SENDER':
                 request_data.get("requestedShipment").get('shippingChargesPayment').update(
-                    {"payor": {"responsibleParty":{"accountNumber": {"value": order.fedex_third_party_account_number_sale_order if order.fedex_bill_by_third_party_sale_order else self.company_id and self.company_id.fedex_account_number}}}})
+                    {"payor": {"responsibleParty": {"accountNumber": {
+                        "value": order.fedex_third_party_account_number_sale_order}}}})
             if self.fedex_onerate:
                 request_data.get("requestedShipment").update(
                     {"shipmentSpecialServices": {"specialServiceTypes": ["FEDEX_ONE_RATE"]}})
             if self.is_cod:
-                request_data.get("requestedShipment").update({"shipmentSpecialServices": {"specialServiceTypes": ["COD"],
+                request_data.get("requestedShipment").update(
+                    {"shipmentSpecialServices": {"specialServiceTypes": ["COD"],
                                                  "shipmentCODDetail": {
                                                      "codCollectionType": self.fedex_collection_type,
                                                      "codCollectionAmount": {
                                                          "amount": pickings.sale_id and pickings.sale_id.amount_total,
                                                          "currency": pickings.sale_id and pickings.sale_id.company_id.currency_id.name or "USD"
                                                      }}}})
+            if shipper_address_id.country_id.code != receiver_id.country_id.code:
+                comodities_packages = []
+
+                for package_id in pickings.package_ids:
+                    for stock_quant_package in package_id.quant_ids:
+                        product_id = stock_quant_package.product_id
+                        # move_line_id = self.env['stock.move.line'].search([('product_id', '=', product_id.id)])
+                        find_sale_line_id = pickings.sale_id.order_line.filtered(
+                            lambda x: x.product_template_id.product_variant_id == product_id)
+
+                        comodities_packages.append({
+                            "description": "%s" % (package_id.name),
+                            "countryOfManufacture": self.company_id and self.company_id.country_id.code,
+                            "quantity": stock_quant_package.quantity,
+                            "quantityUnits": "PCS",
+                            "unitPrice": {
+                                "amount": find_sale_line_id.price_subtotal / find_sale_line_id.product_qty,
+                                "currency": self.company_id and self.company_id.currency_id.name
+                            },
+                            "customsValue": {
+                                "amount": find_sale_line_id.price_subtotal / find_sale_line_id.product_qty,
+                                "currency": self.company_id and self.company_id.currency_id.name
+                            },
+                            "weight": {
+                                "units": self.fedex_weight_uom,
+                                "value": stock_quant_package.quantity * product_id.weight
+                            }
+                        })
+                if total_bulk_weight:
+                    for move_line in pickings.move_line_ids:
+                        if move_line.product_id and not move_line.result_package_id:
+                            product_id = move_line.product_id
+                            # move_line_id = self.env['stock.move.line'].search([('product_id', '=', product_id.id)])
+                            find_sale_line_id = pickings.sale_id.order_line.filtered(
+                                lambda x: x.product_template_id.product_variant_id == product_id)
+                            comodities_packages.append({
+                                "description": "%s" % (pickings.name),
+                                "countryOfManufacture": self.company_id and self.company_id.country_id.code,
+                                "quantity": move_line.qty_done,
+                                "quantityUnits": "PCS",
+                                "unitPrice": {
+                                    "amount": find_sale_line_id.price_subtotal / find_sale_line_id.product_qty,
+                                    "currency": self.company_id and self.company_id.currency_id.name
+                                },
+                                "customsValue": {
+                                    "amount": find_sale_line_id.price_subtotal / find_sale_line_id.product_qty,
+                                    "currency": self.company_id and self.company_id.currency_id.name
+                                },
+                                "weight": {
+                                    "units": self.fedex_weight_uom,
+                                    "value": move_line.qty_done * product_id.weight
+
+                                }
+                            })
+                request_data.get("requestedShipment").update({"customsClearanceDetail": {
+                    "dutiesPayment": {
+                        "paymentType": "SENDER"
+                    },
+                    "isDocumentOnly": True,
+                    "commodities": comodities_packages
+                },
+                    "shippingDocumentSpecification": {
+                        "shippingDocumentTypes": [
+                            "COMMERCIAL_INVOICE"
+                        ],
+                        "commercialInvoiceDetail": {
+                            "documentFormat": {
+                                "docType": "PDF",
+                                "stockType": "PAPER_LETTER"
+                            }
+                        }
+                    }
+                })
             api_url = "{0}/ship/v1/shipments".format(company_id.fedex_api_url)
             headers = {
                 'Content-Type': 'application/json',
@@ -306,15 +427,32 @@ class DeliveryCarrier(models.Model):
             attachments = []
             if response_data.status_code in [200, 201]:
                 response_data = response_data.json()
+                _logger.info("Shipment Response Data %s" % response_data)
                 if response_data.get('output') and response_data.get('output').get('transactionShipments'):
                     for transaction_shipment in response_data.get('output').get('transactionShipments'):
                         carrier_tracking_ref = transaction_shipment.get('masterTrackingNumber')
                         for piece_respone in transaction_shipment.get('pieceResponses'):
                             for package_document in piece_respone.get('packageDocuments'):
+                                if package_document.get('contentType') == 'ACCEPTANCE_LABEL':
+                                    label_type = 'Fedex_Return'
+                                else:
+                                    label_type = 'Fedex'
                                 label_binary_data = binascii.a2b_base64(package_document.get('encodedLabel'))
                                 attachments.append(
-                                    ('Fedex_%s.%s' % (piece_respone.get('packageSequenceNumber') or carrier_tracking_ref, self.fedex_shipping_label_file_type),
-                                     label_binary_data))
+                                    ('%s.%s.%s' % (
+                                    label_type, piece_respone.get('packageSequenceNumber') or carrier_tracking_ref,
+                                    self.fedex_shipping_label_file_type), label_binary_data))
+                        if shipper_address_id.country_id.code != receiver_id.country_id.code:
+                            commercial_label = binascii.a2b_base64(
+                                response_data.get('output').get('transactionShipments')[0].get('shipmentDocuments')[
+                                    0].get(
+                                    'encodedLabel'))
+                            if commercial_label:
+                                attachments.append(
+                                    ('commercial invoice -%s.%s' % (
+                                        carrier_tracking_ref,
+                                        self.fedex_shipping_label_file_type),
+                                     commercial_label))
                         msg = (_('<b>Shipment created!</b><br/>'))
                         pickings.message_post(body=msg, attachments=attachments)
                         return [{'exact_price': 0,

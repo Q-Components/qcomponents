@@ -458,7 +458,7 @@ class DeliveryCarrier(models.Model):
                 prepaid_node = etree.SubElement(payment_information, "Prepaid")
                 billshipper_node = etree.SubElement(prepaid_node, "BillShipper")
                 etree.SubElement(billshipper_node, "AccountNumber").text = str(
-                    self and self.ups_shipper_number)
+                    self and self.company_id.ups_shipper_number)
 
             service_node = etree.SubElement(shipment_node, "Service")
             etree.SubElement(service_node, "Code").text = str(picking_carrier_id.ups_service_type)

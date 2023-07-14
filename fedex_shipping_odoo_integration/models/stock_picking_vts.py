@@ -122,6 +122,11 @@ class FedExPackageDetails(models.Model):
             }
         }
 
+    def export_order_to_fedex(self):
+        if self.delivery_type == "fedex_shipping_provider":
+            res = self.carrier_id.fedex_shipping_provider_send_shipping(self)
+            self.write({'carrier_tracking_ref': res[0].get('tracking_number', ''),
+                        'carrier_price': res[0].get('exact_price', 0.0)})
 
 class FedExPackageDetails(models.Model):
     _inherit = "stock.quant.package"
