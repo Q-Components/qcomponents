@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="server_action_product_template_multi_website_select" model="ir.actions.server">
+            <field name="name">Assign multiple websites</field>
+            <field name="model_id" ref="product.model_product_template"/>
+            <field name="binding_model_id" ref="product.model_product_template"/>
+            <field name="state">code</field>
+            <field name="code">
+            action = records.multi_website_select()
+            </field>
+        </record>
+        
+        <record id="server_action_product_product_multi_website_select" model="ir.actions.server">
+            <field name="name">Assign multiple websites</field>
+            <field name="state">code</field>
+            <field name="model_id" ref="product.model_product_product"/>
+            <field name="binding_model_id" ref="product.model_product_product"/>
+            <field name="code">
+            action = records.multi_website_select()
+            </field>
+        </record>
+
+        <record id="server_action_ecateg_multi_website_select" model="ir.actions.server">
+            <field name="name">Assign multiple websites</field>
+            <field name="state">code</field>
+            <field name="model_id" ref="website_sale.model_product_public_category"/>
+            <field name="binding_model_id" ref="website_sale.model_product_public_category"/>
+            <field name="code">
+            action = records.multi_website_select()
+            </field>
+        </record>
+
+    </data>
+</odoo>
+

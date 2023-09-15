@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <record id="view_website_form_view_algolia" model="ir.ui.view">
+    <field name="name">website.form.algolia</field>
+    <field name="model">website</field>
+    <field name="inherit_id" ref="website.view_website_form"/>
+    <field name="priority">1</field>
+    <field name="arch" type="xml">
+        <xpath expr="//div[@name='other']" position='after'>
+          <div name="algolia_search">
+            <group name="algolia_search">
+              <field name="enable_alogolia_search"/>
+              <field name="algolia_app_id" attrs="{'invisible': [('enable_alogolia_search','=',False)], 'required': [('enable_alogolia_search','=',True)]}"/>
+              <field name="model" invisible="1"/>
+              <field name="custom_fields" widget="many2many_tags" domain="[('model_id','=', model), ('ttype', 'not in', ['one2many','many2many', 'many2one_reference', 'reference', 'binary', 'date', 'datetime', 'boolean', 'monetary']), ('name', 'not in', ['name', 'id', 'list_price'])]" options="{'no_create_edit': True, 'no_create': True}" attrs="{'invisible': [('enable_alogolia_search','=',False)]}"/>
+              <field name="algolia_pricelist_id" domain="['|', ('website_id','=', id), ('website_id','=', False)]"  attrs="{'invisible': [('enable_alogolia_search','=',False)], 'required': [('enable_alogolia_search','=',True)]}"/>
+            </group>
+            <p attrs="{'invisible': [('enable_alogolia_search','=',False)]}">Note: Fields like <b>name</b>, <b>price</b>, <b>image</b> are selected and searchable by default.</p>
+            <button type="object" name="update_index" class="btn btn-primary" attrs="{'invisible': ['|', ('algolia_app_id','=',False), ('enable_alogolia_search','=',False)]}">
+              <span>Update Index</span>
+          </button>
+        </div>
+        </xpath>
+    </field>
+  </record>
+
+
+  <record id="algolia_search_app_view_form" model="ir.ui.view">
+    <field name="name">algolia.search.app.view.form</field>
+    <field name="model">algolia.search.app</field>
+    <field name="arch" type="xml">
+      <form string="App Config">
+        <header>
+          <field name="validated" widget="statusbar"/>
+        </header>
+        <sheet>
+          <group>
+            <field name="name" attrs="{'readonly': [('validated', '=', 'validated')]}"/>
+            <field name="app_id" attrs="{'readonly': [('validated', '=', 'validated')]}"/>
+            <field name="api_key" password="1" attrs="{'readonly': [('validated', '=', 'validated')]}"/>
+            <field name="search_key" readonly="1" attrs="{'readonly': [('validated', '=', 'validated')]}"/>
+            <!-- <field name="validated" invisible="1"/> -->
+          </group>
+          <button type="object" name="api_validation" class="btn btn-primary" attrs="{'invisible': [('validated', '=', 'validated')]}">
+            <span>Validate</span>
+        </button>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="algolia_search_app_view_tree" model="ir.ui.view">
+    <field name="name">algolia.search.app.view.tree</field>
+    <field name="model">algolia.search.app</field>
+    <field name="arch" type="xml">
+      <tree string="App Config">
+        <field name="name"/>
+        <field name="app_id"/>
+        <field name="validated" optional="show"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="algolia_search_action" model="ir.actions.act_window">
+    <field name="name">Algolia App</field>
+    <field name="res_model">algolia.search.app</field>
+    <field name="view_mode">tree,form</field>
+  </record>
+
+  <menuitem name="Algolia Configuration" groups="base.group_system" id="algolia_search_app_config_menu" parent="website.menu_website_configuration" sequence="999"/>
+  <menuitem name="App Configuration" groups="base.group_system" id="algolia_search_app_config_menu_child" parent="algolia_search_app_config_menu" action="algolia_search_action" />
+</odoo>

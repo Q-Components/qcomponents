@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <template id="assets_frontend" inherit_id="website.assets_frontend" name="Algolia Autocomplete Frontend Asset">
+    <xpath expr="//link[last()]" position="after">
+      <link rel="stylesheet" href="/algolia_search/static/src/lib/algolia.css"/>
+      <link rel="stylesheet" type="text/scss" href="/algolia_search/static/src/scss/styles.scss"/>
+    </xpath>
+    <xpath expr="script[last()]" position="after">
+        <script type="text/javascript" src="/algolia_search/static/src/lib/algoliasearch-lite.umd.js"></script>
+        <script type="text/javascript" src="/algolia_search/static/src/lib/instantsearch.production.min.js"></script>
+        <script type="text/javascript" src="/algolia_search/static/src/js/algolia_search.js"></script>
+    </xpath>
+</template>
+
+</odoo>

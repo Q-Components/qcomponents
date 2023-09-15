@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="categories_recursive" inherit_id="website_sale.categories_recursive" name="Category list">
+        <xpath expr="//li[hasclass('nav-item')]" position="replace">
+            <li class="nav-item">
+                <a t-if="website.id in c.website_ids.ids or c.website_ids.ids == []" t-att-href="keep('/shop/category/' + slug(c), category=0)" t-attf-class="nav-link #{'active' if c.id == category.id else ''}">
+                    <span t-field="c.name"/>
+                </a>
+                <ul t-if="c.child_id and website.id in c.website_ids.ids or c.website_ids.ids == []" class="nav nav-pills flex-column nav-hierarchy">
+                    <t t-foreach="c.child_id" t-as="c">
+                        <t t-if="not search or c.id in search_categories_ids">
+
+                            <t t-call="website_sale.categories_recursive" />
+                        </t>
+                    </t>
+                </ul>
+            </li>
+        </xpath>
+    </template>  
+</odoo>

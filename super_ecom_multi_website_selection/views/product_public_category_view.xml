@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="ecom_multi_website_product_public_category_inherit_form_view_ah" model="ir.ui.view">
+            <field name="name">ecom.multi.website.product.public.category.inherit.form.view.ah</field>
+            <field name="model">product.public.category</field>
+            <field name="inherit_id" ref="website_sale.product_public_category_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='website_id']" position="after">
+                    <field name="website_ids" widget='many2many_tags' />
+                </xpath>
+                <xpath expr="//field[@name='website_id']" position='attributes'>
+                    <attribute name='invisible'>1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="ecom_multi_website_product_public_category_inherit_tree_view_ah" model="ir.ui.view">
+            <field name="name">ecom.multi.website.product.public.category.inherit.tree.view.ah</field>
+            <field name="model">product.public.category</field>
+            <field name="inherit_id" ref="website_sale.product_public_category_tree_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='website_id']" position="after">
+                    <field name="website_ids" widget='many2many_tags' />
+                </xpath>
+                <xpath expr="//field[@name='website_id']" position='attributes'>
+                    <attribute name='invisible'>1</attribute>
+                </xpath>
+            </field>
+        </record>
+       
+    </data>
+</odoo>
