@@ -7,7 +7,7 @@
                 <div role="search" class="input-group w-100">
                     <input type="search" class="form-control border-0 text-bg-light"
                            placeholder="Search..." t-att-value="widget.term"/>
-                    <button type="submit" aria-label="Search" title="Search" class="btn btn btn-light">
+                    <button aria-label="Search" title="Search" class="btn btn btn-light term_search_btn">
                         <i class="oi oi-search"></i>
                         <span class="oe_search_found">
                             <small>

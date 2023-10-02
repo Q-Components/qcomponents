@@ -19,6 +19,7 @@ odoo.define('wr_website_customisation.quick_shop', function(require) {
             'click a.js_decrease_qty': '_clickDecreaseQty',
             'click a.js_increase_qty': '_clickIncreaseQty',
             'click a.add_to_cart': '_clickAddToCart',
+            'click button.term_search_btn': '_clickTermSearch',
         },
         init: function(parent, options){
             this.data = [];
@@ -120,6 +121,18 @@ odoo.define('wr_website_customisation.quick_shop', function(require) {
                     $(".website-loader").fadeOut("slow");
                 });
             }
+        },
+        _clickTermSearch: function(ev){
+            var self = this;
+            ev.preventDefault();
+            if($(ev.currentTarget).parent().find('input[type="search"]').val().length <= 0){
+                this.term = '';
+            }else{
+                this.term = $(ev.currentTarget).parent().find('input[type="search"]').val();
+            }
+            this.load_quick_shop_products().then(function(){
+                self.renderElement();
+            });
         }
 	});
 
