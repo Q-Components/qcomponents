@@ -9,6 +9,8 @@
             <xpath expr="//header" position="inside">
                 <button name="create_return_order" string="FedEx Return" type="object"
                         attrs="{'invisible': ['|','|','|',('picking_type_code', '=', 'outgoing'),('state','in',('done','cancel')),('carrier_tracking_ref','!=',False),('carrier_id','=',False)]}"/>
+                <button name="export_order_to_fedex" string="Export to Fedex" type="object"
+                        attrs="{'invisible': ['|','|','|','|',('picking_type_code', '!=', 'outgoing'),('state','!=','done'),('carrier_tracking_ref','!=',False),('carrier_id','=',False),('delivery_type','!=','fedex_shipping_provider')]}"/>
             </xpath>
         </field>
     </record>
