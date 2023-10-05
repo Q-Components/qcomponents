@@ -81,6 +81,7 @@ odoo.define('wr_website_customisation.quick_shop', function(require) {
                 }else{
                     this.term = $(ev.currentTarget).val();
                 }
+                this.offset = 0;
                 this.load_quick_shop_products().then(function(){
                     self.renderElement();
                 });
@@ -130,6 +131,7 @@ odoo.define('wr_website_customisation.quick_shop', function(require) {
             }else{
                 this.term = $(ev.currentTarget).parent().find('input[type="search"]').val();
             }
+            this.offset = 0;
             this.load_quick_shop_products().then(function(){
                 self.renderElement();
             });

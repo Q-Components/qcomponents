@@ -48,7 +48,7 @@ class WebsiteSale(http.Controller):
                 'qty_available': product_id.qty_available,
                 'description_sale': product_id.description_sale,
                 'uom_id': [product_id.uom_id.id, product_id.uom_id.name],
-                'website_url': product_id.website_url,
+                'website_url': product_id.product_tmpl_id.website_url,
                 'price': product_id.lst_price,
             } for product_id in products_ids]
             request.env.cr.execute(f"""
