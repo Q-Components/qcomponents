@@ -3,7 +3,8 @@
 
     <div t-name="QuickShopTemplate">
         <div class="row align-items-start flex-nowrap">
-            <div class="offset-md-3 col-6">
+            <div class="col-1"/>
+            <div class="col-10">
                 <div role="search" class="input-group w-100">
                     <input type="search" class="form-control border-0 text-bg-light"
                            placeholder="Search..." t-att-value="widget.term"/>
@@ -11,18 +12,53 @@
                         <i class="oi oi-search"></i>
                         <span class="oe_search_found">
                             <small>
-                                (<t t-esc="widget.data.total_products"/>found)
+                                (<t t-esc="widget.data.total_products"/> found)
                             </small>
                         </span>
                     </button>
+                    <div class="o_sortby_dropdown dropdown dropdown_sorty_by ms-lg-3 d-none d-lg-inline-block ms-3">
+                        <small class="d-none d-lg-inline text-muted">Sort By:</small>
+                        <a role="button" href="#" data-bs-toggle="dropdown" class="dropdown-toggle btn btn-light">
+                            <span class="d-none d-lg-inline">
+                                <t t-foreach="widget.filters" t-as="filter">
+                                    <t t-if="filter == widget.active_filter">
+                                        <span><t t-esc="widget.filters[filter]"/></span>
+                                    </t>
+                                </t>
+                            </span>
+                            <i class="fa fa-sort-amount-asc d-lg-none"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end" role="menu">
+                            <a role="menuitem" class="dropdown-item quick_shop_filter"
+                               t-foreach="widget.filters" t-as="filter" t-att-data-filter="filter">
+                                <span>
+                                    <t t-esc="widget.filters[filter]"/>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="btn-group ms-3 d-flex ms-3 ms-auto">
+                        <label title="Grid"
+                               t-attf-class="o_view_type btn btn-light #{widget.view_type == 'grid' ? 'border-primary' : ''}"
+                               data-view-type="grid">
+                            <i class="fa fa-th-large"></i>
+                        </label>
+                        <label title="List"
+                               t-attf-class="o_view_type btn btn-light #{widget.view_type == 'list' ? 'border-primary' : ''}"
+                               data-view-type="list">
+                            <i class="oi oi-view-list"></i>
+                        </label>
+                    </div>
                 </div>
             </div>
+            <div class="col-1"/>
         </div>
-        <div class="row align-items-start flex-nowrap">
-            <div class="col-2"/>
-            <div class="col-8">
+        <div class="row align-items-start flex-nowrap mt-3">
+            <div class="col-1"/>
+            <div class="col-10">
                 <div>
-                    <table class="table table-borderless h-100 m-0 o_wsale_context_thumb_cover">
+                    <table class="table table-borderless h-100 m-0 o_wsale_context_thumb_cover"
+                           t-if="widget.view_type == 'list'">
                         <colgroup>
                             <col width="15%"/>
                             <col width="85%"/>
@@ -96,34 +132,84 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr>
-                            <td colspan="2">
-                                <div class="products_pager d-flex justify-content-center pt-5 pb-3">
-                                    <ul class="pagination m-0">
-                                        <li t-attf-class="page-item previous #{widget.offset == 0 ? 'disabled' : ''}">
-                                            <button class="page-link pagination-prev-btn">Prev</button>
-                                        </li>
-                                        <li class="paginate_button page-item">
-                                            <a href="#" class="active page-link">
-                                                <t t-esc="widget.data.current_offset"/>
-                                                -
-                                                <t t-esc="widget.data.next_offset > widget.data.total_products ? widget.data.total_products : widget.data.next_offset"/>
-                                                /
-                                                <t t-esc="widget.data.total_products"/>
-                                                Products
-                                            </a>
-                                        </li>
-                                        <li t-attf-class="page-item previous #{widget.data.total_products == (widget.data.next_offset > widget.data.total_products ? widget.data.total_products : widget.data.next_offset) ? 'disabled' : ''}">
-                                            <button class="page-link pagination-next-btn">Next</button>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
                     </table>
+                    <div class="row" t-if="widget.view_type == 'grid'">
+                        <div class="col-md-3" t-foreach="widget.data.products" t-as="product">
+                            <div class="card oe_product_cart">
+                                <div class="card-body p-1 oe_product_image" style="">
+                                    <div class="ribbon-wrapper" data-oe-model="ir.ui.view" data-oe-id="1733"
+                                         data-oe-field="arch" data-oe-xpath="/t[1]/form[1]/div[1]/div[1]" style="">
+                                        <a href="#" role="button" class="ribbon btn btn-danger" style="">Sale</a>
+                                    </div>
+                                    <a class="d-block h-100" itemprop="url" href="/shop/73165-3-03e-41-212511" style="">
+                                        <span class="d-flex h-100 justify-content-center align-items-center">
+                                            <img t-attf-src="/web/image/product.product/{{product.id}}/image_512/"
+                                                 class="img img-fluid" t-att-alt="product.name" loading="lazy"
+                                                 style=""/>
+                                        </span>
+                                    </a>
+                                </div>
+                                <div class="card-body p-0 text-center o_wsale_product_information" style="">
+                                    <div class="p-2 o_wsale_product_information_text" style="">
+                                        <span>1</span>
+                                        Units available
+                                        <h6 class="o_wsale_products_item_title" style="">
+                                            <a t-att-href="product.website_url">
+                                                <t t-esc="product.name"/>
+                                            </a>
+                                            <div t-if="product.x_studio_alternate_number">
+                                                <a>
+                                                    <t t-esc="product.x_studio_alternate_number"/>
+                                                </a>
+                                            </div>
+                                        </h6>
+                                        <div t-if="product.x_studio_alternate_number">
+                                            <a>parts have stickers</a>
+                                        </div>
+                                        <div style="">
+                                            <span style="font-size: 95%;">
+                                                <t t-esc="product.qty_available"/>
+                                            </span>
+                                            <span style="font-size: 75%;"
+                                                  t-if="product.uom_id and product.uom_id.length &gt; 0">
+                                                <t t-esc="product.uom_id[1]"/>
+                                            </span>
+                                            <span style="font-size: 75%;">
+                                                left in stock.
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="products_pager d-flex justify-content-center pt-5 pb-3">
+                                <ul class="pagination m-0">
+                                    <li t-attf-class="page-item previous #{widget.offset == 0 ? 'disabled' : ''}">
+                                        <button class="page-link pagination-prev-btn">Prev</button>
+                                    </li>
+                                    <li class="paginate_button page-item">
+                                        <a href="#" class="active page-link">
+                                            <t t-esc="widget.data.current_offset"/>
+                                            -
+                                            <t t-esc="widget.data.next_offset > widget.data.total_products ? widget.data.total_products : widget.data.next_offset"/>
+                                            /
+                                            <t t-esc="widget.data.total_products"/>
+                                            Products
+                                        </a>
+                                    </li>
+                                    <li t-attf-class="page-item previous #{widget.data.total_products == (widget.data.next_offset > widget.data.total_products ? widget.data.total_products : widget.data.next_offset) ? 'disabled' : ''}">
+                                        <button class="page-link pagination-next-btn">Next</button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-2"/>
+            <div class="col-1"/>
         </div>
     </div>
 

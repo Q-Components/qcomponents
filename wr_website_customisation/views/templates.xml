@@ -7,22 +7,23 @@
             <div id="wrap" class="oe_structure oe_empty">
                 <style>
                     .website-loader {
-                        position: absolute;
-                        width: 100%;
-                        height: 100%;
-                        background: url(/wr_website_customisation/static/src/img/Spinner-1s-200px.gif) center no-repeat #fff;
-                        background-size: 130px;
-                        z-index: 3;
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    background: url(/wr_website_customisation/static/src/img/Spinner-1s-200px.gif) center no-repeat
+                    #fff;
+                    background-size: 130px;
+                    z-index: 3;
                     }
                     .website-loader::after {
-                        content: "Loading...";
-                        position: absolute;
-                        transform: translate(-50%, -50%);
-                        top: 72%;
-                        left: 50%;
-                        font-family: calibri;
-                        font-size: 16px;
-                        color: #555;
+                    content: "Loading...";
+                    position: absolute;
+                    transform: translate(-50%, -50%);
+                    top: 72%;
+                    left: 50%;
+                    font-family: calibri;
+                    font-size: 16px;
+                    color: #555;
                     }
                 </style>
                 <section class="s_text_block pb40 o_colored_level " data-snippet="s_text_block">
@@ -38,7 +39,17 @@
                     </div>
                 </section>
             </div>
-
         </t>
     </template>
+    <template id="product" inherit_id="website_sale.product">
+        <xpath expr="//div[hasclass('row')]/div[hasclass('col-lg-6')]/div" position="attributes">
+            <attribute name="class">d-none</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('row')]/div[hasclass('col-lg-6')][2]/ol/li[1]" position="replace">
+            <li class="breadcrumb-item o_not_editable">
+                <a href="/quick/shop">All Products</a>
+            </li>
+        </xpath>
+    </template>
+
 </odoo>
