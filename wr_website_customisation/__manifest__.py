@@ -10,7 +10,7 @@
     """,
     "author": "WebRulers Infotech",
     "website": "http://webrulersinfotech.com",
-    "depends": ['base', 'website_sale'],
+    "depends": ['base', 'website_sale', 'stock'],
     "data": [
         'data/data.xml',
         'views/templates.xml',

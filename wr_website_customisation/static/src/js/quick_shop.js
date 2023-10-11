@@ -20,12 +20,23 @@ odoo.define('wr_website_customisation.quick_shop', function(require) {
             'click a.js_increase_qty': '_clickIncreaseQty',
             'click a.add_to_cart': '_clickAddToCart',
             'click button.term_search_btn': '_clickTermSearch',
+            'click label.o_view_type': '_clickViewType',
+            'click a.quick_shop_filter': '_clickQuickShopFilter',
         },
         init: function(parent, options){
             this.data = [];
             this.term = '';
             this.limit = 20;
             this.offset = 0;
+            this.view_type = 'grid';
+            this.filters = {
+                'featured': 'Featured',
+                'newest_arrivals': 'Newest Arrivals',
+                'name_a_z': 'Name (A-Z)',
+                'price_low_high': 'Price - Low to High',
+                'price_high_low': 'Price - High to Low'
+            };
+            this.active_filter = 'featured';
             this._super.apply(this, arguments);
         },
         willStart: function(){
@@ -45,6 +56,7 @@ odoo.define('wr_website_customisation.quick_shop', function(require) {
                     'term': this.term,
                     'limit': this.limit,
                     'offset': this.offset,
+                    'active_filter': this.active_filter
                 }
             }).then(function(result){
                 if(result && result.success){
@@ -135,7 +147,20 @@ odoo.define('wr_website_customisation.quick_shop', function(require) {
             this.load_quick_shop_products().then(function(){
                 self.renderElement();
             });
-        }
+        },
+        _clickViewType: function(ev){
+            ev.preventDefault();
+            this.view_type = $(ev.currentTarget).data('view-type');
+            this.renderElement();
+        },
+        _clickQuickShopFilter: function(ev){
+            var self = this;
+            ev.preventDefault();
+            this.active_filter = $(ev.currentTarget).data('filter');
+            this.load_quick_shop_products().then(function(){
+                self.renderElement();
+            });
+        },
 	});
 
 	$(document).ready(function(){
