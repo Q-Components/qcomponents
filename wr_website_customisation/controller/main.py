@@ -32,7 +32,9 @@ class WebsiteSale(http.Controller):
                 join product_template pt
                 on pp.product_tmpl_id = pt.id
                 where pt.sale_ok = 't'
-                and (pt.website_id = 1 or pt.website_id is null )
+                and pp.active = 't'
+                and pt.is_published = 't'
+                and (pt.website_id = {request.website.id} or pt.website_id is null )
                 and (pt.name ILIKE '%{post.get('term')}%'
                 or pt.x_studio_alternate_number ilike '%{post.get('term')}%'
                 or pt.default_code ilike '%{post.get('term')}%') {self.get_filters_query(post.get('active_filter'))}
@@ -57,7 +59,9 @@ class WebsiteSale(http.Controller):
                 join product_template pt
                 on pp.product_tmpl_id = pt.id
                 where pt.sale_ok = 't'
-                and (pt.website_id = 1 or pt.website_id is null )
+                and pp.active = 't'
+                and pt.is_published = 't'
+                and (pt.website_id = {request.website.id} or pt.website_id is null )
                 and (pt.name ILIKE '%{post.get('term')}%'
                 or pt.x_studio_alternate_number ilike '%{post.get('term')}%'
                 or pt.default_code ilike '%{post.get('term')}%')
