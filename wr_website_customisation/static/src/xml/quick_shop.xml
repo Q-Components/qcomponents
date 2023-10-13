@@ -141,7 +141,7 @@
                                          data-oe-field="arch" data-oe-xpath="/t[1]/form[1]/div[1]/div[1]" style="">
                                         <a href="#" role="button" class="ribbon btn btn-danger" style="">Sale</a>
                                     </div>
-                                    <a class="d-block h-100" itemprop="url" href="/shop/73165-3-03e-41-212511" style="">
+                                    <a class="d-block h-100" itemprop="url" t-att-href="product.website_url" style="">
                                         <span class="d-flex h-100 justify-content-center align-items-center">
                                             <img t-attf-src="/web/image/product.product/{{product.id}}/image_512/"
                                                  class="img img-fluid" t-att-alt="product.name" loading="lazy"
