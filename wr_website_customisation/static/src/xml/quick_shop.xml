@@ -137,10 +137,10 @@
                         <div class="col-md-3" t-foreach="widget.data.products" t-as="product">
                             <div class="card oe_product_cart">
                                 <div class="card-body p-1 oe_product_image" style="">
-                                    <div class="ribbon-wrapper" data-oe-model="ir.ui.view" data-oe-id="1733"
+                                    <!--<div class="ribbon-wrapper" data-oe-model="ir.ui.view" data-oe-id="1733"
                                          data-oe-field="arch" data-oe-xpath="/t[1]/form[1]/div[1]/div[1]" style="">
                                         <a href="#" role="button" class="ribbon btn btn-danger" style="">Sale</a>
-                                    </div>
+                                    </div>-->
                                     <a class="d-block h-100" itemprop="url" t-att-href="product.website_url" style="">
                                         <span class="d-flex h-100 justify-content-center align-items-center">
                                             <img t-attf-src="/web/image/product.product/{{product.id}}/image_512/"

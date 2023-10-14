@@ -27,7 +27,7 @@ class WebsiteSale(http.Controller):
     @http.route(['/fetch_quick_shop_products'], type='json', auth="public", website=True, sitemap=False)
     def fetch_quick_shop_products(self, **post):
         if 'term' in post:
-            request.env.cr.execute(f"""
+            query = f"""
                 select pp.id from product_product pp
                 join product_template pt
                 on pp.product_tmpl_id = pt.id
@@ -39,7 +39,8 @@ class WebsiteSale(http.Controller):
                 or pt.x_studio_alternate_number ilike '%{post.get('term')}%'
                 or pt.default_code ilike '%{post.get('term')}%') {self.get_filters_query(post.get('active_filter'))}
                 limit {post.get('limit', 20)} OFFSET {post.get('offset', 0)}
-            """)
+            """
+            request.env.cr.execute(query)
             products_ids = request.env.cr.fetchall()
             products_ids = [product[0] for product in products_ids]
             products_ids = request.env['product.product'].sudo().browse(products_ids)

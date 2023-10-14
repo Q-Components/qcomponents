@@ -36,7 +36,7 @@ odoo.define('wr_website_customisation.quick_shop', function(require) {
                 'price_low_high': 'Price - Low to High',
                 'price_high_low': 'Price - High to Low'
             };
-            this.active_filter = 'featured';
+            this.active_filter = 'newest_arrivals';
             this._super.apply(this, arguments);
         },
         willStart: function(){
