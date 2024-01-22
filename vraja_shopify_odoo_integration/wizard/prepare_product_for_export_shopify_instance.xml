@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--Wizard view of prepre product for export to odoo.-->
+    <record id="export_product_to_odoo" model="ir.ui.view">
+        <field name="name">prepare.product.for.export.shopify.instance</field>
+        <field name="model">prepare.product.for.export.shopify.instance</field>
+        <field name="arch" type="xml">
+            <form string="Export Products To Odoo">
+                <sheet>
+                    <group>
+                        <field name="shopify_instance_id" required="1"/>
+                    </group>
+                    <footer>
+                        <button name="prepare_product_for_export_shopify_instance"
+                                string="Export" type="object"
+                                class="oe_highlight"/>
+                        <button string="Cancel" class="oe_highlight" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!--Action for prepare product for export to odoo-->
+    <record id="action_export_product_to_odoo_shopify" model="ir.actions.act_window">
+        <field name="name">Export Products To Shopify Instance</field>
+        <field name="res_model">prepare.product.for.export.shopify.instance</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="product.model_product_template"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="view_id" ref="export_product_to_odoo"/>
+    </record>
+
+</odoo>

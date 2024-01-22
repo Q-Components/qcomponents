@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_update_product_process_manual"
+            model="ir.ui.view">
+        <field name="name">Update Product manual</field>
+        <field name="model">export.product.to.shopify</field>
+        <field name="arch" type="xml">
+            <form string="Update Product">
+                <sheet>
+                    <p style="background-color:powderblue; padding: 10px;">
+                        <b>Notes: Update Products</b>
+                        <ul>
+                            <br/>
+                            <li>
+                                At a time maximum of 80 products can be processed.
+                            </li>
+                        </ul>
+                    </p>
+                    <group>
+                        <field name='shopify_is_set_price' string="Update Price ?" widget="boolean_toggle"/>
+                        <field name='shopify_is_set_image' string="Update Image ?" widget="boolean_toggle"/>
+                    </group>
+                    <group>
+                        <field name="shopify_is_publish"/>
+                    </group>
+                    <footer>
+                        <button string="Update Product To Shopify" class="oe_highlight"
+                                type="object" name="update_products_from_odoo_to_shopify_store"/>
+                        <button string="Cancel" class="oe_highlight"
+                                special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_export_product_process_manual"
+            model="ir.ui.view">
+        <field name="name">Export Product manual</field>
+        <field name="model">export.product.to.shopify</field>
+        <field name="arch" type="xml">
+            <form string="Export Product">
+                <sheet>
+                    <p style="background-color:powderblue; padding: 10px;">
+                        <b>Notes: Export Products</b>
+                        <ul>
+                            <br/>
+                            <li>
+                                At a time maximum of 80 products can be processed.
+                            </li>
+                        </ul>
+                    </p>
+                    <group>
+                        <field name="shopify_is_set_price" widget="boolean_toggle"/>
+                        <field name="shopify_is_set_image" widget="boolean_toggle"/>
+                    </group>
+                    <group>
+                        <field name="shopify_is_publish"/>
+                    </group>
+                    <footer>
+                        <button string="Export Product To Shopify" class="oe_highlight"
+                                type="object" name="manual_export_product_to_shopify"/>
+                        <button string="Cancel" class="oe_highlight"
+                                special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Below action used for export product-->
+    <record id="action_wizard_export_product_to_shopify" model="ir.actions.act_window">
+        <field name="name">Shopify - Export Product</field>
+        <field name="res_model">export.product.to.shopify</field>
+        <field name="binding_model_id" ref="model_shopify_product_listing"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_export_product_process_manual"/>
+    </record>
+
+    <!-- Below action used for Update Existing Product in Shopify-->
+    <record id="action_wizard_update_product_to_shopify" model="ir.actions.act_window">
+        <field name="name">Shopify - Update Product</field>
+        <field name="res_model">export.product.to.shopify</field>
+        <field name="binding_model_id" ref="model_shopify_product_listing"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_update_product_process_manual"/>
+    </record>
+
+</odoo>

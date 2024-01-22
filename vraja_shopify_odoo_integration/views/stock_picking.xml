@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Inherit view of delivery carrier-->
+    <record id="stock_picking_shopify_form_view" model="ir.ui.view">
+        <field name="name">stock.picking.shopify.form.view</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button string="Manually Update Shipment" class="oe_highlight"
+                                    type="object" name="manually_update_shipment" attrs="{'invisible':[('updated_status_in_shopify','=',True)]}"/>
+            </xpath>
+            <xpath expr="//notebook/page[@name='extra']" position="after">
+                <page string="Shopify" name="shopify_info">
+                    <group>
+                        <group>
+                            <field name="instance_id"/>
+                            <field name="updated_status_in_shopify"/>
+                        </group>
+                        <group>
+                            <field name="shopify_fulfillment_id" />
+                            <field name="is_order_cancelled_in_shopify" />
+                            <field name="is_shopify_error" />
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

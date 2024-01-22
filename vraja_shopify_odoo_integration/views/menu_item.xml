@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <!-- Main menu -->
+        <menuitem id="shopify_instance_integration"
+                  name="Shopify Connector"
+                  action="action_shopify_instance_integration"
+                  web_icon="vraja_shopify_odoo_integration,static/description/icon.png"/>
+
+        <!-- Configuration Menu & it's Items -->
+        <menuitem id="shopify_configuration_menu"
+                  name="Configuration"
+                  parent="vraja_shopify_odoo_integration.shopify_instance_integration"
+                  sequence="10"/>
+        <menuitem id="shopify_configuration_sub_menu"
+                  name="Instance"
+                  action="action_shopify_instance_integrations"
+                  parent="vraja_shopify_odoo_integration.shopify_configuration_menu"/>
+        <menuitem id="workflow_automation"
+                  name="Sale Auto Workflow"
+                  action="action_order_workflow_automation"
+                  parent="vraja_shopify_odoo_integration.shopify_configuration_menu"/>
+        <menuitem id="shopify_financial_status_configuration"
+                  name="Financial Status"
+                  action="action_shopify_financial_status_configuration"
+                  parent="vraja_shopify_odoo_integration.shopify_configuration_menu"/>
+        <menuitem id="shopify_location"
+                  name="Shopify Locations"
+                  action="action_shopify_location"
+                  parent="vraja_shopify_odoo_integration.shopify_configuration_menu"/>
+        <menuitem id="shopify_payment_gateway"
+                  name="Payment Gateway"
+                  action="action_shopify_payment_gateway"
+                  parent="vraja_shopify_odoo_integration.shopify_configuration_menu"/>
+
+        <!-- Process Menu & it's Items -->
+        <menuitem id="process_menu"
+                  name="Process"
+                  parent="vraja_shopify_odoo_integration.shopify_instance_integration"
+                  sequence="2"/>
+        <menuitem id="menu_order_queue"
+                  name="Order Queue"
+                  parent="vraja_shopify_odoo_integration.process_menu"
+                  sequence="0"
+                  action="action_shopify_order_process"/>
+        <menuitem id="menu_product_queue"
+                  name="Product Queue"
+                  parent="vraja_shopify_odoo_integration.process_menu"
+                  sequence="1"
+                  action="action_shopify_product_process"/>
+        <menuitem id="menu_customer_queue"
+                  name="Customer Queue"
+                  parent="vraja_shopify_odoo_integration.process_menu"
+                  sequence="2"
+                  action="action_shopify_customer_queue"/>
+        <menuitem id="menu_inventory_queue"
+                  name="Inventory Queue"
+                  parent="vraja_shopify_odoo_integration.process_menu"
+                  sequence="3"
+                  action="action_shopify_inventory_process"/>
+
+        <!-- Sale Order Menu & it's Items -->
+        <menuitem id="sale_order_menu"
+                  name="Sales"
+                  parent="vraja_shopify_odoo_integration.shopify_instance_integration"
+                  sequence="0"
+                  action="shopify_sale_order_action"/>
+
+        <!-- Products Menu & it's Items -->
+        <menuitem id="product_listing_menu"
+                  name="Products"
+                  parent="vraja_shopify_odoo_integration.shopify_instance_integration"
+                  sequence="1"/>
+        <menuitem id="product_listing_submenu"
+                  name="Products"
+                  parent="vraja_shopify_odoo_integration.product_listing_menu"
+                  sequence="0"
+                  action="action_shopify_product_listing"/>
+        <menuitem id="shopify_product_listing_items_menu"
+                  name="Product Variant"
+                  parent="vraja_shopify_odoo_integration.product_listing_menu"
+                  action="shopify_product_listing_item_action"/>
+
+        <!-- Log Menu & it's Items -->
+        <menuitem id="log_menu"
+                  name="Log"
+                  parent="vraja_shopify_odoo_integration.shopify_instance_integration"
+                  sequence="3"/>
+        <menuitem id="menu_shopify_log"
+                  name="Log Book"
+                  parent="vraja_shopify_odoo_integration.log_menu"
+                  sequence="0"
+                  action="action_shopify_log"/>
+        <menuitem id="menu_shopify_log_line"
+                  name="Log Book Line"
+                  parent="vraja_shopify_odoo_integration.log_menu"
+                  sequence="1"
+                  action="action_shopify_log_line"/>
+    </data>
+</odoo>

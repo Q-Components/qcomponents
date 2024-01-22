@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- Shopify Operations Form-->
+        <record id="shopify_operations_form_view" model="ir.ui.view">
+            <field name="name">shopify operations form view</field>
+            <field name="model">shopify.operations</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <p style="background-color:powderblue; padding: 10px;"
+                           attrs="{'invisible':[('import_operations', '!=', 'import_order')]}">
+                            <b>Notes: Import Order Process</b>
+                            <ul>
+                                <br/>
+                                <li>To import Unshipped Orders From Shopify Store based on From and To Date, It will
+                                    Create
+                                    Order Queue Inside odoo(Shopify->Process->Order Queue)
+                                </li>
+                                <li>
+                                    Queue Automatically Processed Using Cron Job. User Can also Process Manually By
+                                    Click On
+                                    Process Manually Button Inside the Order Queue.
+                                </li>
+                                <li>
+                                    If any Issue in Process of Order Queue We manages the Logs. Log is Link with Order
+                                    Queue
+                                    So We Easily Check.
+                                </li>
+                            </ul>
+                        </p>
+                        <p style="background-color:powderblue; padding: 10px;"
+                           attrs="{'invisible':[('import_operations', '!=', 'import_product')]}">
+                            <b>Notes: Import Product Process</b>
+                            <ul>
+                                <br/>
+                                <li>
+                                    To Import Products From Shopify Store Based on From and To Date, It will Create
+                                    Product
+                                    Queue Inside odoo(Shopify->Process->Product Queue)
+                                </li>
+                                <li>Queue Automatically Processed in Background Using Cron Job. User Can also Process
+                                    Manually By Click On Process Manually Button Inside the Product Queue.
+                                </li>
+                                <li>
+                                    If any Issue in Process of Product Queue We manages the Logs. Log is Link with
+                                    Product
+                                    Queue So We Easily Check.
+                                </li>
+                            </ul>
+                            <p>
+                                <b>Notes: Import Product By - Remote IDs</b>
+                                <ul>
+                                    <br/>
+                                    <li>
+                                        To Import Products Based on Specify Shopify Template IDs
+                                        Example of Enter shopify product template ids:
+                                        4341100314679,4341100314680,4341100314678,4341100314658
+                                    </li>
+                                    <li>
+                                        Once User Enter the Shopify Template IDs It will Create the Product Queue and
+                                        process
+                                        It.
+                                    </li>
+                                    <li>
+                                        Please Enter shopify product template ids with comma separated values without
+                                        any
+                                        quotes.
+                                    </li>
+                                </ul>
+                            </p>
+                        </p>
+                        <p style="background-color:powderblue; padding: 10px;"
+                           attrs="{'invisible':[('import_operations', '!=', 'import_customers')]}">
+                            <b>Notes: Import Product By - Remote IDs</b>
+                            <ul>
+                                <br/>
+                                <li>
+                                    To Import Customers From Shopify Store, It will Create Customer Queue Inside
+                                    odoo(Shopify->Process->Customer Queue)
+                                </li>
+                                <li>
+                                    Queue Automatically Processed in Background Using Cron Job.
+                                </li>
+                            </ul>
+                        </p>
+                        <p style="background-color:powderblue; padding: 10px;"
+                           attrs="{'invisible':[('import_operations', '!=', 'import_stock')]}">
+                            <b>Notes: Import Stock</b>
+                            <ul>
+                                <br/>
+                                <li>The "Import Stock" feature facilitates the transfer of product stock from a Shopify
+                                    store
+                                    to Odoo.
+                                </li>
+                                <li>Stock is imported to the warehouse based on the configuration specified in the
+                                    "Import
+                                    Stock" section under Shopify > Configuration > Shopify Locations.
+                                </li>
+                                <li>If the "Auto Validate Inventory in Odoo" configuration is enabled, stock changes
+                                    will
+                                    be
+                                    automatically applied. Alternatively, manual processing of inventory adjustment
+                                    transaction
+                                    records is required to implement stock changes if the auto-apply option is disabled.
+                                </li>
+                            </ul>
+                        </p>
+                        <br/>
+                        <group>
+                            <group>
+                                <field name="instance_id"/>
+                                <field name="shopify_operation" widget="radio"/>
+                                <field name="import_operations" widget="radio"
+                                       attrs="{'invisible': [('shopify_operation', '!=', 'import')]}"/>
+                            </group>
+                            <group>
+                                <!-- Import Order fields -->
+                                <field name="from_date_order"
+                                       attrs="{'required':[('import_operations', '=', 'import_order')], 'invisible': ['|', ('shopify_operation', '!=', 'import'), ('import_operations', '!=', 'import_order')]}"/>
+                                <field name="to_date_order"
+                                       attrs="{'required':[('import_operations', '=', 'import_order')], 'invisible': ['|', ('shopify_operation', '!=', 'import'), ('import_operations', '!=', 'import_order')]}"/>
+                                <field name="shopify_order_id"
+                                       attrs="{'invisible': ['|', ('shopify_operation', '!=', 'import'), ('import_operations', '!=', 'import_order')]}"/>
+
+                                <!-- Import Product fields -->
+                                <field name="from_date_product"
+                                       attrs="{'required':[('import_operations', '=', 'import_product')], 'invisible': ['|', ('shopify_operation', '!=', 'import'), ('import_operations', '!=', 'import_product')]}"/>
+                                <field name="to_date_product"
+                                       attrs="{'required':[('import_operations', '=', 'import_product')], 'invisible': ['|', ('shopify_operation', '!=', 'import'), ('import_operations', '!=', 'import_product')]}"/>
+                                <field name="shopify_product_id"
+                                       attrs="{'invisible': ['|', ('shopify_operation', '!=', 'import'), ('import_operations', '!=', 'import_product')]}"/>
+
+                                <!-- Import Stock fields -->
+                                <field name="auto_validate_inventory_in_odoo"
+                                       attrs="{'invisible': ['|', ('shopify_operation', '!=', 'import'), ('import_operations', '!=', 'import_stock')]}"/>
+                            </group>
+                        </group>
+                        <footer>
+                            <button string="Execute" class="oe_highlight" type="object"
+                                    name="execute_process_of_shopify"/>
+                            <button string="Cancel" class="oe_highlight" special="cancel"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="actions_shopify_operations" model="ir.actions.act_window">
+            <field name="name">Shopify Operations</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">shopify.operations</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="shopify_operations_form_view"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>
+
+

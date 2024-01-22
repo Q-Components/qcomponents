@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!--log tree view-->
+        <record id="view_shopify_order_queue_tree_view" model="ir.ui.view">
+            <field name="name">Shopify Order Queue</field>
+            <field name="model">order.data.queue</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Process Detail" create='1'>
+                    <field name="name"/>
+                    <field name="instance_id"/>
+                    <field name="create_date"/>
+                    <field name="state" decoration-success="state == 'completed'" decoration-info="state == 'draft'"
+                           decoration-warning="state == 'partially_completed'" decoration-danger="state == 'failed'"
+                           widget="badge"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--Order Queue  form view-->
+        <record id="view_form_shopify_order_queue_form" model="ir.ui.view">
+            <field name="name">Shopify Order Process Queue</field>
+            <field name="model">order.data.queue</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Shopify Order Process Queue" create="false">
+                    <header>
+                        <button string="Process Queue Manually" class="oe_highlight"
+                                type="object" name="process_shopify_order_queue"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <div class="alert alert-info text-left" role="alert">
+                        <ul>
+                            <li>
+                                If you don't want to wait for the cron to execute the queue and If you want to process
+                                the
+                                queue instantly then click on the Process Queue Manually button.
+                            </li>
+                            <li>
+                                If a queue line failed for any reason and by making required
+                                changes
+                                in Odoo it can process it successfully, so you can try this option to click process
+                                manually.
+                            </li>
+                            <li>
+                                This will not fetch any data from the Shopify store to reprocess it.
+                            </li>
+                            <li>
+                                This process might take some time to complete.
+                            </li>
+                        </ul>
+                    </div>
+                    <sheet>
+                        <!--                        <div class="oe_button_box" name="button_box">-->
+                        <!--                            <button id="order_queue_line_total" class="oe_stat_button" disabled="1"-->
+                        <!--                                    icon="fa-database">-->
+                        <!--                                <div class="o_field_widget o_stat_info">-->
+                        <!--                                    <span class="o_stat_value">-->
+                        <!--                                        <field name="order_queue_line_total_record"/>-->
+                        <!--                                    </span>-->
+                        <!--                                    <span class="o_stat_text">Records</span>-->
+                        <!--                                </div>-->
+                        <!--                            </button>-->
+
+                        <!--                            <button id="order_queue_line_draft" class="oe_stat_button" disabled="1"-->
+                        <!--                                    icon="fa-info">-->
+                        <!--                                <div class="o_field_widget o_stat_info">-->
+                        <!--                                    <span class="o_stat_value">-->
+                        <!--                                        <field name="order_queue_line_draft_record"/>-->
+                        <!--                                    </span>-->
+                        <!--                                    <span class="o_stat_text">Draft</span>-->
+                        <!--                                </div>-->
+                        <!--                            </button>-->
+                        <!--                            <button id="order_queue_line_fail" class="oe_stat_button" disabled="1"-->
+                        <!--                                    icon="fa-times"-->
+                        <!--                                    attrs="{'invisible':[('state', 'in', ['partially_completed'])]}">-->
+                        <!--                                <div class="o_field_widget o_stat_info">-->
+                        <!--                                    <span class="o_stat_value">-->
+                        <!--                                        <field name="order_queue_line_fail_record"/>-->
+                        <!--                                    </span>-->
+                        <!--                                    <span class="o_stat_text">Failed</span>-->
+                        <!--                                </div>-->
+                        <!--                            </button>-->
+                        <!--                            <button id="order_queue_line_fail_sub" class="oe_stat_button" disabled="1"-->
+                        <!--                                    attrs="{'invisible':[('state', 'not in', ['partially_completed'])]}">-->
+                        <!--                                <span class="fa-stack fa-lg"-->
+                        <!--                                      style="padding-top: 6px; margin-left:2px; margin-top:2PX; font-size: 22px; color:#ff0000;">-->
+                        <!--                                    <i class="fa fa-times-circle" title="Time Circle"-->
+                        <!--                                       style="margin-left:18px;"/>-->
+                        <!--                                </span>-->
+                        <!--                                <field name="order_queue_line_fail_record" widget="statinfo"-->
+                        <!--                                       string="Failed"/>-->
+                        <!--                            </button>-->
+                        <!--                            <button id="order_queue_line_done" class="oe_stat_button" disabled="1"-->
+                        <!--                                    icon="fa-check"-->
+                        <!--                                    attrs="{'invisible':[('state', 'in', ['completed'])]}">-->
+                        <!--                                <div class="o_field_widget o_stat_info">-->
+                        <!--                                    <span class="o_stat_value">-->
+                        <!--                                        <field name="order_queue_line_done_record"/>-->
+                        <!--                                    </span>-->
+                        <!--                                    <span class="o_stat_text">Done</span>-->
+                        <!--                                </div>-->
+                        <!--                            </button>-->
+                        <!--                            <button id="order_queue_line_done_sub" class="oe_stat_button" disabled="1"-->
+                        <!--                                    attrs="{'invisible':[('state', 'not in', ['completed'])]}">-->
+                        <!--                                <span class="fa-stack fa-lg"-->
+                        <!--                                      style="padding-top: 6px; margin-left:15px; color:#00ff00;">-->
+                        <!--                                    <i class="fa fa-check fa-stack-1x" style="margin-left:4px;" title="Stack 1x"/>-->
+                        <!--                                    <i class="fa fa-check fa-inverse fa-stack-1x"-->
+                        <!--                                       style="margin-left:-3px;" title="Stack Inverse 1x"/>-->
+                        <!--                                    <i class="fa fa-check  fa-stack-1x"-->
+                        <!--                                       style="margin-left:-4px" title="Stack 1x"/>-->
+                        <!--                                </span>-->
+                        <!--                                <field name="order_queue_line_done_record" widget="statinfo"-->
+                        <!--                                       string="Done"/>-->
+                        <!--                            </button>-->
+                        <!--                            <button id="order_queue_line_cancel" class="oe_stat_button" disabled="1"-->
+                        <!--                                    icon="fa-ban">-->
+                        <!--                                <div class="o_field_widget o_stat_info">-->
+                        <!--                                    <span class="o_stat_value">-->
+                        <!--                                        <field name="order_queue_line_cancel_record"/>-->
+                        <!--                                    </span>-->
+                        <!--                                    <span class="o_stat_text">cancelled</span>-->
+                        <!--                                </div>-->
+                        <!--                            </button>-->
+                        <!--                        </div>-->
+                        <div>
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="instance_id"/>
+                                <label for="create_date" string="Imported at"/>
+                                <field name="create_date" nolabel="1"/>
+                            </group>
+                            <group>
+                                <field name="shopify_log_id" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Order Queue Detail Line" name="order_queue_detail_line">
+                                <field name="shopify_order_queue_line_ids" readonly="1">
+                                    <tree decoration-danger="state == 'failed'"
+                                          decoration-success="state == 'completed'">
+                                        <field name="name" readonly="1"/>
+                                        <!--                                        <field name="shopify_order_queue_id"/>-->
+                                        <!--                                        <field name="instance_id" readonly="1"/>-->
+                                        <field name="sale_order_id"/>
+                                        <field name="order_data_id"/>
+                                        <field name="state"/>
+                                    </tree>
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <group>
+                                                    <field name="name"/>
+                                                    <field name="shopify_order_queue_id"/>
+                                                    <field name="instance_id" readonly="1"/>
+                                                    <field name="state" readonly="1"/>
+                                                </group>
+                                                <group>
+                                                    <field name="order_data_id"/>
+                                                    <field name="sale_order_id"/>
+                                                    <field name="number_of_fails"/>
+                                                </group>
+                                            </group>
+                                            <notebook>
+                                                <page string="Response Data" name="response">
+                                                    <field name="order_data_to_process" widget="ace"
+                                                    />
+                                                </page>
+                                            </notebook>
+                                        </sheet>
+                                    </form>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- action log-->
+        <record id="action_shopify_order_process" model="ir.actions.act_window">
+            <field name="name">Order Queue</field>
+            <field name="res_model">order.data.queue</field>
+            <field name="view_id" ref="view_shopify_order_queue_tree_view"/>
+        </record>
+
+    </data>
+    <data noupdate="1">
+        <record id="seq_shopify_order_queue" model="ir.sequence">
+            <field name="name">shopify order queue seq</field>
+            <field name="code">order.data.queue</field>
+            <field name="padding">5</field>
+            <field name="prefix">Order/Queue/</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

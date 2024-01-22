@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="res_partner_view_form_inherited" model="ir.ui.view">
+            <field name="name">Res Partner View Form Inherited</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='category_id']" position="after">
+                    <field name="shopify_customer_id" readonly="1"/>
+                    <field name="shopify_instance_id" readonly="1"/>
+                    <field name="shopify_address_id" readonly="1"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
