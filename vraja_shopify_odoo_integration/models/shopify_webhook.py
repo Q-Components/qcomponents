@@ -34,6 +34,7 @@ class ShopifyWebhook(models.Model):
 
             result = super(ShopifyWebhook, self).create(val)
             result.get_webhook()
+            _logger.info("CREATE WEBHOOK : %s", result)
         return result
 
     def get_webhook(self):
@@ -54,6 +55,7 @@ class ShopifyWebhook(models.Model):
         response = shopify_webhook.create(webhook_vals)
         if response.id:
             new_webhook = response.to_dict()
+            _logger.info("Creates webhook in Shopify Store : %s", new_webhook)
             self.write({"webhook_id": new_webhook.get("id"), 'delivery_url': url, 'state': 'active'})
         return True
 
