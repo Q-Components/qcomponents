@@ -364,10 +364,10 @@
                                 <div t-attf-class="o_kanban_card_header">
                                     <div class="o_kanban_card_header_title">
                                         <div class="o_primary">
-                                            <img alt="Marketplace Instance"
-                                                 t-att-src="kanban_image('shopify.instance.integration', 'image', record.id.raw_value)"
-                                                 class="oe_kanban_avatar img-fluid" width="60" height="60"/>
-                                            <span></span>
+<!--                                            <img alt="Marketplace Instance"-->
+<!--                                                 t-att-src="kanban_image('shopify.instance.integration', 'image', record.id.raw_value)"-->
+<!--                                                 class="oe_kanban_avatar img-fluid" width="60" height="60"/>-->
+<!--                                            <span></span>-->
                                             <a type="object" name="action_shopify_open_instance_view_form">
                                                 <field name="name"/>
                                             </a>
