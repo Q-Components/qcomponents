@@ -52,4 +52,4 @@
 # 13.30.11.21 move third party delivery level to sale level
 # 13.14.12.21 third party freight
 # 13.15.12.21 fix third party issue
-# 13.17.12.21 add street2 field in label
+# 13.17.12.21 add street2 field in label 
