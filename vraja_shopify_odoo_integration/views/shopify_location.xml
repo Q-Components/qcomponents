@@ -6,7 +6,7 @@
             <field name="name">shopify location form</field>
             <field name="model">shopify.location</field>
             <field name="arch" type="xml">
-                <form>
+                <form create="False">
                     <sheet>
                         <div class="oe_title">
                             <h1>
@@ -24,23 +24,20 @@
                                 <field name="legacy" widget="boolean_toggle" readonly="1"/>
                             </group>
                         </group>
-                        <group string="Warehouse Stock">
+                        <group string="Export stock Detail">
                             <group>
-                                <field name="export_stock_warehouse_ids" string="Export stock warehouses"
+                                <field name="export_stock_warehouse_ids" string="Export stock Detail"
                                        widget="many2many_tags"/>
-                            </group>
-                            <group>
-                                <field name="warehouse_id" string="Import Stock Warehouse"/>
                             </group>
                         </group>
 
-                        <group string="Location Detail">
+                        <group string="Import stock Detail">
                             <group>
-                                <field name="is_import_export_stock" string="Import/Export Stock for this location?"
+                                <field name="is_import_stock" string="Import Stock for this location?"
                                        widget="boolean_toggle"/>
                             </group>
                             <group>
-                                <field name="location_id"/>
+                                <field name="warehouse_id" string="Import Stock Warehouse" attrs="{'invisible': [('is_import_stock', '!=', True)]}"/>
                             </group>
                         </group>
                     </sheet>

@@ -6,7 +6,7 @@
             <field name="name">Shopify Customer Data</field>
             <field name="model">customer.data.queue</field>
             <field name="arch" type="xml">
-                <tree>
+                <tree create='false'>
                     <field name="name"/>
                     <field name="instance_id"/>
                     <field name="create_date"/>
@@ -21,7 +21,7 @@
             <field name="name">Shopify Customer Data</field>
             <field name="model">customer.data.queue</field>
             <field name="arch" type="xml">
-                <form>
+                <form create="False">
                     <header>
                         <button class="btn-primary" type="object" name="process_shopify_customer_queue"
                                 string="Process Queue Manually"/>
@@ -84,6 +84,7 @@
                                                 </group>
                                                 <group>
                                                     <field name="res_partner_id" readonly="1"/>
+                                                    <field name="number_of_fails"/>
                                                 </group>
                                             </group>
                                             <notebook>

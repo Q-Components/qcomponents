@@ -1,8 +1,9 @@
 import logging
 import re
-from datetime import  timedelta
-from odoo import models, fields, tools, api
 import pprint
+from datetime import timedelta
+from odoo import models, fields, tools, api
+from odoo.tools.safe_eval import safe_eval
 from .. import shopify
 
 _logger = logging.getLogger("Shopify Product Queue")
@@ -119,34 +120,63 @@ class ProductDataQueue(models.Model):
                 instance.last_product_synced_date = last_synced_date
         return queue_id_list
 
-    def process_shopify_product_queue(self):
+    def process_shopify_product_queue(self, instance_id=False):
         """
         In product queue given process button, from this button this method get executed.
         From this method from shopify product will get imported into Odoo.
         """
-        shopify_product_object, instance_id = self.env['shopify.product.listing'], self.instance_id
-        queue_line_ids = self.shopify_product_queue_line_ids.filtered(lambda x: x.state in ['draft', 'failed'])
-        log_id = self.env['shopify.log'].generate_shopify_logs('product', 'import', instance_id, 'Process Started')
-        self._cr.commit()
-        commit_counter = 0
-        for line in queue_line_ids:
-            commit_counter += 1
-            if commit_counter == 10:
-                self._cr.commit()
-                commit_counter = 0
-            try:
-                shopify_product_object.shopify_create_products(product_queue_line=line, instance=instance_id,
-                                                               log_id=log_id)
-            except Exception as error:
-                line.state = 'failed'
-                error_msg = 'Getting Some Error When Try To Process Product Queue From Shopify To Odoo'
-                self.env['shopify.log.line'].generate_shopify_process_line('product', 'import', instance_id, error_msg,
-                                                                           False, error, log_id, True)
-                _logger.info(error)
-        self.shopify_log_id = log_id.id
-        log_id.shopify_operation_message = 'Process Has Been Finished'
-        if not log_id.shopify_operation_line_ids:
-            log_id.unlink()
+        shopify_product_object, instance_id = self.env[
+            'shopify.product.listing'], instance_id if instance_id else self.instance_id
+
+        if self._context.get('from_cron'):
+            product_data_queues = self.search([('instance_id', '=', instance_id.id), ('state', '!=', 'completed')],
+                                              order="id asc")
+        else:
+            product_data_queues = self
+        for product_data_queue in product_data_queues:
+            if product_data_queue.shopify_log_id:
+                log_id = product_data_queue.shopify_log_id
+            else:
+                log_id = self.env['shopify.log'].generate_shopify_logs('product', 'import', instance_id,
+                                                                       'Process Started')
+            self._cr.commit()
+
+            if self._context.get('from_cron'):
+                product_data_queue_lines = product_data_queue.shopify_product_queue_line_ids.filtered(
+                    lambda x: x.state in ['draft', 'partially_completed'])
+            else:
+                product_data_queue_lines = product_data_queue.shopify_product_queue_line_ids.filtered(
+                    lambda x: x.state in ['draft', 'partially_completed', 'failed'] and x.number_of_fails < 3)
+
+            commit_counter = 0
+            for line in product_data_queue_lines:
+                commit_counter += 1
+                if commit_counter == 10:
+                    self._cr.commit()
+                    commit_counter = 0
+                try:
+                    product_id = shopify_product_object.shopify_create_products(product_queue_line=line, instance=instance_id,
+                                                                   log_id=log_id)
+                    if not product_id:
+                        line.number_of_fails += 1
+                except Exception as error:
+                    line.state = 'failed'
+                    error_msg = 'Getting Some Error When Try To Process Product Queue From Shopify To Odoo'
+                    self.env['shopify.log.line'].generate_shopify_process_line('product', 'import', instance_id,
+                                                                               error_msg,
+                                                                               False, error, log_id, True)
+                    _logger.info(error)
+            self.shopify_log_id = log_id.id
+            log_id.shopify_operation_message = 'Process Has Been Finished'
+            if not log_id.shopify_operation_line_ids:
+                log_id.unlink()
+
+    def process_shopify_product_queue_using_cron(self):
+        """This method was used for process Product data queue automatically using cron job"""
+        instance_ids = self.env['shopify.instance.integration'].search([])
+        if instance_ids:
+            for instance_id in instance_ids:
+                self.with_context(from_cron=True).process_shopify_product_queue(instance_id)
 
 
 class ProductDataQueueLine(models.Model):
@@ -162,6 +192,9 @@ class ProductDataQueueLine(models.Model):
     state = fields.Selection(selection=[('draft', 'Draft'), ('partially_completed', 'Partially Completed'),
                                         ('completed', 'Completed'), ('failed', 'Failed')], default='draft')
     product_data_to_process = fields.Text(string="Product Data")
+    number_of_fails = fields.Integer(string="Number of attempts",
+                                     help="This field gives information regarding how many time we will try to proceed the order",
+                                     copy=False)
 
     def create_shopify_product_queue_line(self, shopify_product_dict, instance_id, queue_id):
         """

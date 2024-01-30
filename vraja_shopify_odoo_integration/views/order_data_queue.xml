@@ -7,7 +7,7 @@
             <field name="model">order.data.queue</field>
             <field name="type">tree</field>
             <field name="arch" type="xml">
-                <tree string="Process Detail" create='1'>
+                <tree string="Process Detail" create='false'>
                     <field name="name"/>
                     <field name="instance_id"/>
                     <field name="create_date"/>

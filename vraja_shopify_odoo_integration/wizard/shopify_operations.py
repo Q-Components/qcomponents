@@ -32,7 +32,7 @@ class ShopifyOperations(models.TransientModel):
         return from_date
 
     instance_id = fields.Many2one('shopify.instance.integration', string='Instance', default=_get_default_marketplace)
-    shopify_operation = fields.Selection([('import', 'Import'), ('export', 'Export')],
+    shopify_operation = fields.Selection([('import', 'Import')],
                                          string='Shopify Operations', default='import')
     import_operations = fields.Selection([('import_order', 'Import Order'), ("import_product", "Import Product"),
                                           ("import_customers", "Import Customer"), ("import_stock", "Import Stock")],

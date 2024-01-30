@@ -156,6 +156,7 @@ class ShopifyInstanceIntegrations(models.Model):
 
     def write(self, vals):
         res = super(ShopifyInstanceIntegrations, self).write(vals)
+        self.setup_shopify_export_stock_cron()
         self.test_shopify_connection()
         return res
 
@@ -178,7 +179,7 @@ class ShopifyInstanceIntegrations(models.Model):
         This method is used to fetch odoo product in which last stock updated in last 3 hours.
         """
         to_date = datetime.now()
-        date = to_date - timedelta(hours=3)
+        date = to_date - timedelta(days=30)
         query = """SELECT product_id FROM stock_move WHERE date >= %s AND
                    state IN ('partially_available', 'assigned', 'done')"""
         self.env.cr.execute(query, (date,))
@@ -235,17 +236,18 @@ class ShopifyInstanceIntegrations(models.Model):
 
             queue_line_data = []
             for product in final_product_ids:
-                actual_stock = getattr(product, 'free_qty')
-                inventory_data_to_process_vals = {
-                    'inventory_item_id': int(inventory_item_mapping.get(product.id)),
-                    'location_id': int(location_id.shopify_location_id),
-                    'available': actual_stock
-                }
-                vals = {
-                    'product_id': product.id,
-                    'inventory_data_to_process': inventory_data_to_process_vals,
-                }
-                queue_line_data.append(vals)
+                if inventory_item_mapping.get(product.id):
+                    actual_stock = getattr(product, 'free_qty')
+                    inventory_data_to_process_vals = {
+                        'inventory_item_id': int(inventory_item_mapping.get(product.id)),
+                        'location_id': int(location_id.shopify_location_id),
+                        'available': actual_stock
+                    }
+                    vals = {
+                        'product_id': product.id,
+                        'inventory_data_to_process': inventory_data_to_process_vals,
+                    }
+                    queue_line_data.append(vals)
             if queue_line_data:
                 self.env['inventory.data.queue'].create_shopify_inventory_queue_job(instance_id, location_id,
                                                                                     queue_line_data, log_id)

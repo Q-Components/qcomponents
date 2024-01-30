@@ -63,8 +63,17 @@
         <menuitem id="sale_order_menu"
                   name="Sales"
                   parent="vraja_shopify_odoo_integration.shopify_instance_integration"
+                  sequence="0"/>
+        <menuitem id="order_listing_submenu"
+                  name="Order"
+                  parent="sale_order_menu"
                   sequence="0"
                   action="shopify_sale_order_action"/>
+        <menuitem id="customer_listing_submenu"
+                  name="Customers"
+                  parent="sale_order_menu"
+                  sequence="1"
+                  action="shopify_res_partner_action"/>
 
         <!-- Products Menu & it's Items -->
         <menuitem id="product_listing_menu"

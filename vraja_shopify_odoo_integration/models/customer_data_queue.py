@@ -104,6 +104,10 @@ class CustomerDataQueue(models.Model):
         instance_id = self.instance_id
         draft_customer_queue_line_ids = self.customer_queue_line_ids.filtered(
             lambda x: x.state in ['draft'])
+
+        draft_customer_queue_line_ids = self.customer_queue_line_ids.filtered(
+            lambda x: x.state in ['draft', 'partially_completed', 'failed'] and x.number_of_fails < 3)
+
         if not self.shopify_log_id:
             log_id = self.env['shopify.log'].generate_shopify_logs('customer', 'import', instance_id, 'Process Started')
         else:
@@ -112,6 +116,8 @@ class CustomerDataQueue(models.Model):
             try:
                 customer_id = self.env['res.partner'].create_update_customer_shopify_to_odoo(instance_id, customer_line,
                                                                                              log_id=log_id)
+                if not customer_id:
+                    customer_line.number_of_fails += 1
 
             except Exception as error:
                 customer_line.state = 'failed'
@@ -140,6 +146,9 @@ class CustomerDataQueueLine(models.Model):
     customer_data_to_process = fields.Text(string="customer Data", copy=False)
     customer_queue_id = fields.Many2one('customer.data.queue', string='Customer Queue')
     res_partner_id = fields.Many2one("res.partner")
+    number_of_fails = fields.Integer(string="Number of attempts",
+                                     help="This field gives information regarding how many time we will try to proceed the order",
+                                     copy=False)
 
     def create_shopify_customer_queue_line(self, shopify_customer_dict, instance_id, queue_id):
         """This method used to create a shopify customer queue  line """

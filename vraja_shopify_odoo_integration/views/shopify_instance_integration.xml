@@ -2,6 +2,18 @@
 <odoo>
     <data>
 
+        <record id="action_instance_shopify_product_listing" model="ir.actions.act_window">
+            <field name="name">Shopify Listing</field>
+            <field name="res_model">shopify.product.listing</field>
+            <field name="domain">[('shopify_instance_id', '=', active_id)]</field>
+            <field name='view_mode'>tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Shopify Product listing will display here.
+                </p>
+            </field>
+        </record>
+
         <record id="action_shopify_order_id" model="ir.actions.act_window">
             <field name="name">Shopify Order</field>
             <field name="res_model">sale.order</field>
@@ -69,7 +81,7 @@
                                     string="Logs"
                                     icon="fa-bitbucket-square"/>
                             <button class="oe_stat_button" type="action"
-                                    name="%(vraja_shopify_odoo_integration.action_shopify_order_id)d" string="Products"
+                                    name="%(vraja_shopify_odoo_integration.action_instance_shopify_product_listing)d" string="Products"
                                     icon="fa-shopping-bag"/>
                             <button class="oe_stat_button" type="action"
                                     name="%(vraja_shopify_odoo_integration.action_shopify_customer_id)d"
@@ -362,18 +374,18 @@
                         <t t-name="kanban-box">
                             <div t-attf-class="oe_kanban_global_click" style="border-radius: 10px;">
                                 <div t-attf-class="o_kanban_card_header">
-<!--                                    <div class="o_kanban_card_header_title">-->
-<!--                                        <div class="o_primary">-->
-<!--                                            <img alt="Marketplace Instance"-->
-<!--                                                 t-att-src="kanban_image('shopify.instance.integration', 'image', record.id.raw_value)"-->
-<!--                                                 class="oe_kanban_avatar img-fluid" width="60" height="60"/>-->
-<!--                                            <span></span>-->
-<!--                                            <a type="object" name="action_shopify_open_instance_view_form">-->
-<!--                                                <field name="name"/>-->
-<!--                                            </a>-->
-<!--                                        </div>-->
-<!--                                        <br/>-->
-<!--                                    </div>-->
+                                    <div class="o_kanban_card_header_title">
+                                        <div class="o_primary">
+                                            <img alt="Marketplace Instance"
+                                                 t-att-src="kanban_image('shopify.instance.integration', 'image', record.id.raw_value)"
+                                                 class="oe_kanban_avatar img-fluid" width="60" height="60"/>
+                                            <span>  </span>
+                                            <a type="object" name="action_shopify_open_instance_view_form">
+                                                <field name="name"/>
+                                            </a>
+                                        </div>
+                                        <br/>
+                                    </div>
                                     <div class="o_kanban_manage_button_section">
                                         <a class="o_kanban_manage_toggle_button" href="#">
                                             <i class="fa fa-ellipsis-v" aria-label="Selection" role="img"
@@ -395,7 +407,7 @@
                                             </a>
                                         </div>
                                         <div class="col-4 border-right">
-                                            <a name="%(sale.action_quotations_with_onboarding)d"
+                                            <a name="%(vraja_shopify_odoo_integration.action_instance_shopify_product_listing)d"
                                                type="action"
                                                class="d-flex flex-column align-items-center">
                                                 <span class="fa-stack fa-lg" title="Product">

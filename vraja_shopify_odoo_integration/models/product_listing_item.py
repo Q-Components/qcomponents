@@ -99,7 +99,7 @@ class ShopifyProductListingItem(models.Model):
             instance.test_shopify_connection()
 
             location_ids = self.env["shopify.location"].search(
-                [("is_import_export_stock", "=", True), ("instance_id", "=", instance.id)])
+                [("is_import_stock", "=", True), ("instance_id", "=", instance.id)])
             if not location_ids:
                 message = "IMPORT STOCK: Please enable at list one Shopify Location for import/export inventory from Locations records in shopify."
                 self.env['shopify.log.line'].generate_shopify_process_line('inventory', 'import', instance, message,

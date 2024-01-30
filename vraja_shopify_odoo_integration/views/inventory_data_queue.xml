@@ -7,7 +7,7 @@
             <field name="model">inventory.data.queue</field>
             <field name="type">tree</field>
             <field name="arch" type="xml">
-                <tree string="Process Detail" create='1'>
+                <tree string="Process Detail" create='false'>
                     <field name="name"/>
                     <field name="shopify_location_id"/>
                     <field name="instance_id"/>
@@ -72,7 +72,8 @@
                         <notebook>
                             <page string="Inventory Queue Detail Line" name="inventory_queue_detail_line">
                                 <field name="shopify_inventory_queue_line_ids">
-                                    <tree>
+                                    <tree decoration-danger="state == 'failed'"
+                                          decoration-success="state == 'completed'">
                                         <field name="product_id"/>
                                         <field name="state"/>
                                     </tree>
@@ -82,6 +83,7 @@
                                                 <field name="product_id" readonly="1"/>
                                                 <field name="shopify_inventory_queue_id"/>
                                                 <field name="instance_id" readonly="1"/>
+                                                <field name="number_of_fails"/>
                                             </group>
                                             <notebook>
                                                 <page string="Inventory Process Data" name="response">

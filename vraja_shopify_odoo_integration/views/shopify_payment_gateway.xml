@@ -8,15 +8,15 @@
             <field name="arch" type="xml">
                 <form>
                     <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="e.g. Payment Gateway name..."/>
+                            </h1>
+                        </div>
                         <group>
-                            <group>
-                                <field name="name"/>
-                                <field name="code"/>
-                            </group>
-                            <group>
-                                <field name="instance_id"/>
-                                <field name="company_id"/>
-                            </group>
+                            <field name="code"/>
+                            <field name="instance_id"/>
+                            <field name="company_id"/>
                         </group>
                     </sheet>
                     <div class="oe_chatter">

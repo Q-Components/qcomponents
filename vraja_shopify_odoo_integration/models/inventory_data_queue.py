@@ -95,23 +95,32 @@ class InventoryDataQueue(models.Model):
         """
         This method is used to export inventory from odoo to shopify.
         """
-        if not self:
+        if self._context.get('from_cron'):
             process_records = self.search([('state', 'not in', ['completed', 'failed'])])
         else:
             process_records = self
         if process_records:
             for rec in process_records:
-                log_id = self.env['shopify.log'].generate_shopify_logs('inventory', 'export', rec.instance_id,
-                                                                       'Process Started')
+                if rec.shopify_log_id:
+                    log_id = rec.shopify_log_id
+                else:
+                    log_id = self.env['shopify.log'].generate_shopify_logs('inventory', 'export', rec.instance_id,
+                                                                           'Process Started')
                 self._cr.commit()
 
                 # API Call
-                shop_url = rec.instance_id.shopify_url.replace("https://", "").replace("http://", "").replace("www.",
-                                                                                                              "")
+                shop_url = rec.instance_id.shopify_url.replace("https://", "").replace("http://", "").replace("www.","")
                 api_key = rec.instance_id.shopify_api_key
                 password = rec.instance_id.shopify_pwd
                 shopify_url = f'https://{api_key}:{password}@{shop_url}/admin/api/2023-04/inventory_levels/set.json'
-                for inventory_line in rec.shopify_inventory_queue_line_ids.filtered(lambda line: line.state == 'draft'):
+
+                if self._context.get('from_cron'):
+                    product_data_queue_lines = rec.shopify_inventory_queue_line_ids.filtered(lambda line: line.state == 'draft')
+                else:
+                    product_data_queue_lines = rec.shopify_inventory_queue_line_ids.filtered(
+                        lambda x: x.state in ['draft','failed'] and x.number_of_fails < 3)
+
+                for inventory_line in product_data_queue_lines:
                     try:
                         export_data = eval(inventory_line.inventory_data_to_process)
                         shopify_data = {
@@ -121,6 +130,8 @@ class InventoryDataQueue(models.Model):
                         }
                         headers = {'Content-Type': 'application/json'}
                         response = requests.post(shopify_url, data=json.dumps(shopify_data), headers=headers)
+                        if not response:
+                            inventory_line.number_of_fails += 1
                     except ClientError as error:
                         message = "Client Error while Export stock for Product ID: %s & Product Name: '%s' for instance:" \
                                   "'%s'\nError: %s\n%s" % (
@@ -173,6 +184,9 @@ class InventoryDataQueueLine(models.Model):
     state = fields.Selection(selection=[('draft', 'Draft'), ('completed', 'Completed'), ('failed', 'Failed')],
                              default='draft')
     inventory_data_to_process = fields.Text(string="Inventory Data")
+    number_of_fails = fields.Integer(string="Number of attempts",
+                                     help="This field gives information regarding how many time we will try to proceed the order",
+                                     copy=False)
 
     def create_shopify_inventory_queue_line(self, shopify_inventory_dict, instance_id, queue_id, location_id, log_id):
         """

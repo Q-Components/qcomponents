@@ -52,15 +52,15 @@ class ShopifyProductListing(models.Model):
         shopify_product_image = self.env['shopify.product.image']
         shopify_listing_item_obj = self.env['shopify.product.listing.item']
         if not shopify_image_response_vals:
-            shopify_instance_id.connection_to_shopify()
-            images = shopify.Image().find(product_id=shopify_listing_id.shopify_image_id)
+            shopify_instance_id.test_shopify_connection()
+            images = shopify.Image().find(product_id=shopify_listing_id.shopify_product_id)
             shopify_image_response_vals = [image.to_dict() for image in images]
         for image in shopify_image_response_vals:
             image_url = image.get('src')
             if image_url:
                 variant_ids, shopify_image_id = image.get('variant_ids'), image.get('id')
                 shopify_listing_item_ids = shopify_listing_item_obj.search(
-                    [('shopify_instance_id', '=', shopify_instance_id.id), ('shopify_product_id', 'in', variant_ids)])
+                    [('shopify_instance_id', '=', shopify_instance_id.id), ('shopify_product_listing_id', 'in', variant_ids)])
                 listing_image_id = shopify_product_image.search([('shopify_image_id', '=', shopify_image_id)])
                 image_datas = base64.b64encode(requests.get(image_url).content)
                 vals = {

@@ -26,8 +26,8 @@ class ShopifyLocations(models.Model):
                             help="If true, then the location is a fulfillment service location. "
                                  "If false, then the location was created by the merchant and isn't "
                                  "tied to a fulfillment service.")
-    is_import_export_stock = fields.Boolean(string='Stock',
-                                            help='If you enable then stock for this location will be use for import/export.',
+    is_import_stock = fields.Boolean(string='Stock',
+                                            help='If you enable then stock for this location will be use for import.',
                                             copy=False, tracking=True, default=True)
     location_id = fields.Many2one('stock.location', string='Location', copy=False, tracking=True)
 

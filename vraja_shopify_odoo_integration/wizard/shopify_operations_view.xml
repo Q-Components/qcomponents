@@ -112,8 +112,7 @@
                             <group>
                                 <field name="instance_id"/>
                                 <field name="shopify_operation" widget="radio"/>
-                                <field name="import_operations" widget="radio"
-                                       attrs="{'invisible': [('shopify_operation', '!=', 'import')]}"/>
+                                <field name="import_operations" widget="radio"/>
                             </group>
                             <group>
                                 <!-- Import Order fields -->
