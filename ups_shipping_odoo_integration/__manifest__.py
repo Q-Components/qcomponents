@@ -5,7 +5,7 @@
     'name': 'UPS shipping odoo integration',
     'category': 'Website',
     'version': '16.0.0',
-    'summary': """Using ups Easily manage Shipping Operation in odoo.Export Order While Validate Delivery Order.Import Tracking From ups to odoo.Generate Label in odoo.We also Provide the ups,fedex,dhl express shipping integration.""",
+    'summary': """Using ups easily manage Shipping Operation in odoo.Export Order While Validate Delivery Order.Import Tracking From ups to odoo.Generate Label in odoo.We also Provide the ups,fedex,dhl express shipping integration.""",
     'license': 'OPL-1',
 
     # Dependencies
