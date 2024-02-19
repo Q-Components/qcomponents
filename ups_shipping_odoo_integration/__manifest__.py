@@ -4,7 +4,7 @@
     # App information
     'name': 'UPS shipping odoo integration',
     'category': 'Website',
-    'version': '16.0.0',
+    'version': '16.0.1',
     'summary': """Using ups easily manage Shipping Operation in odoo.Export Order While Validate Delivery Order.Import Tracking From ups to odoo.Generate Label in odoo.We also Provide the ups,fedex,dhl express shipping integration.""",
     'license': 'OPL-1',
 
@@ -20,6 +20,7 @@
         'view/delivery_carrier.xml',
         'view/sale_order.xml',
         'view/stock_picking.xml',
+        'view/stock_quant_package.xml',
     ],
     # Odoo Store Specific
     'images': ['static/description/cover.jpg'],
@@ -40,3 +41,4 @@
 
 }
 # version changelog
+# 19.02.2024 = add insure functionality in package level

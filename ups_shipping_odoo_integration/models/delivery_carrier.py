@@ -37,7 +37,7 @@ class DeliveryCarrier(models.Model):
     ups_weight_uom = fields.Selection([('LBS', 'LBS-Pounds'),
                                        ('KGS', 'KGS-Kilograms'),
                                        ('OZS', 'OZS-Ounces')], string="Weight UOM", help="Weight UOM of the Shipment")
-    ups_lable_print_methods = fields.Selection([('GIF', 'GIF'),
+    ups_label_print_methods = fields.Selection([('GIF', 'GIF'),
                                                 ('EPL', 'EPL2'),
                                                 ('ZPL', 'ZPL'),
                                                 ('SPL', 'SPL'),
@@ -79,11 +79,6 @@ class DeliveryCarrier(models.Model):
          ('9', '9 - Check Cashiers Check Money Order/Personal Check')],
         help="Shipment Level = 1 or 9: "
              "Package Level : 0 or 8 or 9", string="UPS COD Fund Code", default="1")
-
-    # For Insurance funcionality
-    insured_request = fields.Boolean(string="Insured Request",
-                                     help="Use this Insured Request required, UPS rate comes with signatured cost.",
-                                     default=False)
 
     # for signature
     signature_required = fields.Selection([('1', 'Delivery Confirmation'),
@@ -236,7 +231,7 @@ class DeliveryCarrier(models.Model):
             width = package_id.package_type_id and package_id.package_type_id.width or 0
             length = package_id.package_type_id and package_id.package_type_id.packaging_length or 0
             weight = package_id.shipping_weight
-            if self.insured_request or (self.ups_cod_parcel and self.ups_cod_service == "package_level"):
+            if self.ups_cod_parcel and self.ups_cod_service == "package_level":
                 for quant_id in package_id.quant_ids:
                     product_id = quant_id.product_id
                     if picking.sale_id:
@@ -280,12 +275,12 @@ class DeliveryCarrier(models.Model):
                 package_service_option.update({"DeliveryConfirmation": {
                     "DCISType": self.signature_required}})
             # Insurance And Declared Value
-            if self.insured_request:
+            if package_id.insured_request:
                 package_service_option.update({
                     "DeclaredValue": {
                         "CurrencyCode": '{}'.format(
                             self.company_id and self.company_id.currency_id and self.company_id.currency_id.name or " "),
-                        "MonetaryValue": str(parcel_value_for_package)
+                        "MonetaryValue": str(package_id.insured_amount)
                     }
                 })
             # for COD
@@ -304,7 +299,7 @@ class DeliveryCarrier(models.Model):
             width = self.ups_provider_package_id and self.ups_provider_package_id.width or 0
             length = self.ups_provider_package_id and self.ups_provider_package_id.packaging_length or 0
             weight = weight_bulk
-            if self.insured_request or (self.ups_cod_parcel and self.ups_cod_service == "package_level"):
+            if self.ups_cod_parcel and self.ups_cod_service == "package_level":
                 for rec in picking.move_line_ids:
                     if rec.product_id and not rec.result_package_id:
                         product_id = rec.product_id
@@ -346,15 +341,15 @@ class DeliveryCarrier(models.Model):
             if self.signature_required:
                 package_service_option.update({"DeliveryConfirmation": {
                     "DCISType": self.signature_required}})
-            # Insurance And Declared Value
-            if self.insured_request:
-                package_service_option.update({
-                    "DeclaredValue": {
-                        "CurrencyCode": '{}'.format(
-                            self.company_id and self.company_id.currency_id and self.company_id.currency_id.name or " "),
-                        "MonetaryValue": str(parcel_value_for_bulk_weight)
-                    }
-                })
+            # # Insurance And Declared Value
+            # if self.insured_request:
+            #     package_service_option.update({
+            #         "DeclaredValue": {
+            #             "CurrencyCode": '{}'.format(
+            #                 self.company_id and self.company_id.currency_id and self.company_id.currency_id.name or " "),
+            #             "MonetaryValue": str(parcel_value_for_bulk_weight)
+            #         }
+            #     })
             if self.ups_cod_parcel and self.ups_cod_service == "package_level":
                 package_service_option.update({"COD": {
                     "CODFundsCode": self.ups_cod_fund_code,
@@ -449,7 +444,7 @@ class DeliveryCarrier(models.Model):
                 },
                 "LabelSpecification": {
                     "LabelImageFormat": {
-                        "Code": str(self.ups_lable_print_methods)
+                        "Code": str(self.ups_label_print_methods)
                     }
                 }
             }

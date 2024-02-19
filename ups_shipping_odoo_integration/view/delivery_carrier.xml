@@ -18,7 +18,7 @@
                                    attrs="{'required': [('delivery_type', '=', 'ups_shipping_provider')]}"/>
                             <field name="ups_weight_uom"
                                    attrs="{'required': [('delivery_type', '=', 'ups_shipping_provider')]}"/>
-                            <field name="ups_lable_print_methods" invisible="1"
+                            <field name="ups_label_print_methods" invisible="1"
                                    attrs="{'required': [('delivery_type', '=', 'ups_shipping_provider')]}"/>
                            <field name="ups_cod_parcel"/>
                             <field name="ups_cod_service"
@@ -28,7 +28,6 @@
                         </group>
                         <group>
                             <field name="negotiated_rate"/>
-                            <field name="insured_request"/>
                             <field name="saturdaydelivery"/>
                             <field name="commercial_invoice"/>
                             <field name="signature_required"/>
