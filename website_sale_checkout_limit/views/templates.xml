@@ -1,0 +1,73 @@
+<odoo>
+    <data>
+        <!--        <template id="assets_frontend" inherit_id="website_sale.assets_frontend">-->
+        <!--            <xpath expr="script[last()]" position="after">-->
+        <!--                <script type="text/javascript" src="/website_sale_checkout_limit/static/src/js/category.js"/>-->
+        <!--            </xpath>-->
+        <!--        </template>-->
+
+        <template id="cart" inherit_id="website_sale.cart">
+            <xpath expr="//div[hasclass('row')]/div" position="after">
+                <t t-set="min_amount" t-value="website.check_cart_amount()"/>
+                <t t-set="message" t-value="website.info_message()"/>
+                <div id="message" t-attf-class="col-12 #{'d-none' if min_amount else ''}">
+                    <div class="alert alert-warning my-2">
+                        <em>
+                            <i class="fa fa-info-circle"/>
+                            <t t-esc="message"/>
+                        </em>
+                    </div>
+                </div>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_cart')]//div[hasclass('justify-content-between')]/div[hasclass('flex-column')]/a"
+                   position="attributes">
+                <attribute name="t-attf-class">btn btn-primary float-right checkout_one
+                    #{"disabled" if not website.check_cart_amount() else ""}
+                </attribute>
+            </xpath>
+
+            <!--            <xpath expr="//div[hasclass('row')]/div/a[2]" position="attributes">-->
+            <!--                <attribute name="t-attf-class">btn btn-primary float-right d-none d-xl-inline-block checkout_one #{"disabled" if not website.check_cart_amount() else ""}</attribute>-->
+            <!--                <attribute name="id">checkout_one</attribute>-->
+            <!--            </xpath>-->
+        </template>
+
+        <template id="short_cart_summary" inherit_id="website_sale.short_cart_summary">
+            <xpath expr="//a" position="attributes">
+                <attribute name="t-attf-class">btn btn-secondary float-end d-none d-xl-inline-block checkout_one
+                    #{"disabled" if not website.check_cart_amount() else ""}
+                </attribute>
+            </xpath>
+        </template>
+        <template id="add_extra_fields_on_product_view" inherit_id="website_sale.products_item"
+                  name="Show Extra Fields On Products" priority="20">
+            <xpath expr="//h6[hasclass('o_wsale_products_item_title')]" position="after">
+                <div>
+                    <a class="text-primary text-decoration-none" itemprop="x_studio_alternate_number" t-att-content="product.x_studio_alternate_number" t-field="product.x_studio_alternate_number"/>
+                </div>
+                <t t-if="product.sudo().qty_available">
+                    <div>
+                        <span class="fw-bold" t-esc="str(int(product.sudo().qty_available))"/>
+                        <span class="fw-bold" t-esc="product.sudo().uom_id.name"/>
+                        <span class="fw-bold">left in stock.</span>
+                    </div>
+                </t>
+            </xpath>
+        </template>
+        <template id="add_extra_fields_on_product_main_form_view" inherit_id="website_sale.product"
+                  name="Show Extra Fields On Products Main View" priority="4">
+            <xpath expr="//p[@t-field='product.description_sale']" position="before">
+                <div>
+                    <a class="text-primary text-decoration-none" itemprop="x_studio_alternate_number" t-att-content="product.x_studio_alternate_number" t-field="product.x_studio_alternate_number"/>
+                </div>
+                <t t-if="product.sudo().qty_available">
+                    <div>
+                        <span class="fw-bold" t-esc="str(int(product.sudo().qty_available))"/>
+                        <span class="fw-bold" t-esc="product.sudo().uom_id.name"/>
+                        <span class="fw-bold">left in stock.</span>
+                    </div>
+                </t>
+            </xpath>
+        </template>
+    </data>
+</odoo>

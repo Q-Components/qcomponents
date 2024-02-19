@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.website.livechat</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="website_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <div id="sale_invoicing_settings" position="inside">
+                <div class="col-12 col-lg-6 o_setting_box" id="minimum_checkout_setting">
+                    <div class="o_setting_right_pane">
+                        <span class="o_form_label">Minimum Amount to Checkout</span>
+                        <div class="text-muted">
+                            Minimum cart amount required to checkout.
+                        </div>
+                        <div class="content-group">
+                            <div class="mt16">
+                                <field name="min_checkout_amount" class="o_light_label" widget="monetary"/>
+                                <field name="min_amount_type" class="o_light_label"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6 o_setting_box" id="message_setting">
+                    <div class="o_setting_right_pane">
+                        <span class="o_form_label">Message</span>
+                        <div class="text-muted">
+                            Message to show if cart amount value less than minimum amount
+                        </div>
+                        <div class="content-group">
+                            <div class="mt16">
+                                <field name="info_message" class="o_light_label"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </field>
+    </record>
+
+</odoo>
