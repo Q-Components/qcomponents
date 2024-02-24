@@ -41,4 +41,4 @@
 
 }
 # version changelog
-# 19.02.2024 = add insure functionality in package level. 
+# 19.02.2024 = add insure functionality in package level.

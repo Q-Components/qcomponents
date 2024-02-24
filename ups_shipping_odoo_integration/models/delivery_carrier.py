@@ -19,7 +19,7 @@ class DeliveryCarrier(models.Model):
 
     delivery_type = fields.Selection(selection_add=[("ups_provider", "UPS")],
                                      ondelete={'ups_provider': 'set default'})
-    ups_provider_package_id = fields.Many2one('stock.package.type', string="Package Info", help="Default Package")
+    ups_default_product_packaging_id = fields.Many2one('stock.package.type', string="Package Info", help="Default Package")
     ups_service_type = fields.Selection([('01', '01-Next Day Air'),
                                          ('02', '02-2nd Day Air'),
                                          ('03', '03-Ground'),
@@ -145,7 +145,7 @@ class DeliveryCarrier(models.Model):
         product_weight = (order.order_line.filtered(
             lambda x: not x.is_delivery and x.product_id.type == 'product' and x.product_id.weight <= 0))
         product_name = ", ".join(product_weight.mapped('product_id').mapped('name'))
-        package_id = self.ups_provider_package_id
+        package_id = self.ups_default_product_packaging_id
         if not package_id:
             raise ValidationError("Package Details Not Correct!!")
         if shipper_address_error or recipient_address_error or product_name:
@@ -247,7 +247,7 @@ class DeliveryCarrier(models.Model):
                 "Description": package_id.name or "",
                 "Packaging": {
                     "Code": "%s" % (
-                            self.ups_provider_package_id and self.ups_provider_package_id.shipper_package_code)
+                            self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.shipper_package_code)
                 },
                 "ReferenceNumber": {"Value": package_id.name or ""},
                 "Dimensions": {
@@ -295,9 +295,9 @@ class DeliveryCarrier(models.Model):
                 }})
             package_list.append(package_data)
         if weight_bulk:
-            height = self.ups_provider_package_id and self.ups_provider_package_id.height or 0
-            width = self.ups_provider_package_id and self.ups_provider_package_id.width or 0
-            length = self.ups_provider_package_id and self.ups_provider_package_id.packaging_length or 0
+            height = self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.height or 0
+            width = self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.width or 0
+            length = self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.packaging_length or 0
             weight = weight_bulk
             if self.ups_cod_parcel and self.ups_cod_service == "package_level":
                 for rec in picking.move_line_ids:
@@ -315,7 +315,7 @@ class DeliveryCarrier(models.Model):
                 "Description": picking.name[:34] or "",
                 "Packaging": {
                     "Code": "%s" % (
-                            self.ups_provider_package_id and self.ups_provider_package_id.shipper_package_code)
+                            self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.shipper_package_code)
                 },
                 "ReferenceNumber": {"Value": picking.name or ""},
                 "Dimensions": {

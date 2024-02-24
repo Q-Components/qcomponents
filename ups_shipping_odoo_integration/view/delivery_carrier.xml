@@ -12,7 +12,7 @@
                         <group>
                             <field name="company_id"
                                    attrs="{'required': [('delivery_type', '=', 'ups_provider')]}"/>
-                            <field name="ups_provider_package_id"
+                            <field name="ups_default_product_packaging_id"
                                    attrs="{'required': [('delivery_type', '=', 'ups_provider')]}"/>
                             <field name="ups_service_type"
                                    attrs="{'required': [('delivery_type', '=', 'ups_shipping_provider')]}"/>
