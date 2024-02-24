@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_res_company_ups_configuration" model="ir.ui.view">
+        <field name="name">ups Configuration</field>
+        <field name="model">res.company</field>
+        <field name="type">form</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[last()]" position="after">
+                <page string="UPS Configuration">
+                    <group>
+                        <field name="use_ups_shipping_provider"/>
+                    </group>
+                    <group attrs="{'invisible': [('use_ups_shipping_provider', '!=', True)]}">
+                        <field name="ups_api_url" attrs="{'required':[('use_ups_shipping_provider','=',True)]}"/>
+                        <field name="ups_userid" attrs="{'required':[('use_ups_shipping_provider','=',True)]}"/>
+                        <field name="ups_password" attrs="{'required':[('use_ups_shipping_provider','=',True)]}"/>
+                        <field name="ups_shipper_number" attrs="{'required':[('use_ups_shipping_provider','=',True)]}"/>
+                        <field name="ups_client_id" attrs="{'required':[('use_ups_shipping_provider','=',True)]}"/>
+                        <field name="ups_client_secret" attrs="{'required':[('use_ups_shipping_provider','=',True)]}"/>
+                        <button name="ups_generate_token" type="object" string="Generate Authentication Token"
+                                class="fa fa-arrow-right oe_link"/>
+                    </group>
+                    <group>
+                        <field name="ups_api_token"/>
+                    </group>
+
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,23 +1,30 @@
 <odoo>
     <data>
-        <record id="ups_location_page" model="ir.ui.view">
+        <record id="ups_shipping_sale_order_view" model="ir.ui.view">
             <field name="name">Sales Order</field>
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='sale_order_template_id']" position="after">
-                    <field name='use_ups_third_party_account' />
-                    <field name='ups_third_party_account_id' attrs="{'invisible':[('use_ups_third_party_account','=',False)], 'required':[('use_ups_third_party_account','=',True)]}" />
+                <xpath expr="//page[last()]" position="after">
                 </xpath>
+                <xpath expr="//field[@name='sale_order_template_id']" position="after">
+                    <field name='use_ups_third_party_account'/>
+                    <field name='ups_third_party_account_id'
+                           attrs="{'invisible':[('use_ups_third_party_account','=',False)], 'required':[('use_ups_third_party_account','=',True)]}"/>
+                </xpath>
+
                 <xpath expr="//page[last()]" position="after">
                     <page string="UPS Locations">
                         <group>
-                            <field name="ups_service_rate" readonly="1"/>
+                            <field name="carrier_id" />
+                            <field name="ups_shipping_location_id" readonly="1"/>
+                            <button type='object' class="fa fa-arrow-right oe_link" name="get_ups_locations"
+                                    string="Get Locations"/>
                         </group>
                         <field name="ups_shipping_location_ids" readonly="1">
                             <tree nolabel="1" readonly="1">
-                                <field name="location_name" />
-                                <field name="location_id" />
+                                <field name="name"/>
+                                <field name="location_id"/>
                                 <field name="street"/>
                                 <field name="street2"/>
                                 <field name="city"/>
@@ -28,15 +35,11 @@
                                         string="Use Location"/>
                             </tree>
                         </field>
-                        <group>
-                            <field name="ups_shipping_location_id" readonly="1"/>
-                            <button type='object' class="fa fa-arrow-right oe_link" name="get_locations"
-                                    string="Get Locations"/>
-
-                        </group>
                     </page>
                 </xpath>
+
             </field>
         </record>
+
     </data>
 </odoo>

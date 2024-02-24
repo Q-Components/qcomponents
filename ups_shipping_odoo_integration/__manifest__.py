@@ -2,17 +2,11 @@
 {
 
     # App information
-    'name': 'UPS Shipping Odoo Integration',
+    'name': 'UPS shipping odoo integration',
     'category': 'Website',
-    'version': '16.00.23.05.2023',
-    'summary': """ """,
-    'description': """
-    	UPS Integration helps you integrate & manage your ups account in odoo. manage your Delivery/shipping operations directly from odoo.
-	    Export Order To ups On Validate Delivery Order.
-        Auto Import Tracking Detail From ups to odoo.
-        Generate Label in Odoo..
-        We also Provide the dhl,bigcommerce,shiphero,gls,fedex,usps,easyship,stamp.com,dpd,shipstation,manifest report
-        """,
+    'version': '16.0.1',
+    'summary': """Using ups easily manage Shipping Operation in odoo.Export Order While Validate Delivery Order.Import Tracking From ups to odoo.Generate Label in odoo.We also Provide the ups,fedex,dhl express shipping integration.""",
+    'license': 'OPL-1',
 
     # Dependencies
     'depends': ['delivery'],
@@ -21,35 +15,30 @@
     'data': [
         'security/ir.model.access.csv',
         'data/delivery_ups.xml',
-        'wizard/choose_delivery_package.xml',
-        'views/sale_order.xml',
-        'views/delivery_carrier_view.xml',
-        'views/res_company.xml',
-        'views/stock_picking.xml',
-        'views/stock_quant_package.xml'
+        'data/ir_crone.xml',
+        'view/res_company.xml',
+        'view/delivery_carrier.xml',
+        'view/sale_order.xml',
+        'view/stock_picking.xml',
+        'view/stock_quant_package.xml',
     ],
+    # Odoo Store Specific
+    'images': ['static/description/cover.jpg'],
 
     # Author
-
     'author': 'Vraja Technologies',
-    'website': 'https://www.vrajatechnologies.com',
+    'website': 'http://www.vrajatechnologies.com',
     'maintainer': 'Vraja Technologies',
-    'live_test_url': 'https://www.vrajatechnologies.com/contactus',
-    'images': ['static/description/ups.jpg'],
+
+    # Technical
     'demo': [],
     'installable': True,
     'application': True,
     'auto_install': False,
+    'live_test_url': 'https://www.vrajatechnologies.com/contactus',
     'price': '99',
     'currency': 'EUR',
-    'license': 'OPL-1',
 
 }
-
-# 14.29.10.21 Latest version
-# justin custom changes
-# add cod feature for justin
-# 13.30.11.21 move third party delivery level to sale level
-# 13.14.12.21 third party freight
-# 13.15.12.21 fix third party issue
-# 13.17.12.21 add street2 field in label
+# version changelog
+# 19.02.2024 = add insure functionality in package level.

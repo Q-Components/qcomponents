@@ -1,3 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_ups_location,ups_location,model_ups_location,sales_team.group_sale_salesman,1,1,1,0
-access_third_party_account,third_party_account,model_ups_thirdparty_account,sales_team.group_sale_salesman,1,1,1,1
+access_third_party_account,third_party_account,model_ups_thirdparty_account,,1,1,1,1
+access_ups_location,ups_location,model_ups_location,,1,1,1,1
