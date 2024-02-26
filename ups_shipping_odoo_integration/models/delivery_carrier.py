@@ -525,14 +525,13 @@ class DeliveryCarrier(models.Model):
                 picking.sale_id.ups_shipping_location_id.location_id)})
 
         # ThirdParty payment
-        if picking.sale_id.use_ups_third_party_account:
+        if picking.sale_id and picking.sale_id.use_ups_third_party_account:
             thirdparty_payment = payload.get('ShipmentRequest').get('Shipment').get('PaymentInformation').get(
                 'ShipmentCharge')
-            thirdparty_payment.update({"BillThirdParty": {
+            thirdparty_payment.update({"BillReceiver": {
                 "AccountNumber": account_number,
                 "Address": {
                     "PostalCode": party_zip,
-                    "CountryCode": party_country
                 }
             }})
         else:
