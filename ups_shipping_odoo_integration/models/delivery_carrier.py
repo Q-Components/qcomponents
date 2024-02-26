@@ -249,7 +249,7 @@ class DeliveryCarrier(models.Model):
                     "Code": "%s" % (
                             self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.shipper_package_code)
                 },
-                "ReferenceNumber": {"Value": package_id.name or ""},
+                "ReferenceNumber": {"Value": picking.sale_id and picking.sale_id.client_order_ref or ""},
                 "Dimensions": {
                     "UnitOfMeasurement": {
                         "Code": "CM" if self.ups_weight_uom == "KGS" else "IN",
@@ -317,7 +317,7 @@ class DeliveryCarrier(models.Model):
                     "Code": "%s" % (
                             self.ups_default_product_packaging_id and self.ups_default_product_packaging_id.shipper_package_code)
                 },
-                "ReferenceNumber": {"Value": picking.name or ""},
+                "ReferenceNumber": {"Value": picking.sale_id and picking.sale_id.client_order_ref or ""},
                 "Dimensions": {
                     "UnitOfMeasurement": {
                         "Code": "CM" if self.ups_weight_uom == "KGS" else "IN",
