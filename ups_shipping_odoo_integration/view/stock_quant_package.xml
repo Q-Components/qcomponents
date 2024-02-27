@@ -9,6 +9,9 @@
             <xpath expr="//field[@name='location_id']" position="after">
                 <field name="insured_request"/>
                 <field name="insured_amount" attrs="{'invisible': [('insured_request', '!=', True)]}"/>
+                <field name="ups_cod_parcel_package"/>
+                <field name="ups_cod_amount_package" attrs="{'invisible': [('ups_cod_parcel_package', '!=', True)]}"/>
+                <field name="ups_cod_fund_code_package" attrs="{'invisible': [('ups_cod_parcel_package', '!=', True)]}"/>
             </xpath>
         </field>
     </record>

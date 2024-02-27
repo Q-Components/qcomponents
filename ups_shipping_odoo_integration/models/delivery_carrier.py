@@ -284,13 +284,13 @@ class DeliveryCarrier(models.Model):
                     }
                 })
             # for COD
-            if self.ups_cod_parcel and self.ups_cod_service == "package_level":
+            if package_id.ups_cod_parcel_package:
                 package_service_option.update({"COD": {
-                    "CODFundsCode": self.ups_cod_fund_code,
+                    "CODFundsCode": package_id.ups_cod_fund_code_package,
                     "CODAmount": {
                         "CurrencyCode": '{}'.format(
                             self.company_id and self.company_id.currency_id and self.company_id.currency_id.name or " "),
-                        "MonetaryValue": str(parcel_value_for_package)
+                        "MonetaryValue": str(package_id.ups_cod_amount_package)
                     }
                 }})
             package_list.append(package_data)
