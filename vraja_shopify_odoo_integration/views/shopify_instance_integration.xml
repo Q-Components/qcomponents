@@ -369,109 +369,11 @@
             </field>
         </record>
 
-        <!--kanban view-->
-        <record id="shopify_instance_integration_kanban" model="ir.ui.view">
-            <field name="name">shopify.instance.integration.kanban</field>
-            <field name="model">shopify.instance.integration</field>
-            <field name="arch" type="html">
-                <kanban class="oe_background_grey o_kanban_dashboard o_account_kanban" create="False">
-                    <field name="name"/>
-                    <field name="shopify_url"/>
-                    <field name="shopify_api_key"/>
-                    <field name="shopify_pwd"/>
-                    <field name="shopify_secret_key"/>
-                    <field name="image"/>
-                    <templates>
-                        <t t-name="kanban-box">
-                            <div t-attf-class="oe_kanban_global_click" style="border-radius: 10px;">
-                                <div t-attf-class="o_kanban_card_header">
-                                    <div class="o_kanban_card_header_title">
-                                        <div class="o_primary">
-                                            <img alt="Marketplace Instance"
-                                                 t-att-src="kanban_image('shopify.instance.integration', 'image', record.id.raw_value)"
-                                                 class="oe_kanban_avatar img-fluid" width="60" height="60"/>
-                                            <span>&#160;&#160;</span>
-                                            <a type="object" name="action_shopify_open_instance_view_form">
-                                                <field name="name"/>
-                                            </a>
-                                        </div>
-                                        <br/>
-                                    </div>
-                                </div>
-                                <div class="container o_kanban_card_content fa-2x">
-                                    <div class="row mt10">
-                                        <div class="col-4 border-right">
-                                            <a name="%(vraja_shopify_odoo_integration.action_shopify_customer_id)d"
-                                               type="action"
-                                               class="d-flex flex-column align-items-center">
-                                                <span class="fa-stack fa-lg" title="Customer">
-                                                    <i class="fa fa-square-o fa-stack-2x"/>
-                                                    <i class="fa fa-users fa-stack-1x"/>
-                                                </span>
-                                                <span class="text-muted">Customer</span>
-                                            </a>
-                                        </div>
-                                        <div class="col-4 border-right">
-                                            <a name="%(vraja_shopify_odoo_integration.action_instance_shopify_product_listing)d"
-                                               type="action"
-                                               class="d-flex flex-column align-items-center">
-                                                <span class="fa-stack fa-lg" title="Product">
-                                                    <i class="fa fa-square-o fa-stack-2x"/>
-                                                    <i class="fa fa-product-hunt fa-stack-1x"/>
-                                                </span>
-                                                <span class="text-muted">Product</span>
-                                            </a>
-                                        </div>
-                                        <div class="col-4 border-right">
-                                            <a name="%(vraja_shopify_odoo_integration.action_shopify_order_id)d"
-                                               type="action"
-                                               class="d-flex flex-column align-items-center">
-                                                <span class="fa-stack fa-lg" title="Orders">
-                                                    <i class="fa fa-square-o fa-stack-2x"/>
-                                                    <i class="fa fa-line-chart fa-stack-1x"/>
-                                                </span>
-                                                <span class="text-muted">Order</span>
-                                            </a>
-                                        </div>
-                                    </div>
-                                    <br/>
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <button name="%(vraja_shopify_odoo_integration.actions_shopify_operations)d"
-                                                    type="action" string="Operations" class="btn-primary"
-                                                    t-attf-style="border-radius: 12px;">
-                                                <span>
-                                                    <i class="fa fa-hand-o-right fa-1x" aria-hidden="true"/>
-                                                    Operations
-                                                </span>
-                                            </button>
-                                        </div>
-
-                                        <div class="col-6" align="right">
-                                            <button name="%(vraja_shopify_odoo_integration.action_shopify_log_instance_id)d"
-                                                    type="action" string="Logs" class="btn-primary"
-                                                    t-attf-style="border-radius: 12px;">
-                                                <span>
-                                                    <i class="fa fa-book fa-1x" aria-hidden="true"/>
-                                                    Logs
-                                                </span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </t>
-                    </templates>
-                    <field name="id" attrs="{'invisible': True}"/>
-                </kanban>
-            </field>
-        </record>
-
         <record id="action_shopify_instance_integration" model="ir.actions.act_window">
             <field name="name">Shopify Instance</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">shopify.instance.integration</field>
-            <field name='view_mode'>kanban,tree,form</field>
+            <field name='view_mode'>tree,form</field>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
                     Create a Shopify Instance
