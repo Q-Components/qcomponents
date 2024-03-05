@@ -46,7 +46,9 @@ class ShopifyWebhook(models.Model):
         instance_obj.connect_in_shopify()
         route = self.get_route()
         current_url = instance_obj.get_base_url()
+        _logger.info("Current URL : %s", current_url)
         url = current_url + route
+        _logger.info("Webhook URL : %s", url)
         if url[:url.find(":")] == 'http':
             raise UserError(_("Address protocol http:// is not supported for creating the webhooks."))
 
