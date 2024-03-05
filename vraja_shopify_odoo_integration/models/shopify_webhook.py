@@ -53,6 +53,7 @@ class ShopifyWebhook(models.Model):
 
         webhook_vals = {"topic": self.webhook_action, "address": url, "format": "json"}
         response = shopify_webhook.create(webhook_vals)
+        _logger.info("Creates webhook in Shopify Store : %s", response)
         if response.id:
             new_webhook = response.to_dict()
             _logger.info("Creates webhook in Shopify Store : %s", new_webhook)

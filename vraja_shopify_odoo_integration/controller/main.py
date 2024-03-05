@@ -88,6 +88,7 @@ class Main(http.Controller):
         instance, If no then return response as False and instance.
         """
         res = request.get_json_data()
+        _logger.info("Get json data : ",res)
         host = request.httprequest.headers.get("X-Shopify-Shop-Domain")
         instance = request.env["shopify.instance.integration"].sudo().with_context(active_test=False).search(
             [("shopify_host", "ilike", host)], limit=1)
