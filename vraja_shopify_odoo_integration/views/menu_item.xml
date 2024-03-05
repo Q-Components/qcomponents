@@ -54,7 +54,7 @@
                   sequence="2"
                   action="action_shopify_customer_queue"/>
         <menuitem id="menu_inventory_queue"
-                  name="Inventory Queue"
+                  name="Export Inventory Queue"
                   parent="vraja_shopify_odoo_integration.process_menu"
                   sequence="3"
                   action="action_shopify_inventory_process"/>
@@ -81,12 +81,12 @@
                   parent="vraja_shopify_odoo_integration.shopify_instance_integration"
                   sequence="1"/>
         <menuitem id="product_listing_submenu"
-                  name="Products"
+                  name="Product Listing"
                   parent="vraja_shopify_odoo_integration.product_listing_menu"
                   sequence="0"
                   action="action_shopify_product_listing"/>
         <menuitem id="shopify_product_listing_items_menu"
-                  name="Product Variant"
+                  name="Product Listing Items"
                   parent="vraja_shopify_odoo_integration.product_listing_menu"
                   action="shopify_product_listing_item_action"/>
 

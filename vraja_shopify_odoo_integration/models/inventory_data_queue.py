@@ -40,16 +40,17 @@ class InventoryDataQueue(models.Model):
                                                        "Inventory Queue Lines")
     shopify_log_id = fields.Many2one('shopify.log', string="Logs")
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """
-        In this method auto generated sequence added in inventory queue name.
+        This method is used to add sequence number in new record.
         """
         sequence = self.env.ref("vraja_shopify_odoo_integration.seq_inventory_queue")
-        name = sequence and sequence.next_by_id() or '/'
-        if type(vals) == dict:
-            vals.update({'name': name})
-        return super(InventoryDataQueue, self).create(vals)
+        for vals in vals_list:
+            name = sequence and sequence.next_by_id() or '/'
+            if type(vals) == dict:
+                vals.update({'name': name})
+        return super(InventoryDataQueue, self).create(vals_list)
 
     def unlink(self):
         """
@@ -109,18 +110,22 @@ class InventoryDataQueue(models.Model):
                 self._cr.commit()
 
                 # API Call
-                shop_url = rec.instance_id.shopify_url.replace("https://", "").replace("http://", "").replace("www.","")
+                shop_url = rec.instance_id.shopify_url.replace("https://", "").replace("http://", "").replace("www.",
+                                                                                                              "")
                 api_key = rec.instance_id.shopify_api_key
                 password = rec.instance_id.shopify_pwd
                 shopify_url = f'https://{api_key}:{password}@{shop_url}/admin/api/2023-04/inventory_levels/set.json'
 
                 if self._context.get('from_cron'):
-                    product_data_queue_lines = rec.shopify_inventory_queue_line_ids.filtered(lambda line: line.state == 'draft')
+                    product_data_queue_lines = rec.shopify_inventory_queue_line_ids.filtered(
+                        lambda line: line.state == 'draft')
                 else:
                     product_data_queue_lines = rec.shopify_inventory_queue_line_ids.filtered(
-                        lambda x: x.state in ['draft','failed'] and x.number_of_fails < 3)
+                        lambda x: x.state in ['draft', 'failed'] and x.number_of_fails < 3)
 
                 for inventory_line in product_data_queue_lines:
+                    response = ''
+                    shopify_data = {}
                     try:
                         export_data = eval(inventory_line.inventory_data_to_process)
                         shopify_data = {
@@ -133,6 +138,7 @@ class InventoryDataQueue(models.Model):
                         if not response:
                             inventory_line.number_of_fails += 1
                     except ClientError as error:
+                        inventory_line.state = 'failed'
                         message = "Client Error while Export stock for Product ID: %s & Product Name: '%s' for instance:" \
                                   "'%s'\nError: %s\n%s" % (
                                       inventory_line.product_id.id, inventory_line.product_id.name,
@@ -140,7 +146,7 @@ class InventoryDataQueue(models.Model):
                                       json.loads(error.response.body.decode()).get("errors")[0])
                         self.env['shopify.log.line'].generate_shopify_process_line('inventory', 'import',
                                                                                    rec.instance_id, message, False,
-                                                                                   message, log_id, True)
+                                                                                   error, log_id, True)
                         _logger.info(message)
                     except Exception as error:
                         message = "Error while Export stock for Product ID: %s & Product Name: '%s' for instance: " \
@@ -149,23 +155,21 @@ class InventoryDataQueue(models.Model):
                                       rec.instance_id.name, str(error))
                         self.env['shopify.log.line'].generate_shopify_process_line('inventory', 'import',
                                                                                    rec.instance_id, message, False,
-                                                                                   message, log_id, True)
+                                                                                   error, log_id, True)
                         _logger.info(message)
-                    if response.status_code in [200, 201]:
+                    if response and response.status_code in [200, 201]:
                         inventory_line.state = 'completed'
                         message = "Successfully updated stock for product: {}.".format(inventory_line.product_id.name)
-                        self.env['shopify.log.line'].generate_shopify_process_line('inventory', 'import',
-                                                                                   rec.instance_id, message,
-                                                                                   shopify_data, response.text,
-                                                                                   log_id, False)
+                        fault_or_not = False
                     else:
                         _logger.info("SOME ERROR FROM  %s" % shopify_url)
                         _logger.info("RESPONSE DATA  %s" % response.text)
+                        inventory_line.state = 'failed'
                         message = "Error while Export stock for Product: {}.".format(inventory_line.product_id.name)
-                        self.env['shopify.log.line'].generate_shopify_process_line('inventory', 'import',
-                                                                                   rec.instance_id, message,
-                                                                                   shopify_data, response.text,
-                                                                                   log_id, True)
+                        fault_or_not = True
+                    self.env['shopify.log.line'].generate_shopify_process_line('inventory', 'import', rec.instance_id,
+                                                                               message, shopify_data, response.text,
+                                                                               log_id, fault_or_not)
                 rec.shopify_log_id = log_id
                 log_id.shopify_operation_message = 'Process Has Been Finished'
                 if not log_id.shopify_operation_line_ids:

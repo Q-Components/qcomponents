@@ -24,7 +24,7 @@
             <field name="model">product.data.queue</field>
             <field name="type">form</field>
             <field name="arch" type="xml">
-                <form string="Shopify Product Process Queue" create="false">
+                <form string="Shopify Product Process Queue" create="false" edit="false">
                     <header>
                         <button string="Process Queue Manually" class="oe_highlight"
                                 type="object" name="process_shopify_product_queue"/>
@@ -75,7 +75,7 @@
                                         <field name="product_data_id"/>
                                         <field name="state"/>
                                     </tree>
-                                    <form>
+                                    <form create="false" edit="false">
                                         <sheet>
                                             <group>
                                                 <group>
@@ -91,8 +91,16 @@
                                             </group>
                                             <notebook>
                                                 <page string="Response Data" name="response">
-                                                    <field name="product_data_to_process" widget="ace"
-                                                    />
+                                                    <field name="product_data_to_process" widget="ace"/>
+                                                </page>
+                                                <page string="Log Lines">
+                                                    <field name="log_line" readonly="1" nolabel="1">
+                                                        <tree decoration-danger="fault_operation == True"
+                                                              decoration-success="fault_operation == False">
+                                                            <field name="shopify_operation_message"/>
+                                                            <field name="fault_operation" invisible="1"/>
+                                                        </tree>
+                                                    </field>
                                                 </page>
                                             </notebook>
                                         </sheet>

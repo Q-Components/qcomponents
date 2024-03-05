@@ -1,5 +1,5 @@
 import logging
-from odoo import models, fields, _
+from odoo import models, fields
 from .. import shopify
 import urllib.parse as urlparse
 
@@ -89,7 +89,7 @@ class ShopifyProductListingItem(models.Model):
 
     def import_stock_from_shopify_to_odoo(self, instance, auto_validate_inventory_in_odoo):
         """
-        This method is created to import product inventory/stock from shopify to Odoo.
+        This method is used to import product inventory/stock from shopify to Odoo.
         """
         location_message = []
         log_id = self.env['shopify.log'].generate_shopify_logs('inventory', 'import', instance, 'Process Started')
@@ -101,7 +101,7 @@ class ShopifyProductListingItem(models.Model):
             location_ids = self.env["shopify.location"].search(
                 [("is_import_stock", "=", True), ("instance_id", "=", instance.id)])
             if not location_ids:
-                message = "IMPORT STOCK: Please enable at list one Shopify Location for import/export inventory from Locations records in shopify."
+                message = "IMPORT STOCK: Please enable at list one Shopify Location for import stock for Locations records in shopify."
                 self.env['shopify.log.line'].generate_shopify_process_line('inventory', 'import', instance, message,
                                                                            False, message, log_id, True)
                 _logger.info(message)
@@ -158,95 +158,91 @@ class ShopifyProductListingItem(models.Model):
         return True
 
     def prepare_vals_for_variation_attributes(self, result, variation):
-        """ This method is used to prepare a val for variation attribute base on the receive response of the product.
-            :param result: Response of product
-            :param variation: variation as response as received in the product response.
-            @return: variation_attributes
+        """
+        This method is designed to construct a value for variation attributes based on the received product response.
+        It takes the product response (result) and the variation details (variation) as input
+        returns the constructed variation_attributes.
         """
         variation_attributes = []
-        option_name = []
-        for options in result.get("options"):
-            attrib_name = options.get("name")
-            attrib_name and option_name.append(attrib_name)
-        option1 = variation.get("option1", False)
-        option2 = variation.get("option2", False)
-        option3 = variation.get("option3", False)
-        if option1 and (option_name and option_name[0]):
-            variation_attributes.append({"name": option_name[0], "option": option1})
-        if option2 and (option_name and option_name[1]):
-            variation_attributes.append({"name": option_name[1], "option": option2})
-        if option3 and (option_name and option_name[2]):
-            variation_attributes.append({"name": option_name[2], "option": option3})
+        option_names = [options["name"] for options in result.get("options") if options.get("name")]
+        for i in range(1, 4):
+            option_value = variation.get(f"option{i}", False)
+            if option_value and (option_names and option_names[i - 1]):
+                variation_attributes.append({"name": option_names[i - 1], "option": option_value})
+
         return variation_attributes
 
     def prepare_template_attribute_values_ids(self, variation_attributes, product_template):
-        """ This method is used to prepare a template attribute values ids list.
-            @return: template_attribute_value_ids
+        """
+        This method generates a list of template attribute value IDs.
+        @return: template_attribute_value_ids
         """
         template_attribute_value_ids = []
         product_attribute_obj = self.env["product.attribute"]
         product_attribute_value_obj = self.env["product.attribute.value"]
         product_template_attribute_value_obj = self.env["product.template.attribute.value"]
+
         for variation_attribute in variation_attributes:
-            attribute_val = variation_attribute.get("option")
-            attribute_name = variation_attribute.get("name")
+            attribute_val, attribute_name = variation_attribute.get("option"), variation_attribute.get("name")
             product_attribute = product_attribute_obj.search([("name", "=ilike", attribute_name)], limit=1)
+
             if product_attribute:
                 product_attribute_value = product_attribute_value_obj.get_attribute_values(attribute_val,
                                                                                            product_attribute.id)
-            if product_attribute_value:
-                product_attribute_value = product_attribute_value[0]
-                template_attribute_value_id = product_template_attribute_value_obj.search(
-                    [("product_attribute_value_id", "=", product_attribute_value.id),
-                     ("attribute_id", "=", product_attribute.id), ("product_tmpl_id", "=", product_template.id)],
-                    limit=1)
-                template_attribute_value_id and template_attribute_value_ids.append(template_attribute_value_id.id)
+                if product_attribute_value:
+                    template_attribute_value_id = product_template_attribute_value_obj.search(
+                        [("product_attribute_value_id", "=", product_attribute_value[0].id),
+                         ("attribute_id", "=", product_attribute.id), ("product_tmpl_id", "=", product_template.id)],
+                        limit=1)
+                    template_attribute_value_id and template_attribute_value_ids.append(template_attribute_value_id.id)
         return template_attribute_value_ids
 
     def search_odoo_product_and_set_sku_barcode(self, template_attribute_value_ids, variation, product_template):
-        """ This method is used to search odoo product base on a prepared domain and set SKU and barcode on that
-            product.
-            :param template_attribute_value_ids: Record of product template attribute value ids.
-            :param variation: Response of product variant which received from shopify store.
-            :param product_template: Record of Odoo product template.
-            @return: odoo_product
+        """
+        This method searches for an Odoo product using a prepared domain and updates its SKU and barcode.
+        @param: template_attribute_value_ids (record of product template attribute value IDs),
+        @param: variation (response of the product variant received from the Shopify store),
+        @param: product_template (record of the Odoo product template) as parameters.
+        @return: odoo_product_variant
         """
         odoo_product_obj = self.env["product.product"]
-        sku = variation.get("sku")
-        barcode = variation.get("barcode") or False
-        if barcode and barcode.__eq__("false"):
+        sku, barcode = variation.get("sku"), variation.get("barcode") or False
+
+        if barcode and barcode.lower() == "false":
             barcode = False
-        odoo_product = False
+
         domain = []
         for template_attribute_value in template_attribute_value_ids:
             tpl = ("product_template_attribute_value_ids", "=", template_attribute_value)
             domain.append(tpl)
-        domain and domain.append(("product_tmpl_id", "=", product_template.id))
-        if domain:
-            odoo_product = odoo_product_obj.search(domain)
-        if odoo_product and sku:
-            odoo_product.write({"default_code": sku})
-        if barcode and odoo_product:
-            odoo_product.write({"barcode": barcode})
-        return odoo_product
+        domain.append(("product_tmpl_id", "=", product_template.id))
 
-    def shopify_set_variant_sku(self, result, product_template, instance):
-        """This method set the variant SKU based on the attribute and attribute value.
-            @param : self, result, product_template, instance
-            @return: True
+        odoo_product_variant = odoo_product_obj.search(domain)
+        if odoo_product_variant:
+            sku and odoo_product_variant.write({"default_code": sku})
+            barcode and odoo_product_variant.write({"barcode": barcode})
+
+        return odoo_product_variant
+
+    def set_shopify_variant_sku(self, result, product_template):
         """
+        This method updates the variant SKU based on the attribute and attribute value.
+        @param: self, result, product_template
+        @return: odoo_product_variant
+        """
+        odoo_product_variant = False
         for variation in result.get("variants"):
             variation_attributes = self.prepare_vals_for_variation_attributes(result, variation)
             template_attribute_value_ids = self.prepare_template_attribute_values_ids(variation_attributes,
                                                                                       product_template)
-            odoo_product = self.search_odoo_product_and_set_sku_barcode(template_attribute_value_ids, variation,
-                                                                        product_template)
-        return odoo_product
+            odoo_product_variant = self.search_odoo_product_and_set_sku_barcode(template_attribute_value_ids, variation,
+                                                                                product_template)
+        return odoo_product_variant
 
-    def shopify_prepare_attribute_vals(self, result):
-        """This method use to prepare a attribute values list.
-           :param result: Response of product.
-           @return: attrib_line_vals(list of attribute vals)
+    def prepare_shopify_attribute_values(self, result):
+        """Prepare a list of attribute values.
+        :param result: Response of the product.
+        @return: attrib_line_vals (list of attribute vals)
         """
         product_attribute_obj = self.env["product.attribute"]
         product_attribute_value_obj = self.env["product.attribute.value"]
@@ -255,42 +251,38 @@ class ShopifyProductListingItem(models.Model):
             attrib_name = attrib.get("name")
             attrib_values = attrib.get("values")
             attribute = product_attribute_obj.get_attribute(attrib_name, auto_create=True)[0]
-            attr_val_ids = []
-            for attrib_value in attrib_values:
-                attribute_value = product_attribute_value_obj.get_attribute_values(attrib_value, attribute.id,
-                                                                                   auto_create=True)
-                if attribute_value:
-                    attribute_value = attribute_value[0]
-                    attr_val_ids.append(attribute_value.id)
+            attr_val_ids = [
+                product_attribute_value_obj.get_attribute_values(attr_value, attribute.id, auto_create=True)[0].id
+                for attr_value in attrib_values]
+
             if attr_val_ids:
                 attribute_line_ids_data = [0, False,
                                            {"attribute_id": attribute.id, "value_ids": [[6, False, attr_val_ids]]}]
                 attrib_line_vals.append(attribute_line_ids_data)
         return attrib_line_vals
 
-    def shopify_create_variant_product(self, result, instance):
+    def shopify_create_product_with_variant(self, result):
         """
-        This method called child to search the attribute in Odoo and based on attribute it's created a product
-        template and variant.
-        :param result: Response of product.
-        :price: Product price
+        Create a product template and variant.
+        :param result: Response of the product.
         """
         product_template_obj = self.env["product.template"]
         template_title = result.get("title", "")
-        attrib_line_vals = self.shopify_prepare_attribute_vals(result)
+        attrib_line_vals = self.prepare_shopify_attribute_values(result)
         if attrib_line_vals:
             template_vals = {"name": template_title,
                              "detailed_type": "product",
                              "attribute_line_ids": attrib_line_vals,
                              "invoice_policy": "order"}
             product_template = product_template_obj.create(template_vals)
-            odoo_product = self.shopify_set_variant_sku(result, product_template, instance)
-            if odoo_product:
+            odoo_product_variant = self.set_shopify_variant_sku(result, product_template)
+            if odoo_product_variant:
                 return product_template
         return False
 
-    def create_or_update_shopify_instance_product_variant(self, variant, shopify_template_id, shopify_instance,
-                                                          shopify_product_listing_obj):
+    def create_or_update_shopify_listing_item_from_odoo_product_variant(self, variant, shopify_template_id,
+                                                                        shopify_instance,
+                                                                        shopify_product_listing_obj):
         """ This method is used to create/update the variant in the shopify instance.
             @return: shopify_variant
         """
@@ -315,19 +307,19 @@ class ShopifyProductListingItem(models.Model):
         return shopify_variant
 
     def shopify_prepare_product_listing_items_vals(self, instance, shopify_product_listing_item, is_set_price):
-        """This method used to prepare product listing items vals for export product listing item from
-            shopify instance to shopify store.
-            :param variant: Record of shopify product product(shopify product listing item)
-            @return: shopify_product_listing_item_vals
+        """
+        This method used to prepare product listing items vals for export product listing item from
+        shopify instance to shopify store.
         """
         shopify_product_listing_item_vals = {}
         if shopify_product_listing_item.shopify_product_variant_id:
             shopify_product_listing_item_vals.update({"id": shopify_product_listing_item.shopify_product_variant_id})
 
         if is_set_price:
-            price = instance.price_list_id and instance.price_list_id._get_product_price(
+            product_price = instance.price_list_id and instance.price_list_id._get_product_price(
                 shopify_product_listing_item.product_id, 1.0, partner=False,
                 uom_id=shopify_product_listing_item.product_id.uom_id.id)
+            shopify_product_listing_item_vals.update({"price": float(product_price)})
 
         if instance:
             shopify_product_listing_item_vals.update({"barcode": shopify_product_listing_item.product_id.barcode or "",
@@ -360,5 +352,3 @@ class ShopifyProductListingItem(models.Model):
         else:
             shopify_product_listing_item_vals.update({"inventory_policy": "deny"})
         return shopify_product_listing_item_vals
-
-

@@ -25,13 +25,13 @@ class ShopifyPaymentGateway(models.Model):
         from_date = to_date - timedelta(7)
         log_id = self.env['shopify.log'].generate_shopify_logs('gateway', 'import', instance, 'Process Started')
         try:
-            results = shopify.Order().find(status="any", updated_at_min=from_date,
+            results = shopify.Order().find(status="open", updated_at_min=from_date,
                                            updated_at_max=to_date, fields=['gateway'], limit=250)
         except ClientError as error:
             if hasattr(error, "response"):
                 if error.response.code == 429 and error.response.msg == "Too Many Requests":
                     time.sleep(int(float(error.response.headers.get('Retry-After', 5))))
-                    results = shopify.Order().find(status="any", updated_at_min=from_date,
+                    results = shopify.Order().find(status="open", updated_at_min=from_date,
                                                    updated_at_max=to_date, fields=['gateway'], limit=250)
                 else:
                     message = "Getting Some Error When Try To Import Gateway"
@@ -55,6 +55,15 @@ class ShopifyPaymentGateway(models.Model):
                 msg = "Gateway Successfully Created {}".format(shopify_payment_gateway and shopify_payment_gateway.name)
                 self.env['shopify.log.line'].generate_shopify_process_line('gateway', 'import', instance, msg,
                                                                            False, result, log_id, False)
+        shopify_payment_gateway = self.search([('instance_id', '=', instance.id)], limit=1)
+        if not shopify_payment_gateway:
+            shopify_payment_gateway = self.create({'name': 'no_payment_gateway',
+                                                   'code': 'no_payment_gateway',
+                                                   'instance_id': instance.id,
+                                                   'company_id': instance.company_id.id})
+            msg = "Gateway Successfully Created {}".format(shopify_payment_gateway and shopify_payment_gateway.name)
+            self.env['shopify.log.line'].generate_shopify_process_line('gateway', 'import', instance, msg,
+                                                                       False, False, log_id, False)
         log_id.shopify_operation_message = 'Process Has Been Finished'
         if not log_id.shopify_operation_line_ids:
             log_id.unlink()

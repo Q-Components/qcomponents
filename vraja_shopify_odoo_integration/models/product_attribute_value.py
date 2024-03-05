@@ -6,12 +6,7 @@ class ProductAttributeValue(models.Model):
 
     def get_attribute_values(self, name, attribute_id, auto_create=False):
         """
-        Gives attribute value if found, otherwise creates new one and returns it.
-        In odoo, while search attribute value name('black\') with ilike, it gives an error in the search query of odoo.
-        :param name: name of attribute value
-        :param attribute_id:id of attribute
-        :param auto_create: True or False
-        :return: attribute values
+        Returns the attribute value if it is found; otherwise, creates a new one and returns it.
         """
         attribute_values = self.search([('name', '=', name), ('attribute_id', '=', attribute_id)], limit=1)
         if not attribute_values:

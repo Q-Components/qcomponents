@@ -38,8 +38,8 @@ class ShopifyOperations(models.TransientModel):
                                           ("import_customers", "Import Customer"), ("import_stock", "Import Stock")],
                                          string='Import Operations', default='import_order')
     # Import Order fields
-    from_date_order = fields.Datetime(string='From Date', default=_get_default_from_date_order)
-    to_date_order = fields.Datetime(string='To Date', default=_get_default_to_date)
+    from_date_order = fields.Datetime(string='From OrderDate', default=_get_default_from_date_order)
+    to_date_order = fields.Datetime(string='To OrderDate', default=_get_default_to_date)
     shopify_order_id = fields.Char(string='Order IDs')
 
     # Import Product fields
@@ -54,10 +54,13 @@ class ShopifyOperations(models.TransientModel):
     def execute_process_of_shopify(self):
         instance = self.instance_id
         queue_ids = False
+        model_action = False
+        model_form = False
         if self.import_operations == "import_order":
-            order_queue_ids = self.env['sale.order'].import_orders_from_shopify_to_odoo(instance, self.from_date_order,
-                                                                                        self.to_date_order,
-                                                                                        self.shopify_order_id)
+            order_queue_ids = self.env['order.data.queue'].import_orders_from_shopify_to_odoo(instance,
+                                                                                              self.from_date_order,
+                                                                                              self.to_date_order,
+                                                                                              self.shopify_order_id)
             if order_queue_ids:
                 queue_ids = order_queue_ids
                 model_action = "vraja_shopify_odoo_integration.action_shopify_order_process"
@@ -82,8 +85,8 @@ class ShopifyOperations(models.TransientModel):
 
         if self.import_operations == "import_stock":
             shopify_product_listing_item = self.env['shopify.product.listing.item']
-            inventory_records = shopify_product_listing_item.import_stock_from_shopify_to_odoo(instance,
-                                                                                               self.auto_validate_inventory_in_odoo)
+            shopify_product_listing_item.import_stock_from_shopify_to_odoo(instance,
+                                                                           self.auto_validate_inventory_in_odoo)
 
         # Based on queue ids, action & form view open particular model with created queue records.
         if queue_ids and model_action and model_form:

@@ -47,7 +47,7 @@
                     <field name="company_id"/>
                     <field name="confirm_sale_order" widget="boolean_toggle"/>
                     <field name="validate_delivery_order" widget="boolean_toggle"/>
-                    <field name="create_invoice"  widget="boolean_toggle" string="Create &amp; Validate Invoice"/>
+                    <field name="create_invoice" attrs="{'invisible':[('confirm_sale_order','==',False)]}" widget="boolean_toggle" string="Create &amp; Validate Invoice"/>
                 </tree>
             </field>
         </record>

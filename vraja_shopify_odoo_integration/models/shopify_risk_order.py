@@ -10,17 +10,18 @@ class ShopifyRiskOrder(models.Model):
     cause_cancel = fields.Boolean(string="Cause Cancel", default=False)
     display = fields.Boolean(string="Display", default=False)
     message = fields.Text(string="Message")
-    recommendation = fields.Selection([('accept', 'This check found no indication of fraud'),
-                                       ('investigate',
-                                        'This order might be fraudulent and needs further investigation'),
-                                       ('cancel', 'This order should be cancelled by the merchant'),
-                                       ], default='accept')
+    recommendation = fields.Selection(selection=[('accept', 'This check found no indication of fraud'),
+                                                 ('investigate',
+                                                  'This order might be fraudulent and needs further investigation'),
+                                                 ('cancel', 'This order should be cancelled by the merchant')],
+                                      default='accept')
     score = fields.Float(string="score")
     source = fields.Char(string="source")
     odoo_order_id = fields.Many2one("sale.order", string="Order")
 
     def shopify_create_risk_in_sale_order(self, risk_result, order):
-        """This method used to create a risk order, if found risk in Shopify order when import orders from Shopify to Odoo.
+        """
+        This method used to create a risk order, if found risk in Shopify order when import orders from Shopify to Odoo.
         """
         for risk_id in risk_result:
             risk = risk_id.to_dict()
@@ -29,7 +30,8 @@ class ShopifyRiskOrder(models.Model):
         return True
 
     def prepare_vals_for_order_risk(self, risk, order):
-        """ This method is used to prepare a vals for the create record of risk order.
+        """
+        This method is used to prepare a vals for the creation record of risk order.
         """
         vals = {'name': risk.get('order_id'),
                 'order_risk_id': risk.get('id'),

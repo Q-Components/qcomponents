@@ -1,7 +1,7 @@
 from odoo import models, fields, _, api
 from .. import shopify
 from datetime import datetime, timedelta
-from ..shopify.pyactiveresource.connection import ForbiddenAccess, Connection, ResourceNotFound, ClientError
+from ..shopify.pyactiveresource.connection import ForbiddenAccess, ClientError
 from odoo.exceptions import UserError, ValidationError
 import json
 import logging
@@ -66,12 +66,11 @@ class ShopifyInstanceIntegrations(models.Model):
     auto_fulfilled_gif_card_order = fields.Boolean(string='Auto Fulfilled Gift Card Order', default=True, tracking=True)
     notify_customer = fields.Boolean(string='Notify Customer Once Update Order Status', default=False, tracking=True)
     webhook_ids = fields.One2many("shopify.webhook", "instance_id", "Webhooks")
+    shopify_invoice_instance_id = fields.Many2one('shopify.instance.integration', string="Instance", copy=False)
 
     def prepare_shopify_shop_url(self, host, api_key, password):
         """
         This method is used to prepare a shop URL.
-        TODO : we need to check if in api url if http is available then must write HTTPS not only http otherwise we got
-            connection time out error
         """
         if host:
             shop = host.split("//")
@@ -146,6 +145,9 @@ class ShopifyInstanceIntegrations(models.Model):
 
     @api.model_create_multi
     def create(self, vals):
+        """
+        In this method auto generated cron added at the time of instance creation.
+        """
         instance = super(ShopifyInstanceIntegrations, self).create(vals)
         instance.action_test_connection()
         instance.create_order_queue_of_shopify_order_in_odoo_using_cron()
@@ -155,8 +157,10 @@ class ShopifyInstanceIntegrations(models.Model):
         return instance
 
     def write(self, vals):
+        """
+        In this method check connection if in credentials any change.
+        """
         res = super(ShopifyInstanceIntegrations, self).write(vals)
-        self.setup_shopify_export_stock_cron()
         self.test_shopify_connection()
         return res
 
@@ -179,7 +183,7 @@ class ShopifyInstanceIntegrations(models.Model):
         This method is used to fetch odoo product in which last stock updated in last 3 hours.
         """
         to_date = datetime.now()
-        date = to_date - timedelta(days=30)
+        date = to_date - timedelta(hours=3)
         query = """SELECT product_id FROM stock_move WHERE date >= %s AND
                    state IN ('partially_available', 'assigned', 'done')"""
         self.env.cr.execute(query, (date,))
@@ -265,6 +269,9 @@ class ShopifyInstanceIntegrations(models.Model):
 
     def create_cron_for_automation_task(self, cron_name, model_name, code_method, interval_number=10,
                                         interval_type='minutes', numbercall=1, nextcall_timegap_minutes=10):
+        """
+        This method is used for create cron record.
+        """
         self.env['ir.cron'].create({
             'name': cron_name,
             'model_id': self.env['ir.model'].search([('model', '=', model_name)]).id,
@@ -275,6 +282,7 @@ class ShopifyInstanceIntegrations(models.Model):
             'numbercall': numbercall,
             'nextcall': datetime.now() + timedelta(minutes=nextcall_timegap_minutes),
             'doall': True,
+            'shopify_instance': self.id
         })
         return True
 
@@ -295,6 +303,9 @@ class ShopifyInstanceIntegrations(models.Model):
         return picking_objs
 
     def update_order_status_cron_action(self, instance):
+        """
+        Update order status cron process
+        """
         instance_id = self.env['shopify.instance.integration'].browse(instance)
         if instance_id.state == 'confirmed':
             shopify_log_id = self.env['shopify.log'].generate_shopify_logs(shopify_operation_name='order_status',
@@ -308,7 +319,10 @@ class ShopifyInstanceIntegrations(models.Model):
                                                                       log_id=shopify_log_id)
 
     def setup_shopify_update_order_status_cron(self):
-        cron_name = "Instance : {0} Update Order Status IN Shopify".format(self.name)
+        """
+        From this method update order status cron creation process declared.
+        """
+        cron_name = "Shopify: [{0}] Update Order Status in Shopify".format(self.name)
         model_name = 'shopify.instance.integration'
         code_method = 'model.update_order_status_cron_action({0})'.format(self.id)
         self.create_cron_for_automation_task(cron_name, model_name, code_method,
@@ -317,6 +331,9 @@ class ShopifyInstanceIntegrations(models.Model):
         return True
 
     def shopify_unlink_old_records_cron(self):
+        """
+        This method is used when unlink old records cron will execute and logs more than 30 days old will be deleted.
+        """
         today_date = datetime.now().date()
         month_ago = today_date - timedelta(days=30)
         shopify_log_date = self.env['shopify.log'].search([]).filtered(lambda x: x.create_date.date() < month_ago)
@@ -331,7 +348,10 @@ class ShopifyInstanceIntegrations(models.Model):
             inventory_data_queue.unlink()
 
     def setup_shopify_export_stock_cron(self):
-        cron_name = "Instance : {0} Prepare export stock data for Shopify".format(self.name)
+        """
+        From this method export stock cron creation process declared.
+        """
+        cron_name = "Shopify: [{0}] Prepare export stock data for Shopify".format(self.name)
         model_name = 'shopify.instance.integration'
         code_method = 'model.prepare_export_stock_data_for_shopify({0})'.format(self.id)
         self.create_cron_for_automation_task(cron_name, model_name, code_method,
@@ -340,7 +360,10 @@ class ShopifyInstanceIntegrations(models.Model):
         return True
 
     def create_order_queue_of_shopify_order_in_odoo_using_cron(self):
-        cron_name = "Instance : {0} Prepare Queue Of Order From Shopify To Odoo".format(self.name)
+        """
+        From this method create order queue for regular order cron creation process declared.
+        """
+        cron_name = "Shopify: [{0}] Prepare Queue Of Order From Shopify To Odoo".format(self.name)
         model_name = 'order.data.queue'
         code_method = 'model.auto_import_order_from_shopify_using_cron({0})'.format(self.id)
         self.create_cron_for_automation_task(cron_name, model_name, code_method,
@@ -349,10 +372,19 @@ class ShopifyInstanceIntegrations(models.Model):
         return True
 
     def create_order_queue_of_shopify_cancel_order_in_odoo_using_cron(self):
-        cron_name = "Instance : {0} Prepare Queue Of Cancel Order From Shopify To Odoo".format(self.name)
+        """
+        From this method create order queue for cancel order cron creation process declared.
+        """
+        cron_name = "Shopify: [{0}] Prepare Queue Of Cancel Order From Shopify To Odoo".format(self.name)
         model_name = 'order.data.queue'
         code_method = 'model.auto_import_cancel_order_from_shopify_using_cron({0})'.format(self.id)
         self.create_cron_for_automation_task(cron_name, model_name, code_method,
                                              interval_type='minutes', interval_number=30,
                                              numbercall=1, nextcall_timegap_minutes=20)
         return True
+
+    def unlink(self):
+        cron_records = self.env['ir.cron'].search([('shopify_instance', 'in', self.ids)])
+        if cron_records:
+            cron_records.unlink()
+        return super(ShopifyInstanceIntegrations, self).unlink()

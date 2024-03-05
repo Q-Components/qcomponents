@@ -52,79 +52,6 @@
                         </ul>
                     </div>
                     <sheet>
-                        <!--                        <div class="oe_button_box" name="button_box">-->
-                        <!--                            <button id="order_queue_line_total" class="oe_stat_button" disabled="1"-->
-                        <!--                                    icon="fa-database">-->
-                        <!--                                <div class="o_field_widget o_stat_info">-->
-                        <!--                                    <span class="o_stat_value">-->
-                        <!--                                        <field name="order_queue_line_total_record"/>-->
-                        <!--                                    </span>-->
-                        <!--                                    <span class="o_stat_text">Records</span>-->
-                        <!--                                </div>-->
-                        <!--                            </button>-->
-
-                        <!--                            <button id="order_queue_line_draft" class="oe_stat_button" disabled="1"-->
-                        <!--                                    icon="fa-info">-->
-                        <!--                                <div class="o_field_widget o_stat_info">-->
-                        <!--                                    <span class="o_stat_value">-->
-                        <!--                                        <field name="order_queue_line_draft_record"/>-->
-                        <!--                                    </span>-->
-                        <!--                                    <span class="o_stat_text">Draft</span>-->
-                        <!--                                </div>-->
-                        <!--                            </button>-->
-                        <!--                            <button id="order_queue_line_fail" class="oe_stat_button" disabled="1"-->
-                        <!--                                    icon="fa-times"-->
-                        <!--                                    attrs="{'invisible':[('state', 'in', ['partially_completed'])]}">-->
-                        <!--                                <div class="o_field_widget o_stat_info">-->
-                        <!--                                    <span class="o_stat_value">-->
-                        <!--                                        <field name="order_queue_line_fail_record"/>-->
-                        <!--                                    </span>-->
-                        <!--                                    <span class="o_stat_text">Failed</span>-->
-                        <!--                                </div>-->
-                        <!--                            </button>-->
-                        <!--                            <button id="order_queue_line_fail_sub" class="oe_stat_button" disabled="1"-->
-                        <!--                                    attrs="{'invisible':[('state', 'not in', ['partially_completed'])]}">-->
-                        <!--                                <span class="fa-stack fa-lg"-->
-                        <!--                                      style="padding-top: 6px; margin-left:2px; margin-top:2PX; font-size: 22px; color:#ff0000;">-->
-                        <!--                                    <i class="fa fa-times-circle" title="Time Circle"-->
-                        <!--                                       style="margin-left:18px;"/>-->
-                        <!--                                </span>-->
-                        <!--                                <field name="order_queue_line_fail_record" widget="statinfo"-->
-                        <!--                                       string="Failed"/>-->
-                        <!--                            </button>-->
-                        <!--                            <button id="order_queue_line_done" class="oe_stat_button" disabled="1"-->
-                        <!--                                    icon="fa-check"-->
-                        <!--                                    attrs="{'invisible':[('state', 'in', ['completed'])]}">-->
-                        <!--                                <div class="o_field_widget o_stat_info">-->
-                        <!--                                    <span class="o_stat_value">-->
-                        <!--                                        <field name="order_queue_line_done_record"/>-->
-                        <!--                                    </span>-->
-                        <!--                                    <span class="o_stat_text">Done</span>-->
-                        <!--                                </div>-->
-                        <!--                            </button>-->
-                        <!--                            <button id="order_queue_line_done_sub" class="oe_stat_button" disabled="1"-->
-                        <!--                                    attrs="{'invisible':[('state', 'not in', ['completed'])]}">-->
-                        <!--                                <span class="fa-stack fa-lg"-->
-                        <!--                                      style="padding-top: 6px; margin-left:15px; color:#00ff00;">-->
-                        <!--                                    <i class="fa fa-check fa-stack-1x" style="margin-left:4px;" title="Stack 1x"/>-->
-                        <!--                                    <i class="fa fa-check fa-inverse fa-stack-1x"-->
-                        <!--                                       style="margin-left:-3px;" title="Stack Inverse 1x"/>-->
-                        <!--                                    <i class="fa fa-check  fa-stack-1x"-->
-                        <!--                                       style="margin-left:-4px" title="Stack 1x"/>-->
-                        <!--                                </span>-->
-                        <!--                                <field name="order_queue_line_done_record" widget="statinfo"-->
-                        <!--                                       string="Done"/>-->
-                        <!--                            </button>-->
-                        <!--                            <button id="order_queue_line_cancel" class="oe_stat_button" disabled="1"-->
-                        <!--                                    icon="fa-ban">-->
-                        <!--                                <div class="o_field_widget o_stat_info">-->
-                        <!--                                    <span class="o_stat_value">-->
-                        <!--                                        <field name="order_queue_line_cancel_record"/>-->
-                        <!--                                    </span>-->
-                        <!--                                    <span class="o_stat_text">cancelled</span>-->
-                        <!--                                </div>-->
-                        <!--                            </button>-->
-                        <!--                        </div>-->
                         <div>
                             <h1>
                                 <field name="name"/>
@@ -146,8 +73,6 @@
                                     <tree decoration-danger="state == 'failed'"
                                           decoration-success="state == 'completed'">
                                         <field name="name" readonly="1"/>
-                                        <!--                                        <field name="shopify_order_queue_id"/>-->
-                                        <!--                                        <field name="instance_id" readonly="1"/>-->
                                         <field name="sale_order_id"/>
                                         <field name="order_data_id"/>
                                         <field name="state"/>
@@ -169,8 +94,7 @@
                                             </group>
                                             <notebook>
                                                 <page string="Response Data" name="response">
-                                                    <field name="order_data_to_process" widget="ace"
-                                                    />
+                                                    <field name="order_data_to_process" widget="ace"/>
                                                 </page>
                                             </notebook>
                                         </sheet>
@@ -188,6 +112,11 @@
             <field name="name">Order Queue</field>
             <field name="res_model">order.data.queue</field>
             <field name="view_id" ref="view_shopify_order_queue_tree_view"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Order Queue will display here
+                </p>
+            </field>
         </record>
 
     </data>

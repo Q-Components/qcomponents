@@ -36,35 +36,29 @@ class CustomerDataQueue(models.Model):
     queue_process_count = fields.Integer(help="It is used for know, how many time queue is processed.")
     shopify_log_id = fields.Many2one('shopify.log', string="Logs")
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
+        """
+        This method is used to add sequence number in new record.
+        """
         sequence = self.env.ref("vraja_shopify_odoo_integration.seq_shopify_customer_queue")
-        name = sequence and sequence.next_by_id() or '/'
-        if type(vals) == dict:
-            vals.update({'name': name})
-        return super(CustomerDataQueue, self).create(vals)
-
-    def unlink(self):
-        """
-        This method is used for unlink queue lines when deleting main queue
-        """
-        for queue in self:
-            if queue.customer_queue_line_ids:
-                queue.customer_queue_line_ids.unlink()
-        return super(CustomerDataQueue, self).unlink()
+        for vals in vals_list:
+            name = sequence and sequence.next_by_id() or '/'
+            if type(vals) == dict:
+                vals.update({'name': name})
+        return super(CustomerDataQueue, self).create(vals_list)
 
     def generate_shopify_customer_queue(self, instance):
-        queue_id = self.create({
-            'instance_id': instance.id,
-        })
-        return queue_id
+        return self.create({'instance_id': instance.id})
 
     def create_shopify_customer_queue_job(self, instance_id, shopify_customer_list):
-        """This method used to create a customer queue """
+        """
+        This method used to create a customer queue.
+        """
         res_id_list = []
         batch_size = 50
         for shopify_customer in tools.split_every(batch_size, shopify_customer_list):
-            queue_id = self.env['customer.data.queue'].generate_shopify_customer_queue(instance_id)
+            queue_id = self.generate_shopify_customer_queue(instance_id)
             for customer in shopify_customer:
                 shopify_customer_dict = customer.to_dict()
                 self.env['customer.data.queue.line'].create_shopify_customer_queue_line(shopify_customer_dict,
@@ -73,7 +67,9 @@ class CustomerDataQueue(models.Model):
         return res_id_list
 
     def fetch_customers_from_shopify_to_odoo(self, from_date, to_date):
-        """This method used to fetch a shopify customer"""
+        """
+        This method used to fetch a shopify customer
+        """
         shopify_customer_list = []
         try:
             shopify_customer_list = shopify.Customer().find(processed_at_min=from_date, processed_at_max=to_date,
@@ -102,17 +98,14 @@ class CustomerDataQueue(models.Model):
         From customer queue create customer in odoo
         """
         instance_id = self.instance_id
-        draft_customer_queue_line_ids = self.customer_queue_line_ids.filtered(
-            lambda x: x.state in ['draft'])
-
-        draft_customer_queue_line_ids = self.customer_queue_line_ids.filtered(
+        to_process_customer_queue_line_ids = self.customer_queue_line_ids.filtered(
             lambda x: x.state in ['draft', 'partially_completed', 'failed'] and x.number_of_fails < 3)
 
         if not self.shopify_log_id:
             log_id = self.env['shopify.log'].generate_shopify_logs('customer', 'import', instance_id, 'Process Started')
         else:
             log_id = self.shopify_log_id
-        for customer_line in draft_customer_queue_line_ids:
+        for customer_line in to_process_customer_queue_line_ids:
             try:
                 customer_id = self.env['res.partner'].create_update_customer_shopify_to_odoo(instance_id, customer_line,
                                                                                              log_id=log_id)
@@ -130,6 +123,7 @@ class CustomerDataQueue(models.Model):
         log_id.shopify_operation_message = 'Process Has Been Finished'
         if not log_id.shopify_operation_line_ids:
             log_id.unlink()
+
 
 class CustomerDataQueueLine(models.Model):
     _name = 'customer.data.queue.line'
@@ -149,6 +143,8 @@ class CustomerDataQueueLine(models.Model):
     number_of_fails = fields.Integer(string="Number of attempts",
                                      help="This field gives information regarding how many time we will try to proceed the order",
                                      copy=False)
+    def _valid_field_parameter(self, field, name):
+        return name == 'tracking' or super()._valid_field_parameter(field, name)
 
     def create_shopify_customer_queue_line(self, shopify_customer_dict, instance_id, queue_id):
         """This method used to create a shopify customer queue  line """

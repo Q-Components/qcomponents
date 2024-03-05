@@ -47,21 +47,22 @@ class SalesOrder(models.Model):
 
     def create_update_customer_shopify_to_odoo(self, instance_id, customer_line=False, so_customer_data=False,
                                                log_id=False):
-        """This method used for create and update customer from shopify to odoo
-           @param instance_id : object of instance,
-                customer_line : object of customer queue line
-                customer_data : json response of specific customer data
-                so_customer_data : json response of customer data from sale order level
-                log_id : object of log_id for create log line
-           @Return : Updated or Created Customer ID / Customer Object
+        """
+        This method used for create and update customer from shopify to odoo
+        @param instance_id : object of instance,
+            customer_line : object of customer queue line
+            customer_data : json response of specific customer data
+            so_customer_data : json response of customer data from sale order level
+            log_id : object of log_id for create log line
+        @Return : Updated or Created Customer ID / Customer Object
         """
         partner_obj = self.env["res.partner"]
         customer_data = customer_line and eval(customer_line.customer_data_to_process)
         customer_datas = so_customer_data or customer_data
         shopify_customer_id = customer_datas.get('id')
-
-        customer_vals = {'name': "{0} {1}".format(customer_datas.get('first_name', '') or '',
-                                                  customer_datas.get('last_name', '') or ''),
+        full_name = "{0} {1}".format(customer_datas.get('first_name', '') or '',
+                                     customer_datas.get('last_name', '') or '')
+        customer_vals = {'name': full_name,
                          'shopify_customer_id': shopify_customer_id,
                          'email': customer_datas.get('email') or '',
                          'phone': customer_datas.get('phone') or '',
@@ -86,22 +87,18 @@ class SalesOrder(models.Model):
         if existing_customer:
             existing_customer.write(customer_vals)
             customer_id = existing_customer
-            customer_line.state = 'completed'
-            msg = "Customer {0} Updated Successfully".format(customer_line.name)
-            self.env['shopify.log.line'].generate_shopify_process_line('customer', 'import', instance_id,
-                                                                       msg,
-                                                                       False, customer_data, log_id,
-                                                                       False)
+            if customer_line:
+                customer_line.state = 'completed'
+            msg = "Customer {0} Updated Successfully".format(full_name)
         else:
             customer_id = partner_obj.create(customer_vals)
-            customer_line.state = 'completed'
-            msg = "Customer {0} Created Successfully".format(customer_line.name)
-            self.env['shopify.log.line'].generate_shopify_process_line('customer', 'import', instance_id,
-                                                                       msg,
-                                                                       False, customer_data, log_id,
-                                                                       False)
-        self.create_child_customer(instance_id, customer_datas,
-                                   customer_id)  # this method used for create child customer
-        customer_line.res_partner_id = customer_id.id
+            if customer_line:
+                customer_line.state = 'completed'
+            msg = "Customer {0} Created Successfully".format(full_name)
+        self.env['shopify.log.line'].generate_shopify_process_line('customer', 'import', instance_id, msg, False,
+                                                                   customer_data, log_id, False)
+        self.create_child_customer(instance_id, customer_datas, customer_id)  # this method used to create child records
+        if customer_line:
+            customer_line.res_partner_id = customer_id.id
         self._cr.commit()
         return customer_id

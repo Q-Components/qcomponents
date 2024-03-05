@@ -27,12 +27,13 @@ class ShopifyLocations(models.Model):
                                  "If false, then the location was created by the merchant and isn't "
                                  "tied to a fulfillment service.")
     is_import_stock = fields.Boolean(string='Stock',
-                                            help='If you enable then stock for this location will be use for import.',
-                                            copy=False, tracking=True, default=True)
+                                     help='If you enable then stock for this location will be use for import.',
+                                     copy=False, tracking=True, default=True)
     location_id = fields.Many2one('stock.location', string='Location', copy=False, tracking=True)
 
     def import_shopify_locations(self, instance):
-        """ Import all the locations from the Shopify instance while confirm the instance connection from odoo.
+        """
+        Retrieve all the locations from the Shopify instance after confirming the connection from Odoo.
         """
         log_id = self.env['shopify.log'].generate_shopify_logs('location', 'import', instance, 'Process Started')
         self._cr.commit()
@@ -70,7 +71,8 @@ class ShopifyLocations(models.Model):
         return shopify_location_list
 
     def prepare_vals_for_location(self, location, instance):
-        """ This method is used to prepare a location vals.
+        """
+        This method is used to prepare a location vals.
         """
         values = {
             'name': location.get('name'),

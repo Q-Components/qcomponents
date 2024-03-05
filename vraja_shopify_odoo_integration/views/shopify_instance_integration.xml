@@ -77,11 +77,16 @@
                                 attrs="{'invisible': [('active', '=', True)]}"/>
                         <div name="button_box" position="inside">
                             <button class="oe_stat_button" type="action"
+                                    name="%(vraja_shopify_odoo_integration.action_shopify_cron_id)d"
+                                    string="Cron"
+                                    icon="fa-clock-o"/>
+                            <button class="oe_stat_button" type="action"
                                     name="%(vraja_shopify_odoo_integration.action_shopify_log_instance_id)d"
                                     string="Logs"
                                     icon="fa-bitbucket-square"/>
                             <button class="oe_stat_button" type="action"
-                                    name="%(vraja_shopify_odoo_integration.action_instance_shopify_product_listing)d" string="Products"
+                                    name="%(vraja_shopify_odoo_integration.action_instance_shopify_product_listing)d"
+                                    string="Products"
                                     icon="fa-shopping-bag"/>
                             <button class="oe_stat_button" type="action"
                                     name="%(vraja_shopify_odoo_integration.action_shopify_customer_id)d"
@@ -198,14 +203,20 @@
                                     </div>
                                 </div>
                                 <br/>
+                                <h3>Update Order Status</h3>
+                                <br/>
                                 <div class="col-12 col-lg-6 o_setting_box">
                                     <div class="o_setting_left_pane">
                                         <field name="auto_fulfilled_gif_card_order"/>
                                     </div>
                                     <div class="o_setting_right_pane">
-                                        <label string="Sync Image" for="auto_fulfilled_gif_card_order"/>
+                                        <label string="Auto Fulfilled Gift Card Order"
+                                               for="auto_fulfilled_gif_card_order"/>
                                         <div class="text-muted">
-                                            Auto Fulfilled Gift Card Order.
+                                            Automatically fulfill only the gift cards of the order.
+                                            Shopify -> Settings -> Checkout -> Order processing
+                                            If you have Checked Automatically fulfill only the gift cards of the order
+                                            then Only Checked here.
                                         </div>
                                     </div>
                                 </div>
@@ -216,7 +227,7 @@
                                         <field name="notify_customer"/>
                                     </div>
                                     <div class="o_setting_right_pane">
-                                        <label string="Sync Image" for="notify_customer"/>
+                                        <label string="Notify TO Customer" for="notify_customer"/>
                                         <div class="text-muted">
                                             Notify Customer Once Update Order Status.
                                         </div>
@@ -379,18 +390,12 @@
                                             <img alt="Marketplace Instance"
                                                  t-att-src="kanban_image('shopify.instance.integration', 'image', record.id.raw_value)"
                                                  class="oe_kanban_avatar img-fluid" width="60" height="60"/>
-                                            <span>  </span>
+                                            <span>&#160;&#160;</span>
                                             <a type="object" name="action_shopify_open_instance_view_form">
                                                 <field name="name"/>
                                             </a>
                                         </div>
                                         <br/>
-                                    </div>
-                                    <div class="o_kanban_manage_button_section">
-                                        <a class="o_kanban_manage_toggle_button" href="#">
-                                            <i class="fa fa-ellipsis-v" aria-label="Selection" role="img"
-                                               title="Selection"/>
-                                        </a>
                                     </div>
                                 </div>
                                 <div class="container o_kanban_card_content fa-2x">

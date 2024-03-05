@@ -21,3 +21,5 @@ from . import res_partner
 from . import shopify_risk_order
 from . import sale_order_line
 from . import shopify_webhook
+from . import ir_cron
+from . import account_move

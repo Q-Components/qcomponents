@@ -30,9 +30,7 @@
                     <div class="alert alert-info text-left" role="alert">
                         <ul>
                             <li>
-                                If you don't want to wait for the cron to execute the queue and If you want to process
-                                the
-                                queue instantly then click on the Process Queue Manually button.
+                                To process the queue click on the Process Queue Manually button.
                             </li>
                             <li>
                                 If a queue line failed for any reason and by making required
@@ -83,7 +81,7 @@
                                                     <field name="state" readonly="1"/>
                                                 </group>
                                                 <group>
-                                                    <field name="res_partner_id" readonly="1"/>
+                                                    <field name="res_partner_id" string="Customer" readonly="1"/>
                                                     <field name="number_of_fails"/>
                                                 </group>
                                             </group>
@@ -108,6 +106,11 @@
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">customer.data.queue</field>
             <field name="view_id" ref="shopify_customer_data_tree_view"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Customer Queue will display here
+                </p>
+            </field>
         </record>
 
         <data noupdate="1">

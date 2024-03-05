@@ -6,12 +6,7 @@ class ProductAttribute(models.Model):
 
     def get_attribute(self, attribute_string, attribute_type='radio', create_variant='always', auto_create=False):
         """
-        Gives attribute if found, otherwise creates new one and returns it.
-        :param attribute_string: name of attribute
-        :param attribute_type: type of attribute
-        :param create_variant: when variant create
-        :param auto_create: True or False
-        :return: attributes
+        Returns the attribute if it is available; otherwise, creates a new one and returns it.
         """
         attributes = self.search([('name', '=ilike', attribute_string),
                                   ('create_variant', '=', create_variant)], limit=1)

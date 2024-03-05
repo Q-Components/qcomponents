@@ -8,7 +8,8 @@
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
                 <button string="Manually Update Shipment" class="oe_highlight"
-                                    type="object" name="manually_update_shipment" attrs="{'invisible':[('updated_status_in_shopify','=',True)]}"/>
+                        type="object" name="manually_update_shipment"
+                        attrs="{'invisible':['|',('updated_status_in_shopify','=',True), ('state','!=','done')]}"/>
             </xpath>
             <xpath expr="//notebook/page[@name='extra']" position="after">
                 <page string="Shopify" name="shopify_info">
@@ -18,13 +19,14 @@
                             <field name="updated_status_in_shopify"/>
                         </group>
                         <group>
-                            <field name="shopify_fulfillment_id" />
-                            <field name="is_order_cancelled_in_shopify" />
-                            <field name="is_shopify_error" />
+                            <field name="shopify_fulfillment_id"/>
+                            <field name="is_order_cancelled_in_shopify"/>
+                            <field name="is_shopify_error"/>
                         </group>
                     </group>
                 </page>
             </xpath>
         </field>
     </record>
+
 </odoo>

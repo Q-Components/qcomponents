@@ -14,7 +14,8 @@ class OrderWorkflowAutomation(models.Model):
     confirm_sale_order = fields.Boolean(string='Confirm Sale Order',
                                         help='Enable this option if you want to confirm sale order',
                                         copy=False, tracking=True)
-    create_invoice = fields.Boolean(string='Invoice', help='Enable this option if you want to Create Invoice & Validate',
+    create_invoice = fields.Boolean(string='Invoice',
+                                    help='Enable this option if you want to Create Invoice & Validate',
                                     copy=False, tracking=True)
     validate_delivery_order = fields.Boolean(string='Validate Delivery Order',
                                              help='Enable this option if you want to validate delivery order',

@@ -33,14 +33,21 @@ class PrepareProductForExportOdoo(models.TransientModel):
                         lambda x: x.attribute_id.create_variant == "always")) > 3:
                     continue
                 shopify_product_listing_obj, shopify_template_id = self.env[
-                    "shopify.product.listing"].create_or_update_shopify_instance_product_template(
+                    "shopify.product.listing"].create_or_update_shopify_listing_from_odoo_product_tmpl(
                     shopify_instance, product_template_id, shopify_template_id)
 
-                self.env["shopify.product.listing.item"].create_or_update_shopify_instance_product_variant(variant,
+                self.env["shopify.product.listing.item"].create_or_update_shopify_listing_item_from_odoo_product_variant(variant,
                                                                                                            shopify_template_id,
                                                                                                            shopify_instance,
                                                                                                            shopify_product_listing_obj)
-
+                vals = {
+                    'name': shopify_product_listing_obj.name,
+                    'sequence': 10,
+                    'image': product_template_id.image_1920,
+                    'shopify_listing_id': shopify_product_listing_obj.id,
+                    'listing_item_ids': [(6, 0, shopify_product_listing_obj.shopify_product_listing_items.ids)],
+                }
+                self.env['shopify.product.image'].create(vals)
             return {
                 'effect': {
                     'fadeout': 'slow',

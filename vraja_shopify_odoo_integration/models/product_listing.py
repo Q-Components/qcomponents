@@ -60,7 +60,8 @@ class ShopifyProductListing(models.Model):
             if image_url:
                 variant_ids, shopify_image_id = image.get('variant_ids'), image.get('id')
                 shopify_listing_item_ids = shopify_listing_item_obj.search(
-                    [('shopify_instance_id', '=', shopify_instance_id.id), ('shopify_product_listing_id', 'in', variant_ids)])
+                    [('shopify_instance_id', '=', shopify_instance_id.id),
+                     ('shopify_product_listing_id', 'in', variant_ids)])
                 listing_image_id = shopify_product_image.search([('shopify_image_id', '=', shopify_image_id)])
                 image_datas = base64.b64encode(requests.get(image_url).content)
                 vals = {
@@ -137,13 +138,24 @@ class ShopifyProductListing(models.Model):
                 shop_image.destroy()
         return True
 
-    def get_product_category(self, product_type):
+    def get_odoo_product_category(self, product_type):
         """
         This method is used to find Product category & if not found then create new one.
         """
         product_category_obj = self.env["product.category"]
-        product_category = product_category_obj.search(
-            [("name", "=", product_type), ("shopify_product_cat", "=", True)], limit=1)
+        product_category = product_category_obj.search([
+            "|",
+            "&", ("name", "=", product_type), ("shopify_product_cat", "=", True),
+            "&", ("name", "=", product_type.lower()), ("shopify_product_cat", "=", True)
+        ], limit=1)
+
+        if not product_category:
+            product_category = product_category_obj.search([("name", "=", product_type.lower())], limit=1)
+            if product_category:
+                product_category.shopify_product_cat = True
+        else:
+            product_category = product_category[0]  # Since it's a single result due to limit=1
+
         if not product_category:
             product_category = product_category_obj.create({"name": product_type, "shopify_product_cat": True})
         return product_category
@@ -153,62 +165,61 @@ class ShopifyProductListing(models.Model):
         This method used to convert product date into actual date time format
         :return date
         """
-        shopify_product_date = False
         if not product_date:
-            return shopify_product_date
+            return False
         shopify_product_date = parser.parse(product_date).astimezone(utc).strftime("%Y-%m-%d %H:%M:%S")
         return shopify_product_date
 
     def prepare_shopify_product_listing_vals(self, product_data, instance, product_category):
-        """This method used to prepare a shopify product listing vals."""
+        """
+        This method is designed for crafting values for a Shopify product listing.
+        """
         shopify_tag_obj = self.env["shopify.tags"]
         tag_ids = []
         sequence = 0
 
+        def convert_date(key):
+            return self.convert_shopify_date_into_odoo_date_format(product_data.get(key))
+
+        website_published = "unpublished"
         if product_data.get('published_at'):
-            if product_data.get("published_scope") == "global":
-                website_published = "published_global"
-            else:
-                website_published = "published_web"
-        else:
-            website_published = "unpublished"
+            website_published = "published_global" if product_data.get(
+                "published_scope") == "global" else "published_web"
 
         if product_data.get("tags"):
             for tag in product_data.get("tags").split(","):
                 shopify_tag = shopify_tag_obj.search([("name", "=", tag)], limit=1)
                 if not shopify_tag:
-                    sequence = sequence + 1
+                    sequence += 1
                     shopify_tag = shopify_tag_obj.create({"name": tag, "sequence": sequence})
                 sequence = shopify_tag.sequence if shopify_tag else 0
                 tag_ids.append(shopify_tag.id)
 
-        product_listing_vals = {"shopify_instance_id": instance.id,
-                                "template_title": product_data.get("title"),
-                                "body_html": product_data.get("body_html"),
-                                "product_type": product_data.get("product_type"),
-                                "tags": tag_ids,
-                                "shopify_tmpl_id": product_data.get("id"),
-                                "shopify_product_category": product_category.id if product_category else False,
-                                "created_at": self.convert_shopify_date_into_odoo_date_format(
-                                    product_data.get("created_at")),
-                                "updated_at": self.convert_shopify_date_into_odoo_date_format(
-                                    product_data.get("updated_at")),
-                                "published_at": self.convert_shopify_date_into_odoo_date_format(
-                                    product_data.get("published_at")),
-                                "website_published": website_published,
-                                "active": True}
-
+        product_listing_vals = {
+            "shopify_instance_id": instance.id,
+            "template_title": product_data.get("title"),
+            "body_html": product_data.get("body_html"),
+            "product_type": product_data.get("product_type"),
+            "tags": tag_ids,
+            "shopify_tmpl_id": product_data.get("id"),
+            "shopify_product_category": product_category.id if product_category else False,
+            "created_at": convert_date("created_at"),
+            "updated_at": convert_date("updated_at"),
+            "published_at": convert_date("published_at"),
+            "website_published": website_published,
+            "active": True
+        }
         return product_listing_vals
 
     def prepare_product_listing_item_vals(self, instance, shopify_variant_data):
         """
-        This method used to prepare a shopify product listing item vals.
-        @param instance:
-        @param shopify_variant_data: Data of Shopify product listing item.
+        Prepare Shopify product listing item values.
         """
+        convert_date = lambda key: self.convert_shopify_date_into_odoo_date_format(shopify_variant_data.get(key))
+
         product_listing_item_vals = {
-            "create_date": self.convert_shopify_date_into_odoo_date_format(shopify_variant_data.get("created_at")),
-            "write_date": self.convert_shopify_date_into_odoo_date_format(shopify_variant_data.get("updated_at")),
+            "create_date": convert_date("created_at"),
+            "write_date": convert_date("updated_at"),
             "exported_in_shopify": True,
             "active": True,
             "shopify_instance_id": instance.id,
@@ -221,156 +232,144 @@ class ShopifyProductListing(models.Model):
                 "inventory_management") == "shopify" else "Dont track Inventory",
             "inventory_policy": shopify_variant_data.get("inventory_policy")
         }
-
         return product_listing_item_vals
 
-    def create_or_update_shopify_variant(self, product_listing_item_vals, shopify_product_listing_item,
-                                         shopify_product_listing=False, odoo_product=False):
+    def create_or_update_shopify_product_listing_item(self, product_listing_item_vals, shopify_product_listing_item,
+                                                      shopify_product_listing=False, odoo_product_variant=False):
         """
-        This method used to create new or update existing shopify variant into Odoo.
+        Create a new shopify variant into Odoo or update an existing one.
         """
         shopify_product_listing_item_obj = self.env["shopify.product.listing.item"]
-        if not shopify_product_listing_item and shopify_product_listing and odoo_product:
-            product_listing_item_vals.update({"name": odoo_product.name,
-                                              "product_id": odoo_product.id,
+        if not shopify_product_listing_item and shopify_product_listing and odoo_product_variant:
+            product_listing_item_vals.update({"name": odoo_product_variant.name,
+                                              "product_id": odoo_product_variant.id,
                                               "shopify_product_listing_id": shopify_product_listing.id})
             shopify_product_listing_item = shopify_product_listing_item_obj.create(product_listing_item_vals)
-            if not odoo_product.default_code:
-                odoo_product.default_code = shopify_product_listing_item.product_sku
+            if not odoo_product_variant.default_code:
+                odoo_product_variant.default_code = shopify_product_listing_item.product_sku
         elif shopify_product_listing_item:
             shopify_product_listing_item.write(product_listing_item_vals)
         return shopify_product_listing_item
 
-    def shopify_create_simple_product(self, product_name, variant_data, attribute_line_data=[]):
+    def shopify_create_product_without_variant(self, product_name, variant_data, attribute_line_data=[]):
         """
-        This method is used to create simple product having no variants.
+        Create product without variants.
         """
-        odoo_product = self.env["product.product"]
-
+        odoo_product_variant = self.env["product.product"]
         product_sku = variant_data.get("sku", "")
         barcode = variant_data.get("barcode")
-
         if product_sku or barcode:
-            vals = {"name": product_name,
-                    "detailed_type": "product",
-                    "default_code": product_sku,
-                    "invoice_policy": "order"}
-            if barcode:
-                vals.update({"barcode": barcode})
-            odoo_product = odoo_product.create(vals)
+            vals = {
+                "name": product_name,
+                "detailed_type": "product",
+                "default_code": product_sku,
+                "invoice_policy": "order",
+                **({"barcode": barcode} if barcode else {})
+            }
+            odoo_product_variant = odoo_product_variant.create(vals)
             if attribute_line_data:
-                odoo_product.product_tmpl_id.write({"attribute_line_ids": attribute_line_data})
-        return odoo_product
+                odoo_product_variant.product_tmpl_id.write({"attribute_line_ids": attribute_line_data})
+        return odoo_product_variant
 
     @api.model
-    def find_template_attribute_values(self, template_options, product_template_id, variant):
+    def retrieve_template_attribute_values(self, template_options, product_template_id, variant):
         """
-        This method is used for create domain for the template attribute value from the
-        product.template.attribute.value
-        template_options: Attributes for searching by name in odoo.
-        product_template_id: use for the odoo product template.
-        variant: use for the product variant response from the shopify datatype should be dict
+        Create a domain for template attribute values from product.template.attribute.value.
         """
         product_attribute_obj = self.env["product.attribute"]
-        product_attribute_list = []
-        for attribute in template_options:
-            product_attribute = product_attribute_obj.get_attribute(attribute.get("name"), auto_create=True)[0]
-            product_attribute_list.append(product_attribute.id)
-
         template_attribute_value_domain = []
-        product_attribute_value_obj = self.env["product.attribute.value"]
-        product_template_attribute_value_obj = self.env["product.template.attribute.value"]
-        counter = 0
-        for product_attribute in product_attribute_list:
-            counter += 1
+
+        for counter, attribute in enumerate(template_options, start=1):
+            product_attribute = product_attribute_obj.get_attribute(attribute.get("name"), auto_create=True)[0]
             attribute_name = "option" + str(counter)
             attribute_val = variant.get(attribute_name)
-            product_attribute_value = product_attribute_value_obj.get_attribute_values(attribute_val, product_attribute,
+
+            product_attribute_value_obj = self.env["product.attribute.value"]
+            product_template_attribute_value_obj = self.env["product.template.attribute.value"]
+
+            product_attribute_value = product_attribute_value_obj.get_attribute_values(attribute_val,
+                                                                                       product_attribute.id,
                                                                                        auto_create=True)
+
             if product_attribute_value:
                 product_attribute_value = product_attribute_value[0]
                 template_attribute_value_id = product_template_attribute_value_obj.search(
                     [("product_attribute_value_id", "=", product_attribute_value.id),
-                     ("attribute_id", "=", product_attribute),
+                     ("attribute_id", "=", product_attribute.id),
                      ("product_tmpl_id", "=", product_template_id)], limit=1)
+
                 if template_attribute_value_id:
-                    domain = ("product_template_attribute_value_ids", "=", template_attribute_value_id.id)
-                    template_attribute_value_domain.append(domain)
+                    template_attribute_value_domain.append(
+                        ("product_template_attribute_value_ids", "=", template_attribute_value_id.id))
 
-        if len(product_attribute_list) != len(template_attribute_value_domain):
-            return []
-        return template_attribute_value_domain
+        return template_attribute_value_domain if len(template_options) == len(template_attribute_value_domain) else []
 
-    def create_or_update_shopify_product_listing(self, template_dict, variant_length, shopify_product_listing,
-                                                 odoo_product=False, odoo_template=False):
+    def create_or_update_shopify_product_listing(self, product_listing_vals, shopify_product_listing,
+                                                 odoo_product_variant=False, odoo_product_template=False):
         """
-        This method used to create new or update existing shopify template into Odoo.
-        @param : self, template_dict, shopify_product_listing, odoo_product
+        Create new or update existing Shopify template in Odoo.
+        @param: product_listing_vals, shopify_product_listing, odoo_product_variant
         @return: shopify_product_listing
         """
         vals = {
-            "shopify_instance_id": template_dict.get("shopify_instance_id"),
-            "name": template_dict.get("template_title"),
-            "shopify_product_id": template_dict.get("shopify_tmpl_id"),
-            "create_date": template_dict.get("created_at"),
-            "write_date": template_dict.get("updated_at"),
-            "description": template_dict.get("body_html"),
-            "published_at": template_dict.get("published_at"),
-            "website_published": template_dict.get("website_published"),
+            "shopify_instance_id": product_listing_vals.get("shopify_instance_id"),
+            "name": product_listing_vals.get("template_title"),
+            "shopify_product_id": product_listing_vals.get("shopify_tmpl_id"),
+            "create_date": product_listing_vals.get("created_at"),
+            "write_date": product_listing_vals.get("updated_at"),
+            "description": product_listing_vals.get("body_html"),
+            "published_at": product_listing_vals.get("published_at"),
+            "website_published": product_listing_vals.get("website_published"),
             "exported_in_shopify": True,
-            "product_catg_id": template_dict.get("shopify_product_category"),
+            "product_catg_id": product_listing_vals.get("shopify_product_category"),
         }
-
         if shopify_product_listing:
             shopify_product_listing.write(vals)
         else:
-            if odoo_product:
-                vals.update({"product_tmpl_id": odoo_product.product_tmpl_id.id})
-            elif odoo_template:
-                vals.update({'product_tmpl_id': odoo_template.id})
+            product_tmpl_id = odoo_product_variant.product_tmpl_id.id if odoo_product_variant else (
+                odoo_product_template.id if odoo_product_template else None
+            )
+            vals.update({"product_tmpl_id": product_tmpl_id})
             shopify_product_listing = self.create(vals)
         return shopify_product_listing
 
-    def create_or_update_shopify_template_and_variant(self, product_listing_vals, product_listing_item_vals,
-                                                      variant_length,
-                                                      shopify_product_listing, shopify_product_listing_item,
-                                                      odoo_product, update_template=False, update_variant=False):
+    def create_or_update_shopify_product_listing_and_listing_item(self, product_listing_vals, product_listing_item_vals,
+                                                                  shopify_product_listing, shopify_product_listing_item,
+                                                                  odoo_product_variant, update_product_listing=False,
+                                                                  update_product_listing_item=False):
         """
         This method is used to create or update shopify template and/or variant.
         """
-        if update_template:
+        if update_product_listing:
             shopify_product_listing = self.create_or_update_shopify_product_listing(product_listing_vals,
-                                                                                    variant_length,
                                                                                     shopify_product_listing,
-                                                                                    odoo_product)
-        if update_variant:
-            shopify_product_listing_item = self.create_or_update_shopify_variant(product_listing_item_vals,
-                                                                                 shopify_product_listing_item,
-                                                                                 shopify_product_listing,
-                                                                                 odoo_product)
+                                                                                    odoo_product_variant)
+        if update_product_listing_item:
+            shopify_product_listing_item = self.create_or_update_shopify_product_listing_item(product_listing_item_vals,
+                                                                                              shopify_product_listing_item,
+                                                                                              shopify_product_listing,
+                                                                                              odoo_product_variant)
         return shopify_product_listing, shopify_product_listing_item
 
-    def check_for_new_variant(self, odoo_template, shopify_attributes, variant_data, shopify_product_listing,
-                              product_listing_item_vals):
+    def sync_odoo_product_variant(self, odoo_product_template, shopify_attributes, variant_data,
+                                  shopify_product_listing, product_listing_item_vals):
         """
-        Checks if the shopify product has new attribute is added.
-        If new attribute is not added then we can add value and generate new variant in Odoo.
+        Check for new attributes and generate a new variant in Odoo.
         """
         product_attribute_value_obj = self.env["product.attribute.value"]
         odoo_product_obj = self.env["product.product"]
 
-        counter = 0
         product_sku = variant_data.get("sku")
-        odoo_attribute_lines = odoo_template.attribute_line_ids.filtered(
+        odoo_attribute_lines = odoo_product_template.attribute_line_ids.filtered(
             lambda x: x.attribute_id.create_variant == "always")
-
         if len(odoo_attribute_lines) != len(shopify_attributes):
-            message = "Product %s has tried to add new attribute for sku %s in Odoo." % (
-                shopify_product_listing.name, product_sku)
-            return message
-
-        attribute_value_domain = self.find_template_attribute_values(shopify_attributes, odoo_template.id, variant_data)
+            return "Product %s has tried to add a new attribute for SKU %s in Odoo." % (
+                shopify_product_listing.name, product_sku
+            )
+        attribute_value_domain = self.retrieve_template_attribute_values(shopify_attributes, odoo_product_template.id,
+                                                                         variant_data)
         if not attribute_value_domain:
+            counter = 0
             for shopify_attribute in shopify_attributes:
                 counter += 1
                 attribute_name = "option" + str(counter)
@@ -378,40 +377,40 @@ class ShopifyProductListing(models.Model):
 
                 attribute_id = odoo_attribute_lines.filtered(
                     lambda x: x.display_name == shopify_attribute.get("name")).attribute_id.id
-                value_id = \
-                    product_attribute_value_obj.get_attribute_values(attribute_value, attribute_id, auto_create=True)[
-                        0].id
+                value_id = product_attribute_value_obj.get_attribute_values(
+                    attribute_value, attribute_id, auto_create=True
+                )[0].id
 
                 attribute_line = odoo_attribute_lines.filtered(lambda x: x.attribute_id.id == attribute_id)
                 if value_id not in attribute_line.value_ids.ids:
                     attribute_line.value_ids = [(4, value_id, False)]
+            odoo_product_template._create_variant_ids()
 
-            odoo_template._create_variant_ids()
-        attribute_value_domain = self.find_template_attribute_values(shopify_attributes, odoo_template.id, variant_data)
-        odoo_product = odoo_product_obj.search(attribute_value_domain)
+        attribute_value_domain = self.retrieve_template_attribute_values(shopify_attributes, odoo_product_template.id,
+                                                                         variant_data)
+        odoo_product_variant = odoo_product_obj.search(attribute_value_domain)
 
-        if not odoo_product:
-            message = "Unknown error occurred. Couldn't find product %s with sku %s in Odoo." % (
-                shopify_product_listing.name, product_sku)
-            return message
-        shopify_product_listing_item = self.create_or_update_shopify_variant(product_listing_item_vals, False,
-                                                                             shopify_product_listing, odoo_product)
+        if not odoo_product_variant:
+            return "Unknown error occurred. Couldn't find product %s with SKU %s in Odoo." % (
+                shopify_product_listing.name, product_sku
+            )
+        shopify_product_listing_item = self.create_or_update_shopify_product_listing_item(
+            product_listing_item_vals, False, shopify_product_listing, odoo_product_variant
+        )
         return shopify_product_listing_item
 
-    def prepare_attribute_line_data_for_variant(self, shopify_attributes, variant_data):
+    def generate_variant_attribute_line_data(self, shopify_attributes, variant_data):
         """
-        Prepares attribute line's data for creating product having single variant.
-        @param shopify_attributes: Attribute data of shopify template.
-        @param variant_data: Data of variant.
+        Prepare attribute line data for creating a product with a single variant.
+        @param shopify_attributes: Attribute data of Shopify template.
+        @param variant_data: Data of the variant.
         """
         product_attribute_obj = self.env['product.attribute']
         product_attribute_value_obj = self.env['product.attribute.value']
 
         attribute_line_data = []
-        counter = 0
 
-        for shopify_attribute in shopify_attributes:
-            counter += 1
+        for counter, shopify_attribute in enumerate(shopify_attributes, start=1):
             attribute_name = "option" + str(counter)
             shopify_attribute_value = variant_data.get(attribute_name)
 
@@ -419,15 +418,14 @@ class ShopifyProductListing(models.Model):
             attribute_value = product_attribute_value_obj.get_attribute_values(shopify_attribute_value, attribute.id,
                                                                                auto_create=True)
             if attribute_value:
-                attribute_value = attribute_value[0]
-                attribute_line_vals = (
-                    0, False, {'attribute_id': attribute.id, 'value_ids': [[6, False, attribute_value.ids]]})
-                attribute_line_data.append(attribute_line_vals)
+                attribute_line_data.append(
+                    (0, False, {'attribute_id': attribute.id, 'value_ids': [[6, False, attribute_value.ids]]})
+                )
         return attribute_line_data
 
     def create_new_product_listing(self, product_data, instance, product_category, log_id, product_queue_line):
         """
-        This method is used for importing new products from Shopify to Odoo.
+        This function serves the purpose of bringing in new products from Shopify to Odoo.
         """
         need_to_update_shopify_product_listing = True
         shopify_product_listing = False
@@ -435,7 +433,7 @@ class ShopifyProductListing(models.Model):
         variant_data = product_data.get("variants")
         product_listing_vals = self.prepare_shopify_product_listing_vals(product_data, instance, product_category)
         name = product_listing_vals.get("template_title")
-        odoo_template = False
+        odoo_product_template = False
 
         for variant in variant_data:
             variant_id = variant.get("id")
@@ -444,14 +442,17 @@ class ShopifyProductListing(models.Model):
             if not product_sku:
                 message = "Product %s have no sku having variant id %s." % (name, variant_id)
                 _logger.info(message)
-                self.env['shopify.log.line'].generate_shopify_process_line('product', 'import', instance,
-                                                                           message, False, False, log_id, True)
-                product_queue_line and product_queue_line.state == 'failed'
+                self.env['shopify.log.line'].with_context(
+                    for_variant_line=product_queue_line).generate_shopify_process_line('product', 'import', instance,
+                                                                                       message, False, False, log_id,
+                                                                                       True)
+                if product_queue_line:
+                    product_queue_line.state = 'failed'
                 continue
 
             product_listing_item_vals = self.prepare_product_listing_item_vals(instance, variant)
 
-            odoo_product = self.env["product.product"]
+            odoo_product_variant = self.env["product.product"]
             shopify_product_listing_item_obj = self.env["shopify.product.listing.item"]
 
             shopify_product_listing_item = shopify_product_listing_item_obj.search(
@@ -466,72 +467,83 @@ class ShopifyProductListing(models.Model):
                         [("product_id.default_code", "=", product_sku), ("shopify_product_variant_id", "=", False),
                          ("shopify_instance_id", "=", instance.id)], limit=1)
                 if not shopify_product_listing_item:
-                    odoo_product = odoo_product.search([("default_code", "=", product_sku)], limit=1)
-            if shopify_product_listing_item and not odoo_product:
-                odoo_product = shopify_product_listing_item.product_id
+                    odoo_product_variant = odoo_product_variant.search([("default_code", "=", product_sku)], limit=1)
+            if shopify_product_listing_item and not odoo_product_variant:
+                odoo_product_variant = shopify_product_listing_item.product_id
+            if odoo_product_variant:
+                odoo_product_template = odoo_product_variant.product_tmpl_id
 
             if shopify_product_listing_item:
-                self.create_or_update_shopify_variant(product_listing_item_vals, shopify_product_listing_item)
+                self.create_or_update_shopify_product_listing_item(product_listing_item_vals,
+                                                                   shopify_product_listing_item)
                 if need_to_update_shopify_product_listing:
                     shopify_product_listing = self.create_or_update_shopify_product_listing(product_listing_vals,
-                                                                                            len(variant_data),
                                                                                             shopify_product_listing_item.shopify_product_listing_id,
-                                                                                            odoo_product, False)
-            elif odoo_product:
-                shopify_product_listing, shopify_product_listing_item = self.create_or_update_shopify_template_and_variant(
-                    product_listing_vals, product_listing_item_vals, len(variant_data), shopify_product_listing,
-                    shopify_product_listing_item, odoo_product, update_template=need_to_update_shopify_product_listing,
-                    update_variant=True)
+                                                                                            odoo_product_variant, False)
+            elif odoo_product_variant:
+                shopify_product_listing, shopify_product_listing_item = self.create_or_update_shopify_product_listing_and_listing_item(
+                    product_listing_vals, product_listing_item_vals, shopify_product_listing,
+                    shopify_product_listing_item, odoo_product_variant,
+                    update_product_listing=need_to_update_shopify_product_listing, update_product_listing_item=True)
                 need_to_update_shopify_product_listing = False
 
             # If odoo's product or shopify listing & listing item not matched with response
             # then need to create new product in odoo or not.
             elif instance.create_product_if_not_found:
                 shopify_attributes = product_data.get("options")
-                if odoo_template and odoo_template.attribute_line_ids:
+                if odoo_product_template and odoo_product_template.attribute_line_ids:
                     if not shopify_product_listing:
                         shopify_product_listing = self.create_or_update_shopify_product_listing(product_listing_vals,
-                                                                                                len(variant_data),
                                                                                                 False, False,
-                                                                                                odoo_template)
-                    shopify_product_listing_item = self.check_for_new_variant(odoo_template, shopify_attributes,
-                                                                              variant, shopify_product_listing,
-                                                                              product_listing_item_vals)
+                                                                                                odoo_product_template)
+                    shopify_product_listing_item = self.sync_odoo_product_variant(odoo_product_template,
+                                                                                  shopify_attributes,
+                                                                                  variant, shopify_product_listing,
+                                                                                  product_listing_item_vals)
                     need_to_update_shopify_product_listing = False
                 else:
                     if shopify_attributes[0].get("name") == "Title" and \
                             shopify_attributes[0].get("values") == ["Default Title"] and len(variant_data) == 1:
-                        odoo_product = self.shopify_create_simple_product(name, variant,
-                                                                          product_listing_vals.get("body_html"))
+                        odoo_product_variant = self.shopify_create_product_without_variant(name, variant,
+                                                                                           product_listing_vals.get(
+                                                                                               "body_html"))
                     else:
-                        odoo_template = shopify_product_listing_item_obj.shopify_create_variant_product(product_data,
-                                                                                                        instance)
-                        attribute_value_domain = self.find_template_attribute_values(shopify_attributes,
-                                                                                     odoo_template.id, variant)
-                        odoo_product = odoo_template.product_variant_ids.search(attribute_value_domain)
+                        odoo_product_template = shopify_product_listing_item_obj.shopify_create_product_with_variant(
+                            product_data)
+                        attribute_value_domain = self.retrieve_template_attribute_values(shopify_attributes,
+                                                                                         odoo_product_template.id,
+                                                                                         variant)
+                        odoo_product_variant = odoo_product_template.product_variant_ids.search(attribute_value_domain)
 
-                    shopify_product_listing, shopify_product_listing_item = self.create_or_update_shopify_template_and_variant(
-                        product_listing_vals, product_listing_item_vals, len(variant_data), shopify_product_listing,
-                        shopify_product_listing_item, odoo_product, update_template=True, update_variant=True)
+                    shopify_product_listing, shopify_product_listing_item = self.create_or_update_shopify_product_listing_and_listing_item(
+                        product_listing_vals, product_listing_item_vals, shopify_product_listing,
+                        shopify_product_listing_item, odoo_product_variant, update_product_listing=True,
+                        update_product_listing_item=True)
                     need_to_update_shopify_product_listing = False
                 if isinstance(shopify_product_listing_item, str):
                     message = shopify_product_listing_item
                     _logger.info(message)
-                    self.env['shopify.log.line'].generate_shopify_process_line('product', 'import', instance,
-                                                                               message, False, False, log_id, True)
-                    product_queue_line.state == 'failed'
+                    self.env['shopify.log.line'].with_context(
+                        for_variant_line=product_queue_line).generate_shopify_process_line('product', 'import',
+                                                                                           instance,
+                                                                                           message, False, False,
+                                                                                           log_id, True)
+                    if product_queue_line:
+                        product_queue_line.state = 'failed'
                     continue
             else:
                 message = "Product %s not found for SKU %s in Odoo." % (name, product_sku)
                 _logger.info(message)
-                self.env['shopify.log.line'].generate_shopify_process_line('product', 'import', instance,
-                                                                           message, False, False, log_id, True)
-                product_queue_line.state == 'failed'
+                self.env['shopify.log.line'].with_context(
+                    for_variant_line=product_queue_line).generate_shopify_process_line('product', 'import', instance,
+                                                                                       message, False, False, log_id,
+                                                                                       True)
+                if product_queue_line:
+                    product_queue_line.state = 'failed'
                 continue
 
             if need_to_update_shopify_product_listing and shopify_product_listing:
                 shopify_product_listing = self.create_or_update_shopify_product_listing(product_listing_vals,
-                                                                                        len(variant_data),
                                                                                         shopify_product_listing)
                 need_to_update_shopify_product_listing = False
 
@@ -539,14 +551,16 @@ class ShopifyProductListing(models.Model):
                                                      variant.get("price"))
         return shopify_product_listing
 
-    def sync_variant_data_with_existing_template(self, instance, variant_data, product_data, shopify_product_listing,
-                                                 product_listing_vals, product_queue_line, log_id):
-        """ This method is used to sync Shopify variant data in which the Shopify template is existing in Odoo.
+    def synchronize_variant_data_with_existing_template(self, instance, variant_data, product_data,
+                                                        shopify_product_listing, product_listing_vals,
+                                                        product_queue_line, log_id):
+        """
+        This method syncs Shopify variant data with an existing Shopify template in Odoo.
         """
         need_to_archive = False
         variant_ids = []
         shopify_attributes = product_data.get("options")
-        odoo_template = shopify_product_listing.product_tmpl_id
+        odoo_product_template = shopify_product_listing.product_tmpl_id
         name = product_listing_vals.get("template_title", "")
 
         for variant in variant_data:
@@ -556,13 +570,16 @@ class ShopifyProductListing(models.Model):
             if not product_sku:
                 message = "Product %s have no sku having variant id %s." % (name, variant_id)
                 _logger.info(message)
-                self.env['shopify.log.line'].generate_shopify_process_line('product', 'import', instance, message,
-                                                                           False, False, log_id, True)
-                product_queue_line and product_queue_line.state == 'failed'
+                self.env['shopify.log.line'].with_context(
+                    for_variant_line=product_queue_line).generate_shopify_process_line(
+                    'product', 'import', instance, message,
+                    False, False, log_id, True)
+                if product_queue_line:
+                    product_queue_line.state = 'failed'
                 continue
 
             # Here we are not passing SKU while searching shopify product, Because We are updating existing product.
-            odoo_product = self.env["product.product"]
+            odoo_product_variant = self.env["product.product"]
             shopify_product_listing_item_obj = self.env["shopify.product.listing.item"]
 
             shopify_product_listing_item = shopify_product_listing_item_obj.search(
@@ -577,9 +594,9 @@ class ShopifyProductListing(models.Model):
                         [("product_id.default_code", "=", product_sku), ("shopify_product_variant_id", "=", False),
                          ("shopify_instance_id", "=", instance.id)], limit=1)
                 if not shopify_product_listing_item:
-                    odoo_product = odoo_product.search([("default_code", "=", product_sku)], limit=1)
-            if shopify_product_listing_item and not odoo_product:
-                odoo_product = shopify_product_listing_item.product_id
+                    odoo_product_variant = odoo_product_variant.search([("default_code", "=", product_sku)], limit=1)
+            if shopify_product_listing_item and not odoo_product_variant:
+                odoo_product_variant = shopify_product_listing_item.product_id
 
             product_listing_item_vals = self.prepare_product_listing_item_vals(instance, variant)
             domain = [("shopify_product_variant_id", "=", False), ("shopify_instance_id", "=", instance.id),
@@ -589,52 +606,64 @@ class ShopifyProductListing(models.Model):
                 shopify_product_listing_item = shopify_product_listing_item_obj.search(domain, limit=1)
 
                 if not shopify_product_listing_item:
-                    attribute_value_domain = self.find_template_attribute_values(shopify_attributes, odoo_template.id,
-                                                                                 variant)
+                    attribute_value_domain = self.retrieve_template_attribute_values(shopify_attributes,
+                                                                                     odoo_product_template.id,
+                                                                                     variant)
                     if attribute_value_domain:
-                        odoo_product = odoo_product.search(attribute_value_domain)
+                        odoo_product_variant = odoo_product_variant.search(attribute_value_domain)
 
-                if odoo_product:
-                    shopify_product_listing_item = self.create_or_update_shopify_variant(product_listing_item_vals,
-                                                                                         shopify_product_listing_item,
-                                                                                         shopify_product_listing,
-                                                                                         odoo_product)
+                if odoo_product_variant:
+                    shopify_product_listing_item = self.create_or_update_shopify_product_listing_item(
+                        product_listing_item_vals,
+                        shopify_product_listing_item,
+                        shopify_product_listing,
+                        odoo_product_variant)
 
                 # If odoo's product not matched with response then need to create new product in odoo or not.
                 elif instance.create_product_if_not_found:
-                    if odoo_template.attribute_line_ids:
-                        shopify_product_listing_item = self.check_for_new_variant(odoo_template, shopify_attributes,
-                                                                                  variant,
-                                                                                  shopify_product_listing,
-                                                                                  product_listing_item_vals)
+                    if odoo_product_template.attribute_line_ids:
+                        shopify_product_listing_item = self.sync_odoo_product_variant(odoo_product_template,
+                                                                                      shopify_attributes,
+                                                                                      variant, shopify_product_listing,
+                                                                                      product_listing_item_vals)
                     else:
-                        attribute_line_data = self.prepare_attribute_line_data_for_variant(shopify_attributes, variant)
-                        odoo_product = self.shopify_create_simple_product(name, variant,
-                                                                          product_listing_vals.get("body_html"),
-                                                                          attribute_line_data)
+                        attribute_line_data = self.generate_variant_attribute_line_data(shopify_attributes, variant)
+                        odoo_product_variant = self.shopify_create_product_without_variant(name, variant,
+                                                                                           product_listing_vals.get(
+                                                                                               "body_html"),
+                                                                                           attribute_line_data)
 
                         need_to_archive = True
-                        shopify_product_listing, shopify_product_listing_item = self.create_or_update_shopify_template_and_variant(
-                            product_listing_vals, product_listing_item_vals, len(variant_data), shopify_product_listing,
-                            shopify_product_listing_item, odoo_product, update_template=True, update_variant=True)
+                        shopify_product_listing, shopify_product_listing_item = self.create_or_update_shopify_product_listing_and_listing_item(
+                            product_listing_vals, product_listing_item_vals, shopify_product_listing,
+                            shopify_product_listing_item, odoo_product_variant, update_product_listing=True,
+                            update_product_listing_item=True)
 
                     if isinstance(shopify_product_listing_item, str):
                         message = shopify_product_listing_item
                         _logger.info(message)
-                        self.env['shopify.log.line'].generate_shopify_process_line('product', 'import', instance,
-                                                                                   message, False, False, log_id, True)
-                        product_queue_line and product_queue_line.state == 'failed'
+                        self.env['shopify.log.line'].with_context(
+                            for_variant_line=product_queue_line).generate_shopify_process_line('product', 'import',
+                                                                                               instance,
+                                                                                               message, False, False,
+                                                                                               log_id, True)
+                        if product_queue_line:
+                            product_queue_line.state = 'failed'
                         variant_ids = []
                         break
                 else:
                     message = "Product %s not found for SKU %s in Odoo." % (name, product_sku)
                     _logger.info(message)
-                    self.env['shopify.log.line'].generate_shopify_process_line('product', 'import', instance, message,
-                                                                               False, False, log_id, True)
-                    product_queue_line and product_queue_line.state == 'failed'
+                    self.env['shopify.log.line'].with_context(
+                        for_variant_line=product_queue_line).generate_shopify_process_line('product', 'import',
+                                                                                           instance, message,
+                                                                                           False, False, log_id, True)
+                    if product_queue_line:
+                        product_queue_line.state = 'failed'
                     continue
             else:
-                self.create_or_update_shopify_variant(product_listing_item_vals, shopify_product_listing_item)
+                self.create_or_update_shopify_product_listing_item(product_listing_item_vals,
+                                                                   shopify_product_listing_item)
             instance.price_list_id.set_product_price(shopify_product_listing_item.product_id.id,
                                                      variant.get("price"))
             variant_ids.append(variant_id)
@@ -644,18 +673,18 @@ class ShopifyProductListing(models.Model):
     def sync_product_with_existing_product_listing(self, shopify_product_listing, product_data, instance,
                                                    product_category, log_id, product_queue_line):
         """
-        This method is used for importing existing shopify product listing.
+        Import existing Shopify product listing.
         """
         product_listing_vals = self.prepare_shopify_product_listing_vals(product_data, instance, product_category)
         variant_data = product_data.get("variants")
 
-        self.create_or_update_shopify_product_listing(product_listing_vals, len(variant_data), shopify_product_listing)
+        self.create_or_update_shopify_product_listing(product_listing_vals, shopify_product_listing)
 
-        variant_ids, need_to_archive = self.sync_variant_data_with_existing_template(instance, variant_data,
-                                                                                     product_data,
-                                                                                     shopify_product_listing,
-                                                                                     product_listing_vals,
-                                                                                     product_queue_line, log_id)
+        variant_ids, need_to_archive = self.synchronize_variant_data_with_existing_template(instance, variant_data,
+                                                                                            product_data,
+                                                                                            shopify_product_listing,
+                                                                                            product_listing_vals,
+                                                                                            product_queue_line, log_id)
         if need_to_archive:
             products_to_archive = shopify_product_listing.shopify_product_listing_items.filtered(
                 lambda x: int(x.shopify_product_variant_id) not in variant_ids)
@@ -679,7 +708,7 @@ class ShopifyProductListing(models.Model):
             return True
 
         # Product category find & if not match then create new one.
-        product_category = self.get_product_category(product_data.get("product_type"))
+        product_category = self.get_odoo_product_category(product_data.get("product_type"))
         shopify_product_listing = self.search(
             [("shopify_product_id", "=", product_data.get("id")), ("shopify_instance_id", "=", instance.id)])
 
@@ -701,18 +730,21 @@ class ShopifyProductListing(models.Model):
             product_queue_line.state = "completed"
             msg = "Product => {} is successfully imported in odoo.".format(shopify_product_listing.name)
             _logger.info(msg)
-            self.env['shopify.log.line'].generate_shopify_process_line('product', 'import', instance, msg, False,
-                                                                       product_data, log_id, False)
+            self.env['shopify.log.line'].with_context(
+                for_variant_line=product_queue_line).generate_shopify_process_line('product', 'import', instance, msg,
+                                                                                   False,
+                                                                                   product_data, log_id, False)
             self._cr.commit()
         return shopify_product_listing
 
-    def create_or_update_shopify_instance_product_template(self, shopify_instance, product_template,
+    def create_or_update_shopify_listing_from_odoo_product_tmpl(self, shopify_instance, product_template,
                                                            shopify_template_id):
-        """ This method is used to create or update the Shopify product in Instance.
-            @return: shopify_template, shopify_template_id
+        """
+        This method is used to create or update the shopify product in instance.
+        @return: shopify_product_listing, shopify_template_id
         """
 
-        shopify_product_listing_obj = self.search([
+        shopify_product_listing = self.search([
             ("shopify_instance_id", "=", shopify_instance.id),
             ("product_tmpl_id", "=", product_template.id)], limit=1)
 
@@ -721,17 +753,17 @@ class ShopifyProductListing(models.Model):
                                          "shopify_instance_id": shopify_instance.id,
                                          "product_catg_id": product_template.categ_id.id,
                                          "name": product_template.name}
-        if not shopify_product_listing_obj:
-            shopify_product_listing_obj = self.create(shopify_product_template_vals)
-            shopify_template_id = shopify_product_listing_obj.id
+        if not shopify_product_listing:
+            shopify_product_listing = self.create(shopify_product_template_vals)
+            shopify_template_id = shopify_product_listing.id
         else:
-            if shopify_template_id != shopify_product_listing_obj.id:
-                shopify_product_listing_obj.write(shopify_product_template_vals)
-                shopify_template_id = shopify_product_listing_obj.id
-        if shopify_product_listing_obj not in self:
-            self += shopify_product_listing_obj
+            if shopify_template_id != shopify_product_listing.id:
+                shopify_product_listing.write(shopify_product_template_vals)
+                shopify_template_id = shopify_product_listing.id
+        if shopify_product_listing not in self:
+            self += shopify_product_listing
 
-        return shopify_product_listing_obj, shopify_template_id
+        return shopify_product_listing, shopify_template_id
 
     def prepare_shopify_product_listing_for_update_and_export(self, new_product, shopify_product_listing_id, instance,
                                                               is_publish, is_set_price, log_id):
@@ -908,6 +940,11 @@ class ShopifyProductListing(models.Model):
             shopify_product_listing_id.shopify_product_listing_items.write({"write_date": updated_at})
 
             return True
+
+    def unlink(self):
+        if self.shopify_product_listing_items:
+            self.shopify_product_listing_items.unlink()
+        return super(ShopifyProductListing, self).unlink()
 
 
 class ProductCategory(models.Model):

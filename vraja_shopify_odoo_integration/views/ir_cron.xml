@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!--cron tree view-->
+        <record id="view_shopify_cron_tree_view" model="ir.ui.view">
+            <field name="name">Shopify Cron</field>
+            <field name="model">ir.cron</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Process Detail" create='false'>
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_shopify_cron_id" model="ir.actions.act_window">
+            <field name="name">Shopify Cron</field>
+            <field name="res_model">ir.cron</field>
+            <field name="view_id" ref="view_shopify_cron_tree_view"/>
+            <field name="domain">[('shopify_instance', '=', active_id)]</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Shopify Crone will display here
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

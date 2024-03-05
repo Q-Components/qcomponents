@@ -1,9 +1,8 @@
 import logging
 import re
-import pprint
 from datetime import timedelta
 from odoo import models, fields, tools, api
-from odoo.tools.safe_eval import safe_eval
+import pprint
 from .. import shopify
 
 _logger = logging.getLogger("Shopify Product Queue")
@@ -47,13 +46,17 @@ class ProductDataQueue(models.Model):
                                                      "shopify_product_queue_id", "Product Queue Lines")
     shopify_log_id = fields.Many2one('shopify.log', string="Logs")
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
+        """
+        This method is used to add sequence number in new record.
+        """
         sequence = self.env.ref("vraja_shopify_odoo_integration.seq_product_queue")
-        name = sequence and sequence.next_by_id() or '/'
-        if type(vals) == dict:
-            vals.update({'name': name})
-        return super(ProductDataQueue, self).create(vals)
+        for vals in vals_list:
+            name = sequence and sequence.next_by_id() or '/'
+            if type(vals) == dict:
+                vals.update({'name': name})
+        return super(ProductDataQueue, self).create(vals_list)
 
     def unlink(self):
         """
@@ -105,14 +108,15 @@ class ProductDataQueue(models.Model):
         From operation wizard's button this method will call if product import option get selected.
         """
         instance.test_shopify_connection()
-        queue_id_list = []
+        queue_id_list, shopify_product_list = [], []
+
         from_date = fields.Datetime.now() - timedelta(10) if not from_date else from_date
         to_date = fields.Datetime.now() if not to_date else to_date
         last_synced_date = fields.Datetime.now()
 
         if shopify_product_ids:
             shopify_product_list = self.fetch_product_from_shopify_to_odoo(shopify_product_ids=shopify_product_ids)
-        if not shopify_product_ids:
+        else:
             shopify_product_list = self.fetch_product_from_shopify_to_odoo(from_date=from_date, to_date=to_date)
         if shopify_product_list:
             queue_id_list = self.create_shopify_product_queue_job(instance, shopify_product_list)
@@ -125,8 +129,7 @@ class ProductDataQueue(models.Model):
         In product queue given process button, from this button this method get executed.
         From this method from shopify product will get imported into Odoo.
         """
-        shopify_product_object, instance_id = self.env[
-            'shopify.product.listing'], instance_id if instance_id else self.instance_id
+        shopify_product_object, instance_id = self.env['shopify.product.listing'], instance_id or self.instance_id
 
         if self._context.get('from_cron'):
             product_data_queues = self.search([('instance_id', '=', instance_id.id), ('state', '!=', 'completed')],
@@ -155,14 +158,15 @@ class ProductDataQueue(models.Model):
                     self._cr.commit()
                     commit_counter = 0
                 try:
-                    product_id = shopify_product_object.shopify_create_products(product_queue_line=line, instance=instance_id,
-                                                                   log_id=log_id)
+                    product_id = shopify_product_object.shopify_create_products(product_queue_line=line,
+                                                                                instance=instance_id,
+                                                                                log_id=log_id)
                     if not product_id:
                         line.number_of_fails += 1
                 except Exception as error:
                     line.state = 'failed'
                     error_msg = 'Getting Some Error When Try To Process Product Queue From Shopify To Odoo'
-                    self.env['shopify.log.line'].generate_shopify_process_line('product', 'import', instance_id,
+                    self.env['shopify.log.line'].with_context(for_variant_line=line).generate_shopify_process_line('product', 'import', instance_id,
                                                                                error_msg,
                                                                                False, error, log_id, True)
                     _logger.info(error)
@@ -195,6 +199,7 @@ class ProductDataQueueLine(models.Model):
     number_of_fails = fields.Integer(string="Number of attempts",
                                      help="This field gives information regarding how many time we will try to proceed the order",
                                      copy=False)
+    log_line = fields.One2many('shopify.log.line', 'product_queue_line')
 
     def create_shopify_product_queue_line(self, shopify_product_dict, instance_id, queue_id):
         """

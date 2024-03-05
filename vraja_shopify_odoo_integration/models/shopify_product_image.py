@@ -30,8 +30,10 @@ class ShopifyProductImage(models.Model):
     sequence = fields.Integer(help="Sequence of images.", index=True, default=10)
     shopify_image_id = fields.Char(string="Shopify Image ID")
     shopify_listing_id = fields.Many2one("shopify.product.listing")
-    shopify_instance_id = fields.Many2one('shopify.instance.integration', string='Marketplace', related='shopify_listing_id.shopify_instance_id',store=True)
-    listing_item_ids = fields.Many2many('shopify.product.listing.item', 'shopify_product_image_listing_item_rel', 'shopify_image_id', 'listing_item_id', string="Listing Item")
+    shopify_instance_id = fields.Many2one('shopify.instance.integration', string='Marketplace',
+                                          related='shopify_listing_id.shopify_instance_id', store=True)
+    listing_item_ids = fields.Many2many('shopify.product.listing.item', 'shopify_product_image_listing_item_rel',
+                                        'shopify_image_id', 'listing_item_id', string="Listing Item")
 
     @api.onchange('url')
     def _onchange_url(self):
@@ -54,23 +56,25 @@ class ShopifyProductImage(models.Model):
             return {'warning': warning}
         return {}
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """
         Guess the extension for a file based on its MIME type, given by type
         Using This Method Generate the Image URL
         """
-        res = super(ShopifyProductImage, self).create(vals)
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        mimetype = guess_mimetype(res.image, default='image/png')
-        imgext = '.' + mimetype.split('/')[1]
-        if imgext == '.svg+xml':
-            imgext = '.svg'
-        safe_name = urllib.parse.quote(res.name)
-        url = base_url + '/shopify/product/image/{}'.format(base64.urlsafe_b64encode(
-            str(res.id).encode("utf-8")).decode("utf-8"))
-        if res.listing_item_ids and not res.shopify_listing_id:
-            res.write({'shopify_listing_id': res.listing_item_ids.mapped('shopify_product_listing_id') and
-                                        res.listing_item_ids.mapped('shopify_product_listing_id')[0].id or False})
-        res.write({'url': url})
+        res = super(ShopifyProductImage, self).create(vals_list)
+        for res in res:
+            base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+            mimetype = guess_mimetype(res.image, default='image/png')
+            imgext = '.' + mimetype.split('/')[1]
+            if imgext == '.svg+xml':
+                imgext = '.svg'
+            safe_name = urllib.parse.quote(res.name)
+            url = base_url + '/shopify/product/image/{}'.format(base64.urlsafe_b64encode(
+                str(res.id).encode("utf-8")).decode("utf-8"))
+            if res.listing_item_ids and not res.shopify_listing_id:
+                res.write({'shopify_listing_id': res.listing_item_ids.mapped('shopify_product_listing_id') and
+                                                 res.listing_item_ids.mapped('shopify_product_listing_id')[
+                                                     0].id or False})
+            res.write({'url': url})
         return res

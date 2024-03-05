@@ -7,7 +7,8 @@ class ShopifyFinancialStatusConfiguration(models.Model):
     _description = 'Shopify Financial Status Configuration'
 
     instance_id = fields.Many2one('shopify.instance.integration', string='Instance', help='Select Instance')
-    company_id = fields.Many2one('res.company', string='Company', help='Select Company', default=lambda self: self.env.user.company_id)
+    company_id = fields.Many2one('res.company', string='Company', help='Select Company',
+                                 default=lambda self: self.env.user.company_id)
     payment_gateway_id = fields.Many2one('shopify.payment.gateway', string='Payment Gateway',
                                          help='Select Payment')
     payment_term_id = fields.Many2one('account.payment.term', string='Payment Term', help='Select Payment Term',
