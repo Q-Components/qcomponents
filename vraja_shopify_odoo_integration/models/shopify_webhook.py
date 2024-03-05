@@ -15,7 +15,7 @@ class ShopifyWebhook(models.Model):
     webhook_id = fields.Char('Webhook Id in Shopify')
     delivery_url = fields.Text("Delivery URL")
     webhook_action = fields.Selection([('customers/create', 'Upon the creation of a customer.'),
-                                       ('orders', 'When Order is Created')])
+                                       ('orders/create', 'When Order is Created')])
     instance_id = fields.Many2one("shopify.instance.integration",
                                   string="This Shopify instance has generated a webhook.",
                                   ondelete="cascade")
@@ -46,13 +46,12 @@ class ShopifyWebhook(models.Model):
         instance_obj.connect_in_shopify()
         route = self.get_route()
         current_url = instance_obj.get_base_url()
-        shopify_webhook = shopify.Webhook()
         url = current_url + route
         if url[:url.find(":")] == 'http':
             raise UserError(_("Address protocol http:// is not supported for creating the webhooks."))
 
         webhook_vals = {"topic": self.webhook_action, "address": url, "format": "json"}
-        response = shopify_webhook.create(webhook_vals)
+        response = shopify.Webhook().create(webhook_vals)
         _logger.info("Creates webhook in Shopify Store : %s", response)
         if response.id:
             new_webhook = response.to_dict()
@@ -67,6 +66,6 @@ class ShopifyWebhook(models.Model):
         webhook_action = self.webhook_action
         if webhook_action == 'customers/create':
             route = "/shopify_odoo_webhook_for_customer_create"
-        elif webhook_action == 'orders':
+        elif webhook_action == 'orders/create':
             route = "/shopify_odoo_webhook_for_orders_create"
         return route
