@@ -210,6 +210,7 @@ class OrderDataQueue(models.Model):
                                             order="id asc")
         else:
             order_data_queues = self
+            _logger.info("Order Data Queue:: \n {}".format(order_data_queues))
         for order_data_queue in order_data_queues:
             if order_data_queue.shopify_log_id:
                 log_id = order_data_queue.shopify_log_id
@@ -223,6 +224,7 @@ class OrderDataQueue(models.Model):
             else:
                 order_data_queue_lines = order_data_queue.shopify_order_queue_line_ids.filtered(
                     lambda x: x.state in ['draft', 'partially_completed', 'failed'] and x.number_of_fails < 3)
+                _logger.info("Order Data Queue Line:: \n {}".format(order_data_queue_lines))
             for line in order_data_queue_lines:
                 try:
                     shopify_order_dictionary = safe_eval(line.order_data_to_process)
