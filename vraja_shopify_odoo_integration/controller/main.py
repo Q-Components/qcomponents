@@ -76,9 +76,15 @@ class Main(http.Controller):
         fulfillment_status = res.get("fulfillment_status") or "unfulfilled"
         if fulfillment_status in ["fulfilled", "unfulfilled", "partial"]:
             res["fulfillment_status"] = fulfillment_status
-            order_data_queue.sudo().create_shopify_order_queue_job(instance,res)
+            order_data_queue.sudo().order_webhook_process(instance, res)
         return
 
+    def order_webhook_process(self, instance_id, res):
+        _logger.info("shopify order response :: {".format(res))
+        queue_id = request.env['order.data.queue'].generate_shopify_order_queue(instance_id)
+        request.env['order.data.queue.line'].create_shopify_order_queue_line(res, instance_id,
+                                                                             queue_id)
+        
     def get_basic_info(self, route):
         """
         This method is used to check that instance and webhook are active or not. If yes then return response and
