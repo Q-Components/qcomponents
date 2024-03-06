@@ -53,7 +53,7 @@ class Main(http.Controller):
         """
         This method used for call child method of customer create process.
         """
-        time.sleep(16)
+        time.sleep(10)
         to_date = datetime.now()
         from_date = to_date - timedelta(days=10)
         create_customer_queue = request.env["customer.data.queue"].sudo()
