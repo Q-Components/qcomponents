@@ -1,5 +1,7 @@
 import base64
 import logging
+import time
+
 from odoo import http
 from odoo.http import request
 from datetime import datetime, timedelta
@@ -51,6 +53,7 @@ class Main(http.Controller):
         """
         This method used for call child method of customer create process.
         """
+        time.sleep(5)
         to_date = datetime.now()
         from_date = to_date - timedelta(days=10)
         create_customer_queue = request.env["customer.data.queue"].sudo()
