@@ -77,10 +77,11 @@ class OrderDataQueue(models.Model):
         res_id_list = []
         batch_size = 50
         shopify_orders_records = tools.split_every(batch_size, shopify_order_list)
-        _logger.info("Create Order queue  :: \n {}".format(shopify_orders_records))
+        _logger.info("Create Order queue  :: \n {} \n shopify order list :: {}".format(shopify_orders_records,shopify_order_list))
         for shopify_orders in shopify_orders_records:
             queue_id = self.generate_shopify_order_queue(instance_id)
             for order in shopify_orders:
+                _logger.info("order in shopify :: {}".format(order))
                 shopify_order_dict = order.to_dict()
                 self.env['order.data.queue.line'].create_shopify_order_queue_line(shopify_order_dict, instance_id,
                                                                                   queue_id)
