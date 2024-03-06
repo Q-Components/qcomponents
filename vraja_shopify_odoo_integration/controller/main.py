@@ -81,7 +81,7 @@ class Main(http.Controller):
 
     def order_webhook_process(self, instance_id, res):
         _logger.info("shopify order response :: {}".format(res))
-        queue_id = request.env['order.data.queue'].generate_shopify_order_queue(instance_id)
+        queue_id = request.env['order.data.queue'].sudo().generate_shopify_order_queue(instance_id)
         request.env['order.data.queue.line'].create_shopify_order_queue_line(res, instance_id,
                                                                              queue_id)
 
