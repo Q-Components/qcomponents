@@ -91,7 +91,7 @@ class Main(http.Controller):
         _logger.info("Get json data : ",res)
         host = request.httprequest.headers.get("X-Shopify-Shop-Domain")
         instance = request.env["shopify.instance.integration"].sudo().with_context(active_test=False).search(
-            [("shopify_host", "ilike", host)], limit=1)
+            [("shopify_url", "ilike", host)], limit=1)
         webhook = request.env["shopify.webhook"].sudo().search([("delivery_url", "ilike", route),
                                                                 ("instance_id", "=", instance.id)], limit=1)
 
