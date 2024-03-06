@@ -74,11 +74,9 @@ class Main(http.Controller):
         _logger.info("CREATE ORDER WEBHOOK call for order: %s", res.get("name"))
 
         fulfillment_status = res.get("fulfillment_status") or "unfulfilled"
-        if sale_order.sudo().search_read([("shopify_instance_id", "=", instance.id),
-                                          ("shopify_order_id", "=", res.get("id")),
-                                          ("shopify_order_number", "=",
-                                           res.get("order_number"))],
-                                         ["id"]):
+        if sale_order.sudo().search_read([("instance_id", "=", instance.id),
+                                          ("shopify_order_reference_id", "=", res.get("id")),
+                                          ("shopify_order_number", "=", res.get("order_number"))], ["id"]):
             sale_order.sudo().process_shopify_order_queue(instance)
         elif fulfillment_status in ["fulfilled", "unfulfilled", "partial"]:
             res["fulfillment_status"] = fulfillment_status
@@ -91,7 +89,7 @@ class Main(http.Controller):
         instance, If no then return response as False and instance.
         """
         res = request.get_json_data()
-        _logger.info("Get json data : ",res)
+        _logger.info("Get json data : ", res)
         host = request.httprequest.headers.get("X-Shopify-Shop-Domain")
         instance = request.env["shopify.instance.integration"].sudo().with_context(active_test=False).search(
             [("shopify_url", "ilike", host)], limit=1)
