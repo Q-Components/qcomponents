@@ -68,6 +68,7 @@ class Main(http.Controller):
         """
         res, instance = self.get_basic_info("shopify_odoo_webhook_for_orders_create")
         sale_order = request.env["sale.order"]
+        order_data_queue = request.env['order.data.queue']
         if not res:
             return
 
@@ -77,10 +78,10 @@ class Main(http.Controller):
         if sale_order.sudo().search_read([("instance_id", "=", instance.id),
                                           ("shopify_order_reference_id", "=", res.get("id")),
                                           ("shopify_order_number", "=", res.get("order_number"))], ["id"]):
-            sale_order.sudo().process_shopify_order_queue(instance)
+            order_data_queue.sudo().process_shopify_order_queue(instance)
         elif fulfillment_status in ["fulfilled", "unfulfilled", "partial"]:
             res["fulfillment_status"] = fulfillment_status
-            sale_order.sudo().process_shopify_order_queue(instance)
+            order_data_queue.sudo().process_shopify_order_queue(instance)
         return
 
     def get_basic_info(self, route):
