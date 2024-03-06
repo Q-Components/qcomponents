@@ -34,8 +34,8 @@ class Main(http.Controller):
                 auth="public", type="json")
     def customer_create_webhook(self):
         """
-        Route for handling customer create/update webhook for Shopify. This route calls while new customer create
-        customer values in the Shopify store.
+        Route for handling customer create webhook for Shopify. This route calls while new customer create
+        in the Shopify store.
         """
         webhook_route = request.httprequest.path.split('/')[1]
         # 1) Create Customer (shopify_odoo_webhook_for_customer_create)
@@ -53,7 +53,7 @@ class Main(http.Controller):
         """
         This method used for call child method of customer create process.
         """
-        time.sleep(5)
+        time.sleep(16)
         to_date = datetime.now()
         from_date = to_date - timedelta(days=10)
         create_customer_queue = request.env["customer.data.queue"].sudo()

@@ -30,7 +30,7 @@ class ShopifyWebhook(models.Model):
                 [('instance_id', '=', val.get('instance_id')), ('webhook_action', '=', val.get('webhook_action'))],
                 limit=1)
             if available_webhook:
-                raise UserError(_('Webhook is already created with the same action.'))
+                raise UserError(_('Webhook is already created with the same ID.'))
 
             result = super(ShopifyWebhook, self).create(val)
             result.get_webhook()
@@ -48,6 +48,7 @@ class ShopifyWebhook(models.Model):
         current_url = instance_obj.get_base_url()
         _logger.info("Current URL : %s", current_url)
         url = current_url + route
+
         _logger.info("Webhook URL : %s", url)
         if url[:url.find(":")] == 'http':
             raise UserError(_("Address protocol http:// is not supported for creating the webhooks."))
