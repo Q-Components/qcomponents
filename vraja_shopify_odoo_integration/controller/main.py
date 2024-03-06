@@ -57,6 +57,7 @@ class Main(http.Controller):
         queue_id = request.env['customer.data.queue'].sudo().generate_shopify_customer_queue(instance_id)
         request.env['customer.data.queue.line'].sudo().create_shopify_customer_queue_line(res, instance_id,
                                                                                           queue_id)
+        queue_id.sudo().process_shopify_customer_queue()
 
     @http.route("/shopify_odoo_webhook_for_orders_create", csrf=False, auth="public", type="json")
     def order_create_webhook(self):
