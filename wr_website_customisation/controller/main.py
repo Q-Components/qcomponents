@@ -151,6 +151,7 @@ class web_inherit(Website):
                     content = View._render_template('website.sitemap_xml', {'content': urls})
                     pages += 1
                     last_sitemap = create_sitemap('/sitemap-%d-%d.xml' % (current_website.id, pages), content)
+                    request.env.cr.commit()
                 else:
                     break
 
