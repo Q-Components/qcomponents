@@ -24,7 +24,7 @@ SITEMAP_CACHE_TIME = datetime.timedelta(hours=12)
 
 class WebsiteSale(http.Controller):
 
-    @http.route('/quick/shop', type='http', auth="public", website=True)
+    @http.route('/quick/shop', type='http', auth="public", website=True, sitemap=True)
     def website_quick_shop(self, **kw):
         return request.render("wr_website_customisation.QuickShop", {})
 
