@@ -2,8 +2,8 @@ from odoo import models,api,fields
 
 class UpsLocation(models.Model):
     _name = "ups.location"
-    _rec_name = "location_name"
-    location_name = fields.Char(string='Location Name')
+    _rec_name = "name"
+    name = fields.Char(string="Location Name", help="Location Name")
     location_id = fields.Char(string="Location Id", help="Location Id")
     street = fields.Char(string="Street", help="Ups Street")
     street2 = fields.Char(string="Area", help="UPS Area")
