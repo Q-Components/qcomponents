@@ -105,7 +105,8 @@ class DeliveryCarrier(models.Model):
 
     def retreive_adderess_details(self, address_id):
         return {
-            "AddressLine": address_id.street[:34] or "",
+            "AddressLine": [address_id.street and address_id.street[:35] or " ",
+                            address_id.street2 and address_id.street2[:35] or " "],
             "City": address_id.city or "",
             "StateProvinceCode": address_id.state_id and address_id.state_id.code or "",
             "PostalCode": address_id.zip or "",
@@ -392,6 +393,7 @@ class DeliveryCarrier(models.Model):
 
         # Location & Pickup(Pickup Point Functionality)
         receiver_street = picking.sale_id.ups_shipping_location_id.street if picking.sale_id.ups_shipping_location_id.street else recipient_address_id.street or ""
+        receiver_street2 = recipient_address_id.street2 or ""
         receiver_city = picking.sale_id.ups_shipping_location_id.city if picking.sale_id.ups_shipping_location_id.city else recipient_address_id.city or ""
         receiver_zip = picking.sale_id.ups_shipping_location_id.zip if picking.sale_id.ups_shipping_location_id.zip else recipient_address_id.zip or ""
         receiver_country_code = picking.sale_id.ups_shipping_location_id.country_code if picking.sale_id.ups_shipping_location_id.country_code else recipient_address_id.country_id and recipient_address_id.country_id.code or ""
@@ -419,7 +421,8 @@ class DeliveryCarrier(models.Model):
                         },
                         "EMailAddress": recipient_address_id.email,
                         "Address": {
-                            "AddressLine": receiver_street,
+                            "AddressLine": [receiver_street and receiver_street[:35] or "",
+                                            receiver_street2 and receiver_street2[:35] or ""],
                             "City": receiver_city,
                             "StateProvinceCode": receiver_state,
                             "PostalCode": receiver_zip,
@@ -492,7 +495,8 @@ class DeliveryCarrier(models.Model):
                             "Number": recipient_address_id.phone or ""
                         },
                         "Address": {
-                            "AddressLine": receiver_street[:34],
+                            "AddressLine": [receiver_street and receiver_street[:35] or "",
+                                            receiver_street2 and receiver_street2[:35] or ""],
                             "City": receiver_city,
                             "StateProvinceCode": receiver_state,
                             "CountryCode": receiver_country_code,
