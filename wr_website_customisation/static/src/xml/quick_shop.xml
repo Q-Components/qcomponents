@@ -163,9 +163,9 @@
                                                 </a>
                                             </div>
                                         </h6>
-                                        <div t-if="product.x_studio_alternate_number">
+                                        <!--<div t-if="product.x_studio_alternate_number">
                                             <a>parts have stickers</a>
-                                        </div>
+                                        </div>-->
                                         <div style="">
                                             <span style="font-size: 95%;">
                                                 <t t-esc="product.qty_available"/>
