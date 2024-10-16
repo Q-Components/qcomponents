@@ -18,23 +18,20 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Sale" required="1"/>
+                        </h1>
+                    </div>
                     <group>
-                        <group>
-                            <div class="oe_title">
-                                <label for="name"/>
-                                <h1>
-                                    <div class="d-flex">
-                                        <field name="name" placeholder="e.g. Sale" required="1"/>
-                                    </div>
-                                </h1>
-                            </div>
-                            <field name="model_id" required="1"/>
-                            <field name="search_record_from_this_value" style="text-transform: uppercase;"
-                                   attrs="{'required': [('main_table', '=', True)]}"/>
-                        </group>
-                        <group>
-                            <field name="main_table"/>
-                        </group>
+                      <group>
+                          <field name="model_id" required="1"/>
+                          <field name="search_record_from_this_value" style="text-transform: uppercase;" attrs="{'required': [('main_table', '=', True)]}"/>
+                      </group>
+                      <group>
+                          <field name="main_table"/>
+                      </group>
                     </group>
                     <notebook name="Notebook">
                         <page name="mapping_import_records" string="Mapping CSV Columns with Fields">
