@@ -1,0 +1,7 @@
+Name,Can be Sold?,Can be Purchased?,Product Type,Category,Unit of Measure,Purchase Unit of Measure,Customer Taxes,Vendor Taxes,Description for Customers,Invoicing Policy,Sales Price,Cost,Internal Reference,Barcode,Weight,Volume,Qty On Hand,Attribute,Values
+Product1,TRUE,TRUE,Storable Product,All,Units,Units,GST 5%,GST 2%,prd,delivery,50,25,Product_1,Product_1,5,4,10,,
+Product2,TRUE,TRUE,Storable Product,All,Units,Units,GST 18%,IGST 5%,prd,order,75,50,Product_2,Product_2,6,5,20,Color,"BLACK,Grey"
+,,,,,,,,,,,,,,,,,,size,"L,XL"
+Product3,TRUE,TRUE,Storable Product,All,Units,Units,GST 5%,GST 28%,prd,Ordered quantities,100,75,Product_3,Product_3,7,6,30,,
+Product4,TRUE,TRUE,Storable Product,All,Units,Units,GST 28%,IGST 5%,prd,Delivered quantities,125,100,Product_4,Product_4,8,7,40,,
+Product5,TRUE,TRUE,Storable Product,All,Units,Units,IGST 28%,GST 2%,prd,Delivered quantities,150,125,Product_5,Product_5,9,8,50,,

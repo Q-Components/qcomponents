@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="view_dynamic_import_records_tree" model="ir.ui.view">
+        <field name="name">dynamic.import.records.tree</field>
+        <field name="model">dynamic.import.records</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="model_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_dynamic_import_records_form" model="ir.ui.view">
+        <field name="name">dynamic.import.records.form</field>
+        <field name="model">dynamic.import.records</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <div class="oe_title">
+                                <label for="name"/>
+                                <h1>
+                                    <div class="d-flex">
+                                        <field name="name" placeholder="e.g. Sale" required="1"/>
+                                    </div>
+                                </h1>
+                            </div>
+                            <field name="model_id" required="1"/>
+                            <field name="search_record_from_this_value" style="text-transform: uppercase;"
+                                   attrs="{'required': [('main_table', '=', True)]}"/>
+                        </group>
+                        <group>
+                            <field name="main_table"/>
+                        </group>
+                    </group>
+                    <notebook name="Notebook">
+                        <page name="mapping_import_records" string="Mapping CSV Columns with Fields">
+                            <field name="line_ids" nolabel="1">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="file_data" string="CSV file column name"/>
+                                    <field name="field_to_store_main_model_name" invisible="1"/>
+                                    <field name="field_to_store_m2o_model_name" invisible="1"/>
+                                    <field name="field_to_store_o2m_model_name" invisible="1"/>
+                                    <field name="mapping_model_field_selection_id"
+                                           domain="[('model_id', '=', field_to_store_main_model_name)]"/>
+                                    <field name="visible_search_field_for_m2o" invisible="1"/>
+                                    <field name="field_of_m2o_field" force_save="1"
+                                           domain="[('model_id', '=', field_to_store_m2o_model_name)]"
+                                           attrs="{'readonly': [('visible_search_field_for_m2o', '=', False)]}"/>
+                                    <field name="visible_selection_field_for_o2m" invisible="1"/>
+                                    <!--                                    <field name="field_of_o2m_field" force_save="1"-->
+                                    <!--                                           domain="[('model_id', '=', field_to_store_o2m_model_name)]"-->
+                                    <!--                                           attrs="{'readonly': [('visible_selection_field_for_o2m', '=', False)], 'required': [('visible_selection_field_for_o2m', '=', True)]}"/>-->
+                                    <field name="sub_dynamic_mapping_record_id" force_save="1"
+                                           domain="[('main_table', '=', False)]"
+                                           attrs="{'readonly': [('visible_selection_field_for_o2m', '=', False)], 'required': [('visible_selection_field_for_o2m', '=', True)]}"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="dynamic_import_records_filter" model="ir.ui.view">
+        <field name="name">dynamic.import.records.filter</field>
+        <field name="model">dynamic.import.records</field>
+        <field name="arch" type="xml">
+            <search string="Search dynamic import records">
+                <field name="model_id" string="Name"/>
+                <filter string="Main Table" name="main_table" domain="[('main_table', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="dynamic_import_records_action" model="ir.actions.act_window">
+        <field name="name">Dynamic Import Records</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">dynamic.import.records</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_main_table': True}</field>
+    </record>
+
+    <menuitem id="menu_dynamic_import_records"
+              name="Dynamic Import Records"
+              action="dynamic_import_records_action"
+              web_icon="dynamic_import_records,static/description/import_records.png"
+              sequence="0"/>
+
+    <menuitem id="menu_item_import_records_configuration" name="Configuration" parent="menu_dynamic_import_records"
+              action="dynamic_import_records_action" sequence="1"/>
+
+</odoo>
