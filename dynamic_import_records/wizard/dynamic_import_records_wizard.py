@@ -66,9 +66,12 @@ class DynamicImportRecordsWizard(models.TransientModel):
 
             # When it's through manual import & CSV file
             elif self.filename.strip().endswith('.csv'):
-                decoded_data = base64.b64decode(self.import_file).decode('utf-8')
+                try:
+                    decoded_data = base64.b64decode(self.import_file).decode('utf-8')
+                except UnicodeDecodeError:
+                    decoded_data = base64.b64decode(self.import_file).decode('ISO-8859-1')
                 with open('/tmp/' + self.filename, "wb") as temp_file:
-                    temp_file.write(decoded_data.encode('utf-8'))
+                    temp_file.write(decoded_data.encode('utf-8', errors='replace'))
                     matched_files = [temp_file.name.split('/')[2]]
 
             # When it's through manual import & XLSX file
