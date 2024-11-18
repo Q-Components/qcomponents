@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="sftp_syncing_tree" model="ir.ui.view">
+        <field name="name">sftp.syncing.tree</field>
+        <field name="model">sftp.syncing</field>
+        <field name="arch" type="xml">
+            <tree string="SFTP Syncing">
+                <field name="name"/>
+                <field name="store"/>
+                <field name="active" invisible="1"/>
+                <field name="company_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="sftp_syncing_form" model="ir.ui.view">
+        <field name="name">sftp.syncing.form</field>
+        <field name="model">sftp.syncing</field>
+        <field name="arch" type="xml">
+            <form string="SFTP Syncing">
+                <header>
+                    <button name="sftp_test_connection" type="object" class="btn-primary"
+                            string="Check Connection"/>
+                    <button name="click_to_create_cron" type="object" class="btn-secondary"
+                            string="Click to create Automatic Cron Jobs"
+                            attrs="{'invisible':[('cron_created','!=',False)]}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="active" invisible="1"/>
+                            <field name="name" required="1"/>
+                            <field name="sftp_host" required="1"/>
+                            <field name="sftp_username" required="1"/>
+                            <field name="sftp_password" required="1"/>
+                            <field name="sftp_port" required="1"/>
+                            <field name="company_id"/>
+                            <field name="cron_created" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="store"/>
+                            <field name="dynamic_import_records_id" domain="[('main_table', '=', True)]"
+                                   attrs="{'required': [('store', '=', 'import_dynamic_records')], 'invisible': [('store', '!=', 'import_dynamic_records')]}"/>
+                            <field name="import_file_path"
+                                   attrs="{'required': [('store', '=', 'import_dynamic_records')], 'invisible': [('store', '!=', 'import_dynamic_records')]}"/>
+                            <field name="row_first_as_header"
+                                   attrs="{'required': [('store', '=', 'import_dynamic_records')], 'invisible': [('store', '!=', 'import_dynamic_records')]}"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sftp_syncing" model="ir.actions.act_window">
+        <field name="name">SFTP Syncing</field>
+        <field name="res_model">sftp.syncing</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_item_sftp_syncing" name="SFTP Syncing"
+              parent="dynamic_import_records.menu_dynamic_import_records"
+              action="dynamic_import_records.action_sftp_syncing" sequence="4"/>
+</odoo>
