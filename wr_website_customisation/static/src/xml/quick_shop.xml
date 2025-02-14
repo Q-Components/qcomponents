@@ -151,8 +151,6 @@
                                 </div>
                                 <div class="card-body p-0 text-center o_wsale_product_information" style="">
                                     <div class="p-2 o_wsale_product_information_text" style="">
-                                        <span>1</span>
-                                        Units available
                                         <h6 class="o_wsale_products_item_title" style="">
                                             <a t-att-href="product.website_url">
                                                 <t t-esc="product.name"/>
