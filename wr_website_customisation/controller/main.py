@@ -69,8 +69,8 @@ class WebsiteSale(http.Controller):
                 'description_sale': product_id.description_sale,
                 'uom_id': [product_id.uom_id.id, product_id.uom_id.name],
                 'website_url': product_id.product_tmpl_id.website_url,
-                'price': product_id.lst_price,
-                'virtual_available': product_id.virtual_available
+                'price': product_id.lst_price
+                #'virtual_available': product_id.virtual_available
             } for product_id in products_ids]
             request.env.cr.execute(f"""
                 select count(pp.id) from product_product pp
