@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="outlook_provider" model="mail.server">
+            <field name="name">Outlook</field>
+            <field name="smtp_host">smtp.outlook.com</field>
+            <field name="smtp_port">587</field>
+            <field name="smtp_debug">False</field>
+            <field name="smtp_encryption">starttls</field>
+            <field name="server">imap.outlook.com</field>
+            <field name="port">993</field>
+            <field name="type">outlook</field>
+            <field name="is_ssl">True</field>
+        </record>
+    </data>
+</odoo>
