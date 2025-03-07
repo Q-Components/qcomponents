@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_users_form_simple_modif_outlook_inherit" model="ir.ui.view">
+            <field name="name">res.users.preferences.outlook.form</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='preferences']" position="inside">
+                    <group string="microsoft outlook" name="microsoft_outlook">
+                        <group colspan="8">
+                            <field name="email" widget="email" readonly="0" required="True" string="Username"/>
+                            <field name="provider_id" readonly="0"
+                                   attrs="{'required': [('is_required_field','=',True)]}"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <field name="is_microsoft_outlook_configured" invisible="1"/>
+                        <field name="microsoft_outlook_refresh_token_outgoing" invisible="1"/>
+                        <h6 class="o_cell o_wrap_label flex-grow-1 flex-sm-grow-0 w-100 text-break text-900"
+                            attrs="{'invisible': [('is_microsoft_outlook_configured', '!=', True)]}">
+                            Outgoing mail server :-
+                        </h6>
+                        <group colspan="8">
+                            <span attrs="{'invisible': ['|', ('smtp_authentication', '!=', 'outlook'), ('microsoft_outlook_refresh_token_outgoing', '=', False)]}"
+                                  class="badge text-bg-success oe_inline o_input_8ch w-30">Outgoing Outlook Token Valid
+                            </span>
+                            <button type="object"
+                                    name="open_microsoft_outlook_uri_outgoing" class="btn-link px-0 ms-2"
+                                    attrs="{'invisible': ['|', '|', ('is_microsoft_outlook_configured', '=', False), ('smtp_authentication', '!=', 'outlook'), ('microsoft_outlook_refresh_token_outgoing', '=', False)]}">
+                                <i class="fa fa-cog" title="Edit Settings"/>
+                            </button>
+                        </group>
+                        <button type="object"
+                                name="open_microsoft_outlook_uri_outgoing"
+                                class="btn-link o_wrap_label w-75"
+                                attrs="{'invisible': ['|', '|', ('is_microsoft_outlook_configured', '=', False), ('smtp_authentication', '!=', 'outlook'), ('microsoft_outlook_refresh_token_outgoing', '!=', False)]}">
+                            <i class="fa fa-arrow-right "/>
+                            Connect your incoming Outlook account
+                        </button>
+                        <h6 class="o_cell o_wrap_label flex-grow-1 flex-sm-grow-0 w-100 text-break text-900"
+                            attrs="{'invisible': [('is_microsoft_outlook_configured', '!=', True)]}">
+                            Incoming mail server :-
+                        </h6>
+                        <group colspan="8">
+                            <field name="microsoft_outlook_refresh_token_incoming" invisible="1"/>
+                            <span attrs="{'invisible': ['|', ('smtp_authentication', '!=', 'outlook'), ('microsoft_outlook_refresh_token_incoming', '=', False)]}"
+                                  class="badge text-bg-success oe_inline o_input_8ch w-30">
+                                Incoming Outlook Token Valid
+                            </span>
+                            <button type="object"
+                                    name="open_microsoft_outlook_uri_incoming" class="btn-link px-0 ms-2"
+                                    attrs="{'invisible': ['|', '|', ('is_microsoft_outlook_configured', '=', False), ('smtp_authentication', '!=', 'outlook'), ('microsoft_outlook_refresh_token_incoming', '=', False)]}">
+                                <i class="fa fa-cog" title="Edit Settings"/>
+                            </button>
+                        </group>
+                        <button type="object"
+                                name="open_microsoft_outlook_uri_incoming"
+                                class="btn-link o_wrap_label w-75"
+                                attrs="{'invisible': ['|', '|', ('is_microsoft_outlook_configured', '=', False), ('smtp_authentication', '!=', 'outlook'), ('microsoft_outlook_refresh_token_incoming', '!=', False)]}">
+                            <i class="fa fa-arrow-right "/>
+                            Connect your incoming Outlook account
+                        </button>
+                        <button class="alert alert-warning d-block mt-2 text-start"
+                                icon="fa-arrow-right" type="action" role="alert"
+                                name="%(base.res_config_setting_act_window)d"
+                                attrs="{'invisible': ['|', ('is_microsoft_outlook_configured', '=', True), ('smtp_authentication', '!=', 'outlook')]}">
+                            Setup your Outlook API credentials in the general settings to link a Outlook account.
+                        </button>
+                        <group colspan="10">
+                            <button string="Test Connection" type="object" name="test_smtp_connection"
+                                    class="btn-primary  o_wrap_label flex-grow-1 flex-sm-grow-0 w-100 text-break text-900"/>
+                        </group>
+                    </group>
+                </xpath>
+                <xpath expr="//group[@name='mail_server_settings']" position="attributes">
+                    <attribute name="attrs">{'invisible': [('smtp_authentication','!=','login')]}
+                    </attribute>
+                </xpath>
+                <xpath expr="//group[@name='microsoft_outlook']" position="attributes">
+                    <attribute name="attrs">{'invisible': [('smtp_authentication','!=','outlook')]}
+                    </attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_users_form_mail_outlook_inherit" model="ir.ui.view">
+            <field name="name">res.users.view.form.outlook.mail</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="mail.view_users_form_mail"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='authentication']" position="after">
+                    <group string="microsoft outlook" name="microsoft_outlook">
+                        <group colspan="8">
+                            <field name="email" widget="email" readonly="0" required="True" string="Username"/>
+                            <field name="provider_id" readonly="0"
+                                   attrs="{'required': [('is_required_field','=',True)]}"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <field name="is_microsoft_outlook_configured" invisible="1"/>
+                        <field name="microsoft_outlook_refresh_token_outgoing" invisible="1"/>
+                        <h6 class="o_cell o_wrap_label flex-grow-1 flex-sm-grow-0 w-100 text-break text-900"
+                            attrs="{'invisible': [('is_microsoft_outlook_configured', '!=', True)]}">
+                            Outgoing mail server :-
+                        </h6>
+                        <group colspan="8">
+                            <span attrs="{'invisible': ['|', ('smtp_authentication', '!=', 'outlook'), ('microsoft_outlook_refresh_token_outgoing', '=', False)]}"
+                                  class="badge text-bg-success oe_inline o_input_8ch w-30">Outgoing Outlook Token Valid
+                            </span>
+                            <button type="object"
+                                    name="open_microsoft_outlook_uri_outgoing" class="btn-link px-0 ms-2"
+                                    attrs="{'invisible': ['|', '|', ('is_microsoft_outlook_configured', '=', False), ('smtp_authentication', '!=', 'outlook'), ('microsoft_outlook_refresh_token_outgoing', '=', False)]}">
+                                <i class="fa fa-cog" title="Edit Settings"/>
+                            </button>
+                        </group>
+                        <button type="object"
+                                name="open_microsoft_outlook_uri_outgoing"
+                                class="btn-link o_wrap_label w-75"
+                                attrs="{'invisible': ['|', '|', ('is_microsoft_outlook_configured', '=', False), ('smtp_authentication', '!=', 'outlook'), ('microsoft_outlook_refresh_token_outgoing', '!=', False)]}">
+                            <i class="fa fa-arrow-right "/>
+                            Connect your incoming Outlook account
+                        </button>
+                        <h6 class="o_cell o_wrap_label flex-grow-1 flex-sm-grow-0 w-100 text-break text-900"
+                            attrs="{'invisible': [('is_microsoft_outlook_configured', '!=', True)]}">
+                            Incoming mail server :-
+                        </h6>
+                        <group colspan="8">
+                            <field name="microsoft_outlook_refresh_token_incoming" invisible="1"/>
+                            <span attrs="{'invisible': ['|', ('smtp_authentication', '!=', 'outlook'), ('microsoft_outlook_refresh_token_incoming', '=', False)]}"
+                                  class="badge text-bg-success oe_inline o_input_8ch w-30">
+                                Incoming Outlook Token Valid
+                            </span>
+                            <button type="object"
+                                    name="open_microsoft_outlook_uri_incoming" class="btn-link px-0 ms-2"
+                                    attrs="{'invisible': ['|', '|', ('is_microsoft_outlook_configured', '=', False), ('smtp_authentication', '!=', 'outlook'), ('microsoft_outlook_refresh_token_incoming', '=', False)]}">
+                                <i class="fa fa-cog" title="Edit Settings"/>
+                            </button>
+                        </group>
+                        <button type="object"
+                                name="open_microsoft_outlook_uri_incoming"
+                                class="btn-link o_wrap_label w-75"
+                                attrs="{'invisible': ['|', '|', ('is_microsoft_outlook_configured', '=', False), ('smtp_authentication', '!=', 'outlook'), ('microsoft_outlook_refresh_token_incoming', '!=', False)]}">
+                            <i class="fa fa-arrow-right "/>
+                            Connect your incoming Outlook account
+                        </button>
+                        <button class="alert alert-warning d-block mt-2 text-start"
+                                icon="fa-arrow-right" type="action" role="alert"
+                                name="%(base.res_config_setting_act_window)d"
+                                attrs="{'invisible': ['|', ('is_microsoft_outlook_configured', '=', True), ('smtp_authentication', '!=', 'outlook')]}">
+                            Setup your Outlook API credentials in the general settings to link a Outlook account.
+                        </button>
+                        <group colspan="10">
+                            <button string="Test Connection" type="object" name="test_smtp_connection"
+                                    class="btn-primary  o_wrap_label flex-grow-1 flex-sm-grow-0 w-100 text-break text-900"/>
+                        </group>
+                    </group>
+                </xpath>
+                <xpath expr="//group[@name='mail_server_settings']" position="attributes">
+                    <attribute name="attrs">{'invisible': [('smtp_authentication','!=','login')]}
+                    </attribute>
+                </xpath>
+                <xpath expr="//group[@name='microsoft_outlook']" position="attributes">
+                    <attribute name="attrs">{'invisible': [('smtp_authentication','!=','outlook')]}
+                    </attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

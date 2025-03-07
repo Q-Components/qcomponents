@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_users_form_simple_modif_gmail_base_inherit" model="ir.ui.view">
+            <field name="name">res.users.preferences.gmail.form</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="advanced_email_configurator.view_users_form_simple_modif_inherit"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='mail_server_settings']" position="before">
+                    <group string="Authenticate"  name="authentication">
+                        <field name="smtp_authentication" widget="radio" string="Authenticate"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_users_form_mail_gmail_base_inherit" model="ir.ui.view">
+            <field name="name">res.users.view.form.gmail.mail</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="mail.view_users_form_mail"/>
+            <field name="arch" type="xml">
+                <field name="notification_type" position="after">
+                    <group string="Authenticate" name="authentication">
+                        <field name="smtp_authentication" widget="radio" string="Authenticate"/>
+                    </group>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>
