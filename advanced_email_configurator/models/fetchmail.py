@@ -20,13 +20,11 @@ class FetchmailServer(models.Model):
     type = fields.Selection([
         ('pop', 'POP Server'),
         ('imap', 'IMAP Server'),
-        ('outlook', 'Outlook Oauth Authntication'),
         ('local', 'Local Server'),
     ], 'Server Type', related='mail_server_id.type', index=True, default='imap')
     server_type = fields.Selection([
         ('pop', 'POP Server'),
         ('imap', 'IMAP Server'),
-        ('outlook','Outlook Oauth Authntication'),
         ('local', 'Local Server'),
     ], 'Server Type', related='mail_server_id.type', index=True, default='imap')
     is_ssl = fields.Boolean('SSL/TLS', related='mail_server_id.is_ssl',
@@ -79,7 +77,7 @@ class FetchmailServer(models.Model):
             # SEARCH command *always* returns at least the most
             # recent message, even if it has already been synced
             res_id = None
-            _logger.info("Num :{}".format(num))
+
             result, data = imap_server.fetch(num, '(RFC822)')
             if data and data[0]:
                 try:
@@ -145,7 +143,7 @@ class FetchmailServer(models.Model):
                     self._cr.commit()
         return
 
-    @api.model
-    def _fetch_mails(self):
-        """ Method called by cron to fetch mails from servers """
-        return self.search([('state', '=', 'done'), ('type', '!=', 'local')]).fetch_mail()
+    # @api.model
+    # def _fetch_mails(self):
+    #     """ Method called by cron to fetch mails from servers """
+    #     return self.search([('state', '=', 'done'), ('type', 'in', ['pop', 'imap'])]).fetch_mail()
