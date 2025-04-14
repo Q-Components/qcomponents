@@ -57,7 +57,7 @@ class FetchmailServer(models.Model):
             'SINCE', '%s' % last_internal_date_str
         )
         new_uids = uids[0].split()
-
+        _logger.info("new_uids : {0} Search Status : {1}".format(new_uids,search_status))
         for new_uid in new_uids:
             fetch_status, date = imap_server.fetch(
                 new_uid,
@@ -72,11 +72,12 @@ class FetchmailServer(models.Model):
                 date_uids[new_uid] = internaldate_msg
 
         result_unseen, data_unseen = imap_server.search(None, '(UNSEEN)')
+        _logger.info("Unseen : {}".format(result_unseen))
         for num in messages:
             # SEARCH command *always* returns at least the most
             # recent message, even if it has already been synced
             res_id = None
-
+            _logger.info("Num :{}".format(num))
             result, data = imap_server.fetch(num, '(RFC822)')
             if data and data[0]:
                 try:
@@ -108,9 +109,9 @@ class FetchmailServer(models.Model):
         context = self.env.context.copy()
         context['fetchmail_cron_running'] = True
         for server in self:
+            _logger.info("Server Last Internal Date : {0}".format(server.last_internal_date))
             if server.type != 'imap':
                 super(FetchmailServer, server).fetch_mail()
-
             elif server.type == 'imap' and server.last_internal_date:
                 _logger.info('start checking for new emails, starting from %s on %s server %s',
                              server.last_internal_date, server.type, server.name)
