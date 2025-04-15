@@ -118,7 +118,7 @@ class FetchmailServer(models.Model):
         context = self.env.context.copy()
         context['fetchmail_cron_running'] = True
         for server in self:
-            _logger.info("Server Last Internal Date : {0}".format(server.last_internal_date))
+            _logger.info("Server Type {0} Last Internal Date : {1}".format(server.type,server.last_internal_date))
             if server.type != 'imap':
                 super(FetchmailServer, server).fetch_mail()
             elif server.type == 'imap' and server.last_internal_date:
@@ -143,6 +143,9 @@ class FetchmailServer(models.Model):
                         imap_server.close()
                         imap_server.logout()
 
+                _logger.info("Fetched %d email(s) on %s server %s, starting from %s; %d succeeded, %d failed.",
+                             count,
+                             server.type, server.name, last_date, (count - failed), failed)
                 if last_date:
                     _logger.info("Fetched %d email(s) on %s server %s, starting from %s; %d succeeded, %d failed.",
                                  count,
