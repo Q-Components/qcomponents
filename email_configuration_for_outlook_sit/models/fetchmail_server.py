@@ -17,4 +17,4 @@ class FetchmailOutlookServer(models.Model):
 
     @api.model
     def _fetch_from_date_imap(self, imap_server, count, failed):
-        super(FetchmailOutlookServer, self)._fetch_from_date_imap()
+        super(FetchmailOutlookServer, self)._fetch_from_date_imap(imap_server, count, failed)
