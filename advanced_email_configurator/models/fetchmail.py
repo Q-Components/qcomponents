@@ -107,8 +107,10 @@ class FetchmailServer(models.Model):
                 _logger.info("LAST DATE : {}".format(last_date))
                 if last_date:
                     vals = {'last_internal_date': last_date}
-                    vals.pop('server_type')
-                    vals.pop('is_ssl')
+                    if 'server_type' in vals:
+                        vals.pop('server_type')
+                    if 'is_ssl' in vals:
+                        vals.pop('is_ssl')
                     self.write(vals)
                     self._cr.commit()
         return count, failed, last_date
