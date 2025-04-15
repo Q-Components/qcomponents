@@ -119,9 +119,9 @@ class FetchmailServer(models.Model):
         context['fetchmail_cron_running'] = True
         for server in self:
             _logger.info("Server Type {0} Last Internal Date : {1}".format(server.type,server.last_internal_date))
-            if server.type != 'imap':
+            if server.type not in ['imap','outlook']:
                 super(FetchmailServer, server).fetch_mail()
-            elif server.type == 'imap' and server.last_internal_date:
+            elif server.type in ['imap','outlook'] and server.last_internal_date:
                 _logger.info('start checking for new emails, starting from %s on %s server %s',
                              server.last_internal_date, server.type, server.name)
                 context.update({'fetchmail_server_id': server.id, 'server_type': server.type})
