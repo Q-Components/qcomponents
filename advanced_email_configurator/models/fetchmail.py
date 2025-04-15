@@ -103,7 +103,8 @@ class FetchmailServer(models.Model):
                     imap_server.store(num, '-FLAGS', '\\Seen')
                 self._cr.commit()
                 count += 1
-                last_date = date_uids[num] or False
+                last_date = date_uids[num] or False #datetime.now() or 
+                _logger.info("Last Date : {}".format(last_date))
                 if last_date:
                     vals = {'last_internal_date': last_date}
                     self.write(vals)
