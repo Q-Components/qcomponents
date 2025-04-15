@@ -72,7 +72,7 @@ class FetchmailServer(models.Model):
                 date_uids[new_uid] = internaldate_msg
 
         result_unseen, data_unseen = imap_server.search(None, '(UNSEEN)')
-        _logger.info("Unseen : {}".format(result_unseen))
+        _logger.info("Unseen : {} data unseen : {}".format(result_unseen,data_unseen))
         for num in messages:
             # SEARCH command *always* returns at least the most
             # recent message, even if it has already been synced
@@ -93,6 +93,12 @@ class FetchmailServer(models.Model):
                         self.type,
                         self.name)
                     failed += 1
+                _logger.info(">>>>>> DATA : {}".format(data))
+                # if 'Seen' not in data[1].decode('UTF-8'):
+                #     imap_server.uid('STORE', uid, '+FLAGS', '(\\Seen)')
+                # else:
+                #     imap_server.uid('STORE', uid, '-FLAGS', '(\\Seen)')
+                _logger.info("num Info : {}".format(num.decode('utf-8')))
                 if num.decode('utf-8') in data_unseen[0].decode('utf-8'):
                     imap_server.store(num, '-FLAGS', '\\Seen')
                 self._cr.commit()
