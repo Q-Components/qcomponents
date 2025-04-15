@@ -105,12 +105,12 @@ class FetchmailServer(models.Model):
                 count += 1
                 last_date = date_uids[num] or False #datetime.now() or
                 _logger.info("Last Date : {} VALS : {}".format(last_date,vals))
-                if last_date:
-                    vals = {'last_internal_date': last_date}
-                    vals.pop('server_type')
-                    vals.pop('is_ssl')
-                    self.write(vals)
-                    self._cr.commit()
+                # if last_date:
+                #     vals = {'last_internal_date': last_date}
+                #     vals.pop('server_type')
+                #     vals.pop('is_ssl')
+                #     self.write(vals)
+                #     self._cr.commit()
         return count, failed, last_date
 
     def fetch_mail(self):
@@ -148,6 +148,8 @@ class FetchmailServer(models.Model):
                                  count,
                                  server.type, server.name, last_date, (count - failed), failed)
                     vals = {'last_internal_date': last_date}
+                    vals.pop('server_type')
+                    vals.pop('is_ssl')
                     server.write(vals)
                     self._cr.commit()
         return
