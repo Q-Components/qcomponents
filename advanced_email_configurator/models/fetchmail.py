@@ -54,7 +54,7 @@ class FetchmailServer(models.Model):
 
         search_status, uids = imap_server.search(
             None,
-            'SINCE', '%s' % last_internal_date_str
+            'UNSEEN','SINCE', '%s' % last_internal_date_str
         )
         new_uids = uids[0].split()
         _logger.info("new_uids : {0} Search Status : {1}".format(new_uids,search_status))
@@ -72,8 +72,8 @@ class FetchmailServer(models.Model):
                 date_uids[new_uid] = internaldate_msg
 
         imap_date = last_internal_date.strftime('%d-%b-%Y')
-        result_unseen, data_unseen = imap_server.search(None, 'UNSEEN','SINCE',imap_date)
-        _logger.info("Unseen : {} data unseen : {}".format(result_unseen,data_unseen))
+        # result_unseen, data_unseen = imap_server.search(None, 'UNSEEN','SINCE',imap_date)
+        # _logger.info("Unseen : {} data unseen : {}".format(result_unseen,data_unseen))
         for num in messages:
             # SEARCH command *always* returns at least the most
             # recent message, even if it has already been synced
@@ -94,11 +94,15 @@ class FetchmailServer(models.Model):
                         self.type,
                         self.name)
                     failed += 1
-                _logger.info(">>>>>> DATA : {}".format(data))
-                # if 'Seen' not in data[1].decode('UTF-8'):
-                #     imap_server.uid('STORE', uid, '+FLAGS', '(\\Seen)')
-                # else:
-                #     imap_server.uid('STORE', uid, '-FLAGS', '(\\Seen)')
+
+                _logger.info("DATA : {}".format(data[1].decode('UTF-8')))
+                if data[1] and 'Seen' not in data[1].decode('UTF-8'):
+                    #imap_server.uid('STORE', uid, '+FLAGS', '(\\Seen)')
+                    imap_server.store(num, '+FLAGS', '\\Seen')
+                    _logger.info("Inside If Condition")
+                else:
+                    #imap_server.uid('STORE', uid, '-FLAGS', '(\\Seen)')
+                    imap_server.store(num, '-FLAGS', '\\Seen')
                 _logger.info("num Info : {}".format(num.decode('utf-8')))
                 # if num.decode('utf-8') in data_unseen[0].decode('utf-8'):
                 #     imap_server.store(num, '-FLAGS', '\\Seen')
