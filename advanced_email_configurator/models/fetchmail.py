@@ -71,7 +71,8 @@ class FetchmailServer(models.Model):
                 messages.append(new_uid)
                 date_uids[new_uid] = internaldate_msg
 
-        result_unseen, data_unseen = imap_server.search(None, '(UNSEEN)')
+        imap_date = last_internal_date.strftime('%d-%b-%Y')
+        result_unseen, data_unseen = imap_server.search(None, 'UNSEEN','SINCE',imap_date)
         _logger.info("Unseen : {} data unseen : {}".format(result_unseen,data_unseen))
         for num in messages:
             # SEARCH command *always* returns at least the most
