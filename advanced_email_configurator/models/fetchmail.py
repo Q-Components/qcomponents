@@ -99,12 +99,11 @@ class FetchmailServer(models.Model):
                 # else:
                 #     imap_server.uid('STORE', uid, '-FLAGS', '(\\Seen)')
                 _logger.info("num Info : {}".format(num.decode('utf-8')))
-                if num.decode('utf-8') in data_unseen[0].decode('utf-8'):
-                    imap_server.store(num, '-FLAGS', '\\Seen')
+                # if num.decode('utf-8') in data_unseen[0].decode('utf-8'):
+                #     imap_server.store(num, '-FLAGS', '\\Seen')
                 self._cr.commit()
                 count += 1
                 last_date = date_uids[num] or False #datetime.now() or
-                _logger.info("Last Date : {} VALS : {}".format(last_date,vals))
                 # if last_date:
                 #     vals = {'last_internal_date': last_date}
                 #     vals.pop('server_type')
@@ -150,6 +149,7 @@ class FetchmailServer(models.Model):
                     vals = {'last_internal_date': last_date}
                     vals.pop('server_type')
                     vals.pop('is_ssl')
+                    _logger.info("VALS : {}".format(vals))
                     server.write(vals)
                     self._cr.commit()
         return
