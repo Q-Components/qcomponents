@@ -71,9 +71,7 @@ class FetchmailServer(models.Model):
                 messages.append(new_uid)
                 date_uids[new_uid] = internaldate_msg
 
-        imap_date = last_internal_date.strftime('%d-%b-%Y')
         # result_unseen, data_unseen = imap_server.search(None, 'UNSEEN','SINCE',imap_date)
-        # _logger.info("Unseen : {} data unseen : {}".format(result_unseen,data_unseen))
         for num in messages:
             # SEARCH command *always* returns at least the most
             # recent message, even if it has already been synced
@@ -129,8 +127,6 @@ class FetchmailServer(models.Model):
             if server.type not in ['imap','outlook']:
                 super(FetchmailServer, server).fetch_mail()
             elif server.type in ['imap','outlook'] and server.last_internal_date:
-                _logger.info('start checking for new emails, starting from %s on %s server %s',
-                             server.last_internal_date, server.type, server.name)
                 context.update({'fetchmail_server_id': server.id, 'server_type': server.type})
 
                 count, failed = 0, 0
@@ -149,18 +145,12 @@ class FetchmailServer(models.Model):
                     if imap_server:
                         imap_server.close()
                         imap_server.logout()
-
-                _logger.info("Fetched %d email(s) on %s server %s, starting from %s; %d succeeded, %d failed.",
-                             count,
-                             server.type, server.name, last_date, (count - failed), failed)
                 if last_date:
-                    _logger.info("Fetched %d email(s) on %s server %s, starting from %s; %d succeeded, %d failed.",
-                                 count,
-                                 server.type, server.name, last_date, (count - failed), failed)
                     vals = {'last_internal_date': last_date}
-                    vals.pop('server_type')
-                    vals.pop('is_ssl')
-                    _logger.info("VALS : {}".format(vals))
+                    if 'server_type' in vals:
+                        vals.pop('server_type')
+                    if 'is_ssl' in vals:
+                        vals.pop('is_ssl')
                     server.write(vals)
                     self._cr.commit()
         return
