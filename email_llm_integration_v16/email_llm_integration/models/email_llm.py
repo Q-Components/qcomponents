@@ -65,6 +65,20 @@ class EmailLLM(models.Model):
             return msg.get_payload(decode=True).decode()
 
     def send_to_gpt(self, email_body):
+        """Send an email body to the GPT API for product inquiry analysis.
+
+        This method sends a formatted prompt to the GPT model via a configured API endpoint.
+        It checks if the email is related to a product inquiry and, if so, returns a structured
+        JSON with product names, synonyms, customer intents, and related Odoo technical fields.
+
+        :Params:
+            email_body (str): The raw text content of the email to be analyzed.
+
+        :Returns:
+            str : A JSON string containing extracted product-related information if applicable,
+            None : if the email is not a product inquiry or if an error occurred.
+
+        """
         try:
             ir_config = self.env['ir.config_parameter'].sudo()
             olg_api_endpoint = ir_config.get_param('web_editor.olg_api_endpoint', 'https://olg.api.odoo.com')
@@ -106,6 +120,7 @@ This format should be returned without any additional text or explanation. Just 
             if after_prompt:
                 prompt = "Email:" + prompt + "\n" + after_prompt
 
+            # Send the prompt to the GPT endpoint
             response = iap_jsonrpc(
                 f"{olg_api_endpoint}/api/olg/1/chat",
                 params={

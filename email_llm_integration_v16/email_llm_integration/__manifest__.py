@@ -11,7 +11,6 @@
                       | Automate Email Inquiry Processing | Email Inquiry Processing | Create Quotation from Email 
                       | AI Powered Email Inquiry Processing  |""",
 
-
     # Dependencies
     'depends': ['mail', 'sale_management', 'stock', 'account_accountant'],
 

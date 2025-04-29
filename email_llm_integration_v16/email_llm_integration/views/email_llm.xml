@@ -4,7 +4,7 @@
         <field name="name">email.llm.tree</field>
         <field name="model">email.llm</field>
         <field name="arch" type="xml">
-            <tree>
+            <tree create="false">
                 <field name="email_sender_name"/>
                 <field name="create_date"/>
             </tree>

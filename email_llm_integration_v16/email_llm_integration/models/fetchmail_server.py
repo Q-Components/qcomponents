@@ -15,6 +15,14 @@ class FetchmailServer(models.Model):
     )
 
     def _fetch_mails(self):
+        """
+        Fetch unseen emails from servers configured for LLM processing.
+
+        This method connects to all fetchmail servers marked for LLM email reading,
+        retrieves unseen emails from the inbox using IMAP (with OAuth authentication
+        if applicable), sends the email body to the GPT model for processing, and
+        creates corresponding email and processed email records in Odoo.
+        """
         self_record = self.env['fetchmail.server'].search([
             ('use_for_llm_processing', '=', True)
         ])
@@ -22,14 +30,17 @@ class FetchmailServer(models.Model):
             try:
                 # Connect to IMAP
                 mail = imaplib.IMAP4_SSL(server.server, server.port)
-                mail.login(server.user, server.password)
+                server._imap_login(mail)
                 mail.select("inbox")
 
                 result, data = mail.search(None, 'UNSEEN')
                 email_ids = data[0].split()
 
                 for eid in email_ids:
-                    processed_mail = self.env['processed.emails'].search([('processed_email_id', '=', eid),('server_id', '=', server.id)], limit=1)
+                    processed_mail = self.env['processed.emails'].search([
+                        ('processed_email_id', '=', eid),
+                        ('server_id', '=', server.id)
+                    ], limit=1)
                     if processed_mail:
                         continue
 
