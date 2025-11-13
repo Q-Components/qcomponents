@@ -15,19 +15,6 @@ _logger = logging.getLogger(__name__)
 class SkuvaultPorductTemplate(models.Model):
     _inherit = 'product.template'
 
-    @api.depends('product_variant_ids', 'product_variant_ids.alternate_number')
-    def _compute_alternate_number(self):
-        unique_variants = self.filtered(lambda template: len(template.product_variant_ids) == 1)
-        for template in unique_variants:
-            template.alternate_number = template.product_variant_ids.alternate_number
-        for template in (self - unique_variants):
-            template.alternate_number = False
-
-    def _set_alternate_number(self):
-        for template in self:
-            if len(template.product_variant_ids) == 1:
-                template.product_variant_ids.alternate_number = template.alternate_number
-    
     sku_location = fields.Char(string='Sku Location')
     supplier_name = fields.Char(string='Supplier')
 
@@ -41,9 +28,13 @@ class SkuvaultPorductTemplate(models.Model):
     x_studio_package = fields.Char(string='Package')
     x_studio_rohs = fields.Char(string='Rohs')
     brand_name = fields.Char(string='Brand',index=True,tracking=True)
-    alternate_number = fields.Char(
-        'Alternate Number', compute='_compute_alternate_number',
-        inverse='_set_alternate_number', store=True)
+    alternate_number = fields.Char(string='Alternate Number')
+
+    def write(self, vals):
+        res = super().write(vals)
+        if 'alternate_number' in vals:
+            self.product_variant_id.alternate_number = vals.get('alternate_number')
+        return res
 
     def skuvault_post_api_request_data(self):
         """

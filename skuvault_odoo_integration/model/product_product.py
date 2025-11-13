@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo.exceptions import ValidationError
 import logging
-from odoo import models, fields, _
+from odoo import models, fields, api, _
 import requests
 import json
 import time
@@ -19,6 +19,24 @@ class PorductProduct(models.Model):
     sku_location = fields.Char(string='Sku Location',related='product_tmpl_id.sku_location',readonly=False)
     x_studio_alternate_number = fields.Char(string='Alternate Number',related='product_tmpl_id.x_studio_alternate_number',readonly=False,store=True,index=True)
     alternate_number = fields.Char('Alternate Number', index=True)
+
+    def _sync_alternate_number(self):
+        for rec in self:
+            rec.alternate_number = rec.product_tmpl_id.alternate_number
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super(PorductProduct,self).create(vals_list)
+        for rec in records:
+            rec._sync_alternate_number()
+        return records
+
+    # def write(self, vals):
+    #     res = super().write(vals)
+    #     if 'alternate_number' in vals:
+    #         self.product_tmpl_id.alternate_number = vals.get('alternate_number')
+    #     return res
+
 
     def update_inventory_from_variant_manually_to_odoo(self):
         warehouse_id = self.env['stock.warehouse'].search([('use_skuvault_warehouse_management', '=', True)])
