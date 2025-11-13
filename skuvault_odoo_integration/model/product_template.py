@@ -16,14 +16,14 @@ class SkuvaultPorductTemplate(models.Model):
 
     # X studio fields taken
     x_studio_category = fields.Char(string='Category')
-    x_studio_manufacturer = fields.Char(string='manufacturer')
-    x_studio_alternate_number = fields.Char(string='Alternate Number')
+    x_studio_manufacturer = fields.Char(string='manufacturer',index=True,tracking=True)
+    x_studio_alternate_number = fields.Char(string='Alternate Number',index=True,tracking=True)
     x_studio_date_code_1 = fields.Char(string='Date Code')
     x_studio_origin_code = fields.Char(string='Origin Code')
     x_studio_condition_1 = fields.Char(string='condition')
     x_studio_package = fields.Char(string='Package')
     x_studio_rohs = fields.Char(string='Rohs')
-    brand_name = fields.Char(string='Brand')
+    brand_name = fields.Char(string='Brand',index=True,tracking=True)
 
     def skuvault_post_api_request_data(self):
         """
