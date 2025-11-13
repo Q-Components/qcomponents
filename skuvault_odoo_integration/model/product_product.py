@@ -18,6 +18,7 @@ class PorductProduct(models.Model):
     supplier_name = fields.Char(string='Supplier',related='product_tmpl_id.supplier_name',readonly=False)
     sku_location = fields.Char(string='Sku Location',related='product_tmpl_id.sku_location',readonly=False)
     x_studio_alternate_number = fields.Char(string='Alternate Number',related='product_tmpl_id.x_studio_alternate_number',readonly=False,store=True,index=True)
+    alternate_number = fields.Char('Alternate Number', index=True)
 
     def update_inventory_from_variant_manually_to_odoo(self):
         warehouse_id = self.env['stock.warehouse'].search([('use_skuvault_warehouse_management', '=', True)])
