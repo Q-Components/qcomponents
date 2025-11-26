@@ -18,7 +18,6 @@
             'views/res_company.xml',
             'views/delivery_carrier_view.xml',
             'views/sale_view.xml',
-            'views/stock_picking_vts.xml'
             ],
 
     # Author
