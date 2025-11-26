@@ -2,7 +2,7 @@
 
 from odoo import models, fields, api
 from odoo.http import request
-from odoo.addons.http_routing.models.ir_http import slug, unslug
+# from odoo.addons.http_routing.models.ir_http import slug  unslug
 
 class Website(models.Model):
     _inherit = "website"

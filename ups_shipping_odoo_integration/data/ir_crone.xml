@@ -5,10 +5,17 @@
             <field name="name">UPS Authentication Process</field>
             <field name="interval_number">10</field>
             <field name="interval_type">minutes</field>
-            <field name="numbercall">-1</field>
-            <field name="doall" eval="False"/>
             <field name="model_id" ref="model_res_company"/>
             <field name="code">model.ups_generate_crone()</field>
+            <field name="active" eval="True"/>
+            <field name="state">code</field>
+        </record>
+        <record id="ups_shipment_status_cron" model="ir.cron">
+            <field name="name">UPS Shipment Status</field>
+            <field name="interval_number">10</field>
+            <field name="interval_type">minutes</field>
+            <field name="model_id" ref="model_stock_picking"/>
+            <field name="code">model.ups_shipment_status()</field>
             <field name="active" eval="True"/>
             <field name="state">code</field>
         </record>

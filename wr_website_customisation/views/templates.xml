@@ -42,14 +42,20 @@
         </t>
     </template>
     <template id="product" inherit_id="website_sale.product">
-        <xpath expr="//div[hasclass('row')]/div[hasclass('col-lg-6')]/div" position="attributes">
-            <attribute name="class">d-none</attribute>
+
+
+        <xpath expr="//div[@id='product_detail_main']/div[1]" position="attributes">
+            <attribute name="class" add="d-none"/>
         </xpath>
-        <xpath expr="//div[hasclass('row')]/div[hasclass('col-lg-6')][2]/ol/li[1]" position="replace">
+
+
+        <xpath expr="//ol[contains(@class,'o_wsale_breadcrumb')]/li[1]" position="replace">
             <li class="breadcrumb-item o_not_editable">
                 <a href="/quick/shop">All Products</a>
             </li>
         </xpath>
+
     </template>
+
 
 </odoo>

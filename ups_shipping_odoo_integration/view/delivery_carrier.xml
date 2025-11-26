@@ -7,34 +7,44 @@
         <field name="arch" type="xml">
             <xpath expr="//page[@name='destination']" position='before'>
                 <page string="Configuration" name="ups_configuration"
-                      attrs="{'invisible': [('delivery_type', '!=', 'ups_provider')]}">
+                      invisible="delivery_type != 'ups_provider'">
                     <group>
                         <group>
                             <field name="company_id"
-                                   attrs="{'required': [('delivery_type', '=', 'ups_provider')]}"/>
-                            <field name="ups_default_product_packaging_id"
-                                   attrs="{'required': [('delivery_type', '=', 'ups_provider')]}"/>
+                                   required="delivery_type == 'ups_provider'"/>
+                            <field name="ups_provider_package_id"
+                                   required="delivery_type == 'ups_provider'"/>
                             <field name="ups_service_type"
-                                   attrs="{'required': [('delivery_type', '=', 'ups_shipping_provider')]}"/>
+                                   required="delivery_type == 'ups_provider'"/>
                             <field name="ups_weight_uom"
-                                   attrs="{'required': [('delivery_type', '=', 'ups_shipping_provider')]}"/>
-                            <field name="ups_label_print_methods" invisible="1"
-                                   attrs="{'required': [('delivery_type', '=', 'ups_shipping_provider')]}"/>
-                           <field name="ups_cod_parcel"/>
-                            <field name="ups_cod_service"
-                                   attrs="{'required': [('ups_cod_parcel', '!=', 'False')], 'invisible': [('ups_cod_parcel', '=', False)]}"/>
+                                   required="delivery_type == 'ups_provider'"/>
+                            <field name="ups_label_print_methods"
+                                   required="delivery_type == 'ups_provider'"/>
+                            <field name="ups_cod_parcel"/>
+                            <field name="ups_cod_service" required="delivery_type == 'ups_provider'"
+                                   invisible="ups_cod_parcel == False"/>
                             <field name="ups_cod_fund_code"
-                                   attrs="{'required': [('ups_cod_parcel', '!=', 'False')], 'invisible': [('ups_cod_parcel', '=', False)]}"/>
+                                   required="ups_cod_parcel != False" invisible="ups_cod_parcel == False"/>
                         </group>
                         <group>
                             <field name="negotiated_rate"/>
+                            <field name="insured_request"/>
                             <field name="saturdaydelivery"/>
                             <field name="commercial_invoice"/>
                             <field name="signature_required"/>
+                            <field name="return_labels"/>
+                            <field name="ups_shipment_indication_type"/>
+                            <field name="ups_notification_type"/>
                             <field name="ups_pickup_functionality"/>
-                            <field name="ups_request_option" attrs="{'required': [('ups_pickup_functionality', '!=', False)], 'invisible': [('ups_pickup_functionality', '=', False)]}"/>
-                            <field name="ups_service_code" attrs="{'required': [('ups_pickup_functionality', '!=', False)], 'invisible': [('ups_pickup_functionality', '=', False)]}"/>
-                            <field name="ups_measurement_code" attrs="{'required': [('ups_pickup_functionality', '!=', False)], 'invisible': [('ups_pickup_functionality', '=', False)]}"/>
+                            <field name="ups_request_option"
+                                   required="ups_pickup_functionality != False"
+                                   invisible="ups_pickup_functionality == False"/>
+                            <field name="ups_service_code"
+                                   required="ups_pickup_functionality != False"
+                                   invisible="ups_pickup_functionality == False"/>
+                            <field name="ups_measurement_code"
+                                   required="ups_pickup_functionality != False"
+                                   invisible="ups_pickup_functionality == False"/>
                         </group>
                     </group>
                 </page>

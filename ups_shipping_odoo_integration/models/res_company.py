@@ -10,7 +10,7 @@ class ResCompany(models.Model):
     use_ups_shipping_provider = fields.Boolean(copy=False, string="Are You Use UPS Shipping Provider.?",
                                                help="If use UPS shipping provider than value set TRUE.",
                                                default=False)
-    ups_api_url = fields.Char(string="API URL", copy=False, default="https://wwwcie.ups.com")
+    ups_api_url = fields.Char(string="UPS API URL", copy=False, default="https://wwwcie.ups.com")
     ups_userid = fields.Char("UPS User ID")
     ups_password = fields.Char("UPS Password")
     ups_shipper_number = fields.Char("UPS Shipper Number")

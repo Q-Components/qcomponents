@@ -197,7 +197,7 @@ class StockWarehouse(models.Model):
                                     'name':product_data.get('PartNumber','') or product_data.get('Sku'),
                                     #'lst_price': product_data.get('SalePrice'),
                                     'weight': product_data.get('WeightValue'),
-                                    'type':'product',
+                                    'type':'consu',
                                     'supplier_name':product_data.get('Supplier'),
                                     'standard_price': product_data.get('Cost')}
                                 for attribute_data in product_data.get('Attributes'):
@@ -316,7 +316,7 @@ class StockWarehouse(models.Model):
                             'name':product_data.get('PartNumber','') or product_data.get('Sku'),
                             #'lst_price': product_data.get('SalePrice'),
                             'weight': product_data.get('WeightValue'),
-                            'type':'product',
+                            'type':'consu',
                             'standard_price': product_data.get('Cost')}
                         for attribute_data in product_data.get('Attributes'):
                             if attribute_data.get('Name') == 'Category' and attribute_data.get('Value'):

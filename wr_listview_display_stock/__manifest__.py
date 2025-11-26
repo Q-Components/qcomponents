@@ -9,7 +9,7 @@
         Listview Display Stock
     """,
     'author': "Vraja Technologies",
-    'version': '1.0',
+    'version': '19.0.1.0',
     'website': "https://www.vrajatechnologies.com",
     'license': 'OPL-1',
     'category': 'Sales/Inventory',

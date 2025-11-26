@@ -4,15 +4,15 @@
 		<record id="view_skuvault_operation_tree_view" model="ir.ui.view">
 			<field name="name">Skuvault Operation</field>
 			<field name="model">skuvault.operation</field>
-			<field name="type">tree</field>
+			<field name="type">list</field>
 			<field name="arch" type="xml">
-				<tree string="Skuvault Operation Detail" create='false'>
+				<list string="Skuvault Operation Detail" create='false'>
 					<field name="name" />
 					<field name="warehouse_id" />
 					<field name="skuvault_operation" />
 					<field name="skuvault_operation_type" />
 					<field name="create_date" />
-				</tree>
+				</list>
 			</field>
 		</record>
 
@@ -37,7 +37,7 @@
 						</group>
 						<group string="Skuvault Operation Details" colspan="4">
 							<field name="operation_ids" nolabel="1" readonly="1">
-								<tree decoration-danger="fault_operation==True">
+								<list decoration-danger="fault_operation==True">
 									<field name="skuvault_operation_type" invisible="1" />
 
 									<field name="skuvault_operation" invisible="1" />
@@ -46,7 +46,7 @@
 
 									<field name="fault_operation" />
 									<field name ="process_message"/>
-								</tree>
+								</list>
 							</field>
 						</group>
 
@@ -57,9 +57,9 @@
 		<record id="view_skuvault_operation_details" model="ir.ui.view">
 			<field name="name">Skuvault Operation Details</field>
 			<field name="model">skuvault.operation.details</field>
-			<field name="type">tree</field>
+			<field name="type">list</field>
 			<field name="arch" type="xml">
-				<tree string="Skuvault Operation Details" create='false'>
+				<list string="Skuvault Operation Details" create='false'>
 					<field name="skuvault_operation" />
 					<field name="operation_id" />
 					<field name="skuvault_operation_type" />
@@ -67,7 +67,7 @@
 					<field name="request_message" />
 					<field name="response_message" />
 					<field name="create_date" />
-				</tree>
+				</list>
 			</field>
 		</record>
 
@@ -100,7 +100,7 @@
 		<record id="action_skuvault_operation_details" model="ir.actions.act_window">
 			<field name="name">Skuvault Fault Data</field>
 			<field name="res_model">skuvault.operation.details</field>
-			<field name="view_mode">tree,form</field>
+			<field name="view_mode">list,form</field>
 			<field name="domain">[('fault_operation','=',True)]</field>
 		</record>
 		<menuitem id="menu_skuvault_operation_detail" name="Skuvault Process Details"

@@ -4,8 +4,11 @@ from werkzeug import urls
 
 from odoo import models, _
 from odoo.addons.payment import utils as payment_utils
-from odoo.addons.payment_stripe.const import PAYMENT_METHOD_TYPES
-from odoo.addons.payment_stripe.controllers.main import StripeController
+
+import odoo.addons.payment_stripe as stripe
+
+# from odoo.addons.payment_stripe.const import PAYMENT_METHOD_TYPES
+# from odoo.addons.payment_stripe.controllers.main import StripeController
 
 
 class PaymentTransaction(models.Model):

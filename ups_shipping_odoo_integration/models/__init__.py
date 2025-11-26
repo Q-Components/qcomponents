@@ -5,4 +5,3 @@ from . import sale_order
 from . import stock_picking
 from . import ups_thirdparty_account
 from . import ups_location
-from . import stock_quant_package

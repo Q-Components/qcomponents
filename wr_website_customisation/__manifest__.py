@@ -2,7 +2,7 @@
 
 {
     "name": "Website Customisation",
-    "version": "1.0",
+    "version": "19.0.1.0",
     "category": "Website",
     'summary': 'Website Customisation',
     "description": """

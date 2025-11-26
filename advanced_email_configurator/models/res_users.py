@@ -2,7 +2,7 @@
 
 import logging
 from odoo import api, fields, models, tools, _
-from odoo.exceptions import except_orm, UserError
+from odoo.exceptions import UserError
 from odoo.tools import ustr, pycompat
 
 _logger = logging.getLogger(__name__)

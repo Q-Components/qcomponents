@@ -36,9 +36,9 @@
              <field name="name">mail.server.tree.view</field>
              <field name="model">mail.server</field>
              <field name="active" eval="True"/>
-             <field name="type">tree</field>
+             <field name="type">list</field>
              <field name="arch" type="xml">
-                 <tree string="Mail Server">
+                 <list string="Mail Server">
                      <field name="name"/>
                      <field name="smtp_host"/>
                      <field name="smtp_port" />
@@ -48,7 +48,7 @@
                      <field name="port"/>
                      <field name="type" invisible="1"/>
                      <field name="is_ssl" invisible="1"/>
-                 </tree>
+                 </list>
             </field>
         </record>
 

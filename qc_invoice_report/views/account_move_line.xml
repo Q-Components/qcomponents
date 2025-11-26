@@ -5,7 +5,7 @@
             <field name="name">qc.invoice.report.tree.view</field>
             <field name="model">account.move.line</field>
             <field name="arch" type="xml">
-                <tree string="Invoice Report" create="false" expand="context.get('expand', False)"
+                <list string="Invoice Report" create="false" expand="context.get('expand', False)"
                       multi_edit="1">
                     <field name="move_id"/>
                     <field name="product_id"/>
@@ -19,7 +19,7 @@
                     <field name="sku_location"/>
                     <field name="condition"/>
                     <field name="type" invisible="1" />
-                </tree>
+                </list>
             </field>
         </record>
         <record id="qc_invoice_report_search_view" model="ir.ui.view">
@@ -40,7 +40,7 @@
                     <field name="move_id" string="Journal Entry" filter_domain="[
                         '|', '|', ('move_id.name', 'ilike', self), ('move_id.ref', 'ilike', self), ('move_id.partner_id', 'ilike', self)]"/>
                     <separator/>
-                    <group expand="0" string="Group By">
+                    <group>
                         <filter string="Invoice" name="group_by_move" domain="[]" context="{'group_by': 'move_id'}"/>
                         <filter string="Partner" name="group_by_partner" domain="[]" context="{'group_by': 'partner_id'}"/>
                         <filter string="Condition" name="group_by_condition" domain="[]" context="{'group_by': 'condition'}"/>
@@ -53,7 +53,7 @@
             <field name="name">QC Invoice Report</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">account.move.line</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="domain">[('type', '=', 'out_invoice'),('product_id','!=',False)]</field>
             <field name="view_id" ref="qc_invoice_report_tree_view"/>
             <field name="search_view_id" ref="qc_invoice_report_search_view" />

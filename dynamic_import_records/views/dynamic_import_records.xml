@@ -5,10 +5,11 @@
         <field name="name">dynamic.import.records.tree</field>
         <field name="model">dynamic.import.records</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
                 <field name="model_id"/>
-            </tree>
+                <field name="partner_id"/>
+            </list>
         </field>
     </record>
 
@@ -25,37 +26,41 @@
                         </h1>
                     </div>
                     <group>
-                      <group>
-                          <field name="model_id" required="1"/>
-                          <field name="search_record_from_this_value" style="text-transform: uppercase;" attrs="{'required': [('main_table', '=', True)]}"/>
-                      </group>
-                      <group>
-                          <field name="main_table"/>
-                      </group>
+                        <group>
+                            <field name="model_id" required="1"/>
+                            <field name="search_record_from_this_value" style="text-transform: uppercase;"
+                                  required="main_table == True"/>
+                        </group>
+                        <group>
+                            <field name="default_value_dynamic_records" placeholder="{'warehouse_id': 3}"/>
+                            <field name="main_table"/>
+                            <field name="partner_id"/>
+                        </group>
                     </group>
                     <notebook name="Notebook">
                         <page name="mapping_import_records" string="Mapping CSV Columns with Fields">
                             <field name="line_ids" nolabel="1">
-                                <tree editable="bottom">
+                                <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="file_data" string="CSV file column name"/>
-                                    <field name="field_to_store_main_model_name" invisible="1"/>
-                                    <field name="field_to_store_m2o_model_name" invisible="1"/>
-                                    <field name="field_to_store_o2m_model_name" invisible="1"/>
+                                    <field name="field_to_store_m2o_model_name" column_invisible="True"/>
+                                    <field name="field_to_store_m2m_model_name" column_invisible="True"/>
+                                    <field name="field_to_store_o2m_model_name" column_invisible="True"/>
                                     <field name="mapping_model_field_selection_id"
-                                           domain="[('model_id', '=', field_to_store_main_model_name)]"/>
-                                    <field name="visible_search_field_for_m2o" invisible="1"/>
+                                           domain="[('model_id', '=', parent.model_id)]"/>
+                                    <field name="visible_search_field_for_m2o" column_invisible="True"/>
                                     <field name="field_of_m2o_field" force_save="1"
                                            domain="[('model_id', '=', field_to_store_m2o_model_name)]"
-                                           attrs="{'readonly': [('visible_search_field_for_m2o', '=', False)]}"/>
-                                    <field name="visible_selection_field_for_o2m" invisible="1"/>
-                                    <!--                                    <field name="field_of_o2m_field" force_save="1"-->
-                                    <!--                                           domain="[('model_id', '=', field_to_store_o2m_model_name)]"-->
-                                    <!--                                           attrs="{'readonly': [('visible_selection_field_for_o2m', '=', False)], 'required': [('visible_selection_field_for_o2m', '=', True)]}"/>-->
+                                           readonly="visible_search_field_for_m2o == False"/>
+                                    <field name="visible_search_field_for_m2m" column_invisible="True"/>
+                                    <field name="field_of_m2m_field" force_save="1"
+                                           domain="[('model_id', '=', field_to_store_m2m_model_name)]"
+                                           readonly="visible_search_field_for_m2m == False"/>
+                                    <field name="visible_selection_field_for_o2m" column_invisible="True"/>
                                     <field name="sub_dynamic_mapping_record_id" force_save="1"
                                            domain="[('main_table', '=', False)]"
-                                           attrs="{'readonly': [('visible_selection_field_for_o2m', '=', False)], 'required': [('visible_selection_field_for_o2m', '=', True)]}"/>
-                                </tree>
+                                           readonly = "visible_selection_field_for_o2m == False" required = "visible_selection_field_for_o2m == True"/>
+                                </list>
                             </field>
                         </page>
                     </notebook>
@@ -79,7 +84,7 @@
         <field name="name">Dynamic Import Records</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">dynamic.import.records</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="context">{'search_default_main_table': True}</field>
     </record>
 
