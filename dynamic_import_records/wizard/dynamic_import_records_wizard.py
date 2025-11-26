@@ -44,7 +44,7 @@ class DynamicImportRecordsWizard(models.TransientModel):
         string='Inventory Location'
     )
     import_file = fields.Binary('Import File')
-    filename = fields.Char()
+    filename = fields.Char(string="File Name")
     row_first_as_header = fields.Boolean(string="Use first row as a header?", default=True)
     csv_file_delimiter = fields.Char(
         string="CSV File Delimiter"
