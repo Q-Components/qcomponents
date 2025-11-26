@@ -1,16 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!--        <template id="assets_frontend" inherit_id="website_sale.assets_frontend">-->
-        <!--            <xpath expr="script[last()]" position="after">-->
-        <!--                <script type="text/javascript" src="/website_sale_checkout_limit/static/src/js/category.js"/>-->
-        <!--            </xpath>-->
-        <!--        </template>-->
 
-        <template id="cart" inherit_id="website_sale.cart">
-            <!-- Adjusted XPath to target the 'shop_cart' div and insert content before it -->
-            <xpath expr="//div[@id='shop_cart']" position="before">
-                <t t-set="min_amount" t-value="website.check_cart_amount()"/>
-                <t t-set="message" t-value="website.info_message()"/>
+        <!-- Cart warning message -->
+        <template id="cart_message" inherit_id="website_sale.cart_summary_content">
+            <xpath expr="//div[1]" position="before">
+                <t t-set="order" t-value="website_sale_order"/>
+                <t t-set="min_amount" t-value="order and order.amount_total >= 100"/> <!-- Replace 100 with your minimum -->
+                <t t-set="message" t-value="'Minimum cart amount is 100.'"/>
                 <div id="message" t-attf-class="col-12 #{'d-none' if min_amount else ''}">
                     <div class="alert alert-warning my-2">
                         <em>
@@ -20,29 +17,32 @@
                     </div>
                 </div>
             </xpath>
+        </template>
 
-            <!-- Adjusted XPath to target checkout button attributes -->
-            <xpath expr="//div[contains(@class, 'oe_cart')]//div[contains(@class, 'justify-content-between')]//a"
-                   position="attributes">
-                <attribute name="t-attf-class">btn btn-primary float-right checkout_one
-                    #{"disabled" if not website.check_cart_amount() else ""}
+        <!-- Checkout button control -->
+        <template id="checkout_button_limit" inherit_id="website_sale.navigation_buttons">
+            <xpath expr="//a[@name='website_sale_main_button']" position="attributes">
+                <attribute name="t-attf-class">btn btn-primary w-100
+                    #{'disabled' if not website_sale_order or website_sale_order.amount_total &lt; 100 else ''}
+                </attribute>
+            </xpath>
+
+            <xpath expr="//a[@name='website_sale_main_button']" position="attributes">
+                <attribute name="t-att-href">
+                    #{'' if not website_sale_order or website_sale_order.amount_total &lt; 100 else next_website_checkout_step_href}
                 </attribute>
             </xpath>
         </template>
 
 
-        <template id="short_cart_summary" inherit_id="website_sale.short_cart_summary">
-            <xpath expr="//a" position="attributes">
-                <attribute name="t-attf-class">btn btn-secondary float-end d-none d-xl-inline-block checkout_one
-                    #{"disabled" if not website.check_cart_amount() else ""}
-                </attribute>
-            </xpath>
-        </template>
+        <!-- Product list extra fields -->
         <template id="add_extra_fields_on_product_view" inherit_id="website_sale.products_item"
                   name="Show Extra Fields On Products" priority="20">
-            <xpath expr="//h6[hasclass('o_wsale_products_item_title')]" position="after">
+            <xpath expr="//h2[hasclass('o_wsale_products_item_title')]" position="after">
                 <div>
-                    <a class="text-primary text-decoration-none" itemprop="x_studio_alternate_number" t-att-content="product.x_studio_alternate_number" t-field="product.x_studio_alternate_number"/>
+                    <a class="text-primary text-decoration-none" itemprop="x_studio_alternate_number"
+                       t-att-content="product.x_studio_alternate_number"
+                       t-field="product.x_studio_alternate_number"/>
                 </div>
                 <t t-if="product.sudo().qty_available">
                     <div>
@@ -53,11 +53,15 @@
                 </t>
             </xpath>
         </template>
+
+        <!-- Product detail page extra fields -->
         <template id="add_extra_fields_on_product_main_form_view" inherit_id="website_sale.product"
                   name="Show Extra Fields On Products Main View" priority="4">
-            <xpath expr="//p[@t-field='product.description_sale']" position="before">
+            <xpath expr="//div[contains(@class,'o_wsale_product_details_content_section')]" position="inside">
                 <div>
-                    <a class="text-primary text-decoration-none" itemprop="x_studio_alternate_number" t-att-content="product.x_studio_alternate_number" t-field="product.x_studio_alternate_number"/>
+                    <a class="text-primary text-decoration-none" itemprop="x_studio_alternate_number"
+                       t-att-content="product.x_studio_alternate_number"
+                       t-field="product.x_studio_alternate_number"/>
                 </div>
                 <t t-if="product.sudo().qty_available">
                     <div>
@@ -68,5 +72,6 @@
                 </t>
             </xpath>
         </template>
+
     </data>
 </odoo>
