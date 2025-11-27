@@ -10,7 +10,7 @@ class LogBook(models.Model):
 
     name = fields.Char("Name")
     company_id = fields.Many2one("res.company", "Company")
-    file_name = fields.Char(string="File Name")
+    file_name = fields.Char()
     log_detail_ids = fields.One2many('log.book.lines', 'log_id', 'Logs')
 
     @api.model_create_multi

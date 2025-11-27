@@ -37,7 +37,7 @@ class ResConfigSettings(models.TransientModel):
 
     min_checkout_amount = fields.Float(string='Minimum Amount to Checkout')
     min_amount_type = fields.Selection([('untaxed', 'Tax Excluded'), ('taxed', 'Tax Included')])
-    info_message = fields.Text(string='Message', translate=True)
+    info_message = fields.Text(string='Message', translate=False)
 
     def set_values(self):
         res = super(ResConfigSettings, self).set_values()

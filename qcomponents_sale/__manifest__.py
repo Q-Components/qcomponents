@@ -25,7 +25,7 @@
 
     # any module necessary for this one to work correctly
     'depends': ['sale', 'product', 'contacts','stock_delivery'],
-    
+
 
     # always loaded
     'data': [
