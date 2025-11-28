@@ -20,6 +20,9 @@ class SaleOrder(models.Model):
 
     def get_ups_locations(self):
         """ this method return ups location"""
+        existing_records = self.env['ups.location'].search([('ups_sale_order_id', '=', self.id)])
+        if existing_records:
+            existing_records.sudo().unlink()
         recipient_address_id = self.partner_shipping_id
         company_id = self.company_id
         receiver_zip = recipient_address_id.zip or ""
@@ -56,7 +59,7 @@ class SaleOrder(models.Model):
                 }
             }
         })
-        api_url = "{}/api/locations/v1/search/availabilities/64?Locale=en_US".format(company_id.ups_api_url)
+        api_url = "{0}/api/locations/v1/search/availabilities/{1}?Locale=en_US".format(company_id.ups_api_url,int(self.carrier_id.ups_request_option))
         _logger.info("UPS Location API URL {}".format(api_url))
         _logger.info("UPS Location Request DATA {}".format(request_data))
         headers = {'Content-Type': 'application/json', 'Accept': 'application/json',
@@ -71,8 +74,6 @@ class SaleOrder(models.Model):
                 if not drop_location:
                     raise ValidationError("Drop Location Not Found {}".format(Locator_data))
                 ups_locations = self.env['ups.location']
-                existing_records = self.env['ups.location'].search([('ups_sale_order_id', '=', self.id)])
-                existing_records.sudo().unlink()
                 for location in drop_location:
                     country_obj = self.env['res.country'].search(
                         [('code', '=', location.get('AddressKeyFormat').get('CountryCode'))])
@@ -91,14 +92,14 @@ class SaleOrder(models.Model):
                         state_name_code = ""
 
                     ups_locations.sudo().create(
-                        {'name': "{}".format(location.get('AddressKeyFormat').get('ConsigneeName')),
-                         'location_id': "{}".format(location.get('LocationID')),
-                         'street': '{}'.format(location.get('AddressKeyFormat').get('AddressLine')),
-                         'street2': '{}'.format(location.get('AddressKeyFormat').get('PoliticalDivision3')),
-                         'city': '{}'.format(location.get('AddressKeyFormat').get('PoliticalDivision2')),
+                        {'name': "{}".format(location.get('AddressKeyFormat').get('ConsigneeName') or ""),
+                         'location_id': "{}".format(location.get('LocationID') or ""),
+                         'street': '{}'.format(location.get('AddressKeyFormat').get('AddressLine') or ""),
+                         'street2': '{}'.format(location.get('AddressKeyFormat').get('PoliticalDivision3') or ""),
+                         'city': '{}'.format(location.get('AddressKeyFormat').get('PoliticalDivision2') or ""),
                          'state_code': '{}'.format(state_name_code),
-                         'zip': '{}'.format(location.get('AddressKeyFormat').get('PostcodePrimaryLow')),
-                         'country_code': '{}'.format(location.get('AddressKeyFormat').get('CountryCode')),
+                         'zip': '{}'.format(location.get('AddressKeyFormat').get('PostcodePrimaryLow') or ""),
+                         'country_code': '{}'.format(location.get('AddressKeyFormat').get('CountryCode') or ""),
                          'ups_sale_order_id': '{}'.format(self.id)})
                 return {
                     'effect': {

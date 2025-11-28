@@ -10,17 +10,18 @@ class LogBook(models.Model):
 
     name = fields.Char("Name")
     company_id = fields.Many2one("res.company", "Company")
-    file_name = fields.Char(string="File Name")
+    file_name = fields.Char()
     log_detail_ids = fields.One2many('log.book.lines', 'log_id', 'Logs')
 
-    @api.model
-    def create(self, vals):
-        sequence = self.env.ref("dynamic_import_records.seq_log_main_log")
-        name = sequence and sequence.next_by_id() or '/'
-        company_id = self._context.get('company_id', self.env.user.company_id.id)
-        if type(vals) == dict:
-            vals.update({'name': name, 'company_id': company_id})
-        return super(LogBook, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            sequence = self.env.ref("dynamic_import_records.seq_log_main_log")
+            name = sequence and sequence.next_by_id() or '/'
+            company_id = self._context.get('company_id', self.env.user.company_id.id)
+            if type(vals) == dict:
+                vals.update({'name': name, 'company_id': company_id})
+        return super(LogBook, self).create(vals_list)
 
     def auto_delete_log_message(self):
         """
@@ -49,14 +50,15 @@ class LogBookLines(models.Model):
     log_id = fields.Many2one('log.book', 'Main Log')
     fault_operation = fields.Boolean(string="Fault")
 
-    @api.model
-    def create(self, vals):
-        sequence = self.env.ref("dynamic_import_records.seq_log_logs_line")
-        name = sequence and sequence.next_by_id() or '/'
-        company_id = self._context.get('company_id', self.env.user.company_id.id)
-        if type(vals) == dict:
-            vals.update({'name': name, 'company_id': company_id})
-        return super(LogBookLines, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            sequence = self.env.ref("dynamic_import_records.seq_log_logs_line")
+            name = sequence and sequence.next_by_id() or '/'
+            company_id = self._context.get('company_id', self.env.user.company_id.id)
+            if type(vals) == dict:
+                vals.update({'name': name, 'company_id': company_id})
+        return super(LogBookLines, self).create(vals_list)
 
     def create_log(self, log_message, main_log, fault_operation=False):
         vals = {

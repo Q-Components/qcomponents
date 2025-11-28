@@ -7,5 +7,4 @@ class ProductTemplate(models.Model):
     # ORM uses CTEs to translate which cannot be efficiently
     # searched.
     name = fields.Char(translate=False)
-    # description = fields.Text(translate=False)
     description_sale = fields.Text(translate=False)

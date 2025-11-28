@@ -1,7 +1,8 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access.dynamic.import.records,access_dynamic_import_records,model_dynamic_import_records,,1,1,1,1
-access.dynamic.import.records.line,access_dynamic_import_records_line,model_dynamic_import_records_line,,1,1,1,1
-access.dynamic.import.records.wizard,access_dynamic_import_records_wizard,model_dynamic_import_records_wizard,,1,1,1,1
-access_main_logs,manager_main_logs,model_log_book,,1,1,1,1
-access_logs_line,manager_logs_line,model_log_book_lines,,1,1,1,1
-access.sftp.syncing,access_sftp_syncing,model_sftp_syncing,,1,1,1,1
+access.dynamic.import.records,access_dynamic_import_records,model_dynamic_import_records,base.group_user,1,1,1,1
+access.dynamic.import.records.line,access_dynamic_import_records_line,model_dynamic_import_records_line,base.group_user,1,1,1,1
+access.dynamic.import.records.wizard,access_dynamic_import_records_wizard,model_dynamic_import_records_wizard,base.group_user,1,1,1,1
+access_main_logs,manager_main_logs,model_log_book,base.group_user,1,1,1,1
+access_logs_line,manager_logs_line,model_log_book_lines,base.group_user,1,1,1,1
+access.dynamic.import.sftp.syncing,access_dynamic_import_sftp_syncing,model_dynamic_import_sftp_syncing,base.group_user,1,1,1,1
+access_dynamic_import_ftp_syncing,access_dynamic_import_ftp_syncing,model_dynamic_import_ftp_syncing,base.group_user,1,1,1,1

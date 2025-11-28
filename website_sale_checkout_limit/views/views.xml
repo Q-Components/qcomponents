@@ -6,7 +6,8 @@
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="website_sale.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <div id="sale_invoicing_settings" position="inside">
+            <!-- Insert minimum_checkout_setting after the "Invoicing Policy" setting -->
+            <xpath expr="//setting[@id='invoicing_policy_setting']" position="after">
                 <div class="col-12 col-lg-6 o_setting_box" id="minimum_checkout_setting">
                     <div class="o_setting_right_pane">
                         <span class="o_form_label">Minimum Amount to Checkout</span>
@@ -21,11 +22,15 @@
                         </div>
                     </div>
                 </div>
+            </xpath>
+
+            <!-- Insert message_setting after the "Automatic Invoice Generation" setting -->
+            <xpath expr="//setting[@id='automatic_invoice_generation_setting']" position="after">
                 <div class="col-12 col-lg-6 o_setting_box" id="message_setting">
                     <div class="o_setting_right_pane">
                         <span class="o_form_label">Message</span>
                         <div class="text-muted">
-                            Message to show if cart amount value less than minimum amount
+                            Message to show if cart amount value is less than minimum amount.
                         </div>
                         <div class="content-group">
                             <div class="mt16">
@@ -34,8 +39,10 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </xpath>
+
         </field>
     </record>
+
 
 </odoo>

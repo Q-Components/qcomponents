@@ -3,17 +3,18 @@ import binascii
 import json
 import logging
 from datetime import datetime
-from odoo.exceptions import Warning, ValidationError
+from odoo.exceptions import ValidationError
 from odoo import models, fields, api, _
 
 _logger = logging.getLogger(__name__)
-
 
 class DeliveryCarrier(models.Model):
     _inherit = "delivery.carrier"
 
     delivery_type = fields.Selection(selection_add=[('fedex_shipping_provider', 'Fedex')],
                                      ondelete={'fedex_shipping_provider': 'set default'})
+    fedex_account_number = fields.Char(copy=False, string='Account Number',
+                                       help="The account number sent to you by Fedex after registering for Web Services.")
     fedex_request_type = fields.Selection([('LIST', 'LIST'),
                                            ('INCENTIVE', 'INCENTIVE'),
                                            ('ACCOUNT', 'ACCOUNT'),
@@ -24,57 +25,169 @@ class DeliveryCarrier(models.Model):
     fedex_weight_uom = fields.Selection([('LB', 'LB'),
                                          ('KG', 'KG')], default='LB', string="Weight UoM",
                                         help="Weight UoM of the Shipment")
+    fedex_region = fields.Selection(
+        [
+            ('US', 'U.S.'),
+            ('CA', 'Canada'),
+            ('LAC', 'Latin America & Caribbean'),
+            ('APAC', 'Asia Pacific'),
+            ('MEISA', 'Middle East, India, South Asia'),
+            ('EU', 'Europe'),
+        ],
+        string="FedEx Region"
+    )
+    fedex_service_us = fields.Selection(
+        [
+            ('FEDEX_INTERNATIONAL_PRIORITY_EXPRESS', 'FedEx International Priority® Express'),
+            ('INTERNATIONAL_FIRST', 'FedEx International First®'),
+            ('FEDEX_INTERNATIONAL_PRIORITY', 'FedEx International Priority®'),
+            ('INTERNATIONAL_ECONOMY', 'FedEx International Economy®'),
+            ('FEDEX_GROUND', 'FedEx Ground®'),
+            ('FIRST_OVERNIGHT', 'FedEx First Overnight®'),
+            ('FEDEX_FIRST_FREIGHT', 'FedEx First Overnight® Freight'),
+            ('FEDEX_1_DAY_FREIGHT', 'FedEx 1Day® Freight'),
+            ('FEDEX_2_DAY_FREIGHT', 'FedEx 2Day® Freight'),
+            ('FEDEX_3_DAY_FREIGHT', 'FedEx 3Day® Freight'),
+            ('INTERNATIONAL_PRIORITY_FREIGHT', 'FedEx International Priority® Freight'),
+            ('INTERNATIONAL_ECONOMY_FREIGHT', 'FedEx International Economy® Freight'),
+            ('FEDEX_INTERNATIONAL_DEFERRED_FREIGHT', 'FedEx® International Deferred Freight'),
+            ('INTERNATIONAL_PRIORITY_DISTRIBUTION', 'FedEx Priority DirectDistribution®'),
+            ('INTERNATIONAL_DISTRIBUTION_FREIGHT', 'FedEx Priority DirectDistribution® Freight'),
+            ('INTL_GROUND_DISTRIBUTION', 'International Ground® Distribution'),
+            ('GROUND_HOME_DELIVERY', 'FedEx Home Delivery®'),
+            ('SMART_POST', 'FedEx Ground® Economy'),
+            ('PRIORITY_OVERNIGHT', 'FedEx Priority Overnight®'),
+            ('STANDARD_OVERNIGHT', 'FedEx Standard Overnight®'),
+            ('FEDEX_2_DAY', 'FedEx 2Day®'),
+            ('FEDEX_2_DAY_AM', 'FedEx 2Day® AM'),
+            ('FEDEX_EXPRESS_SAVER', 'FedEx Express Saver®'),
+            ('SAME_DAY', 'FedEx SameDay®'),
+            ('SAME_DAY_CITY', 'FedEx SameDay® City'),
+        ],
+        string="FedEx Service (US)"
+    )
+    fedex_service_ca = fields.Selection(
+        [
+            ('FIRST_OVERNIGHT', 'FedEx First Overnight®'),
+            ('PRIORITY_OVERNIGHT', 'FedEx Priority Overnight®'),
+            ('STANDARD_OVERNIGHT', 'FedEx Standard Overnight®'),
+            ('FEDEX_2_DAY', 'FedEx 2Day®'),
+            ('FEDEX_ECONOMY', 'FedEx Economy'),
+            ('FEDEX_GROUND', 'FedEx Ground®'),
+            ('FEDEX_1_DAY_FREIGHT', 'FedEx 1Day® Freight'),
+            ('FEDEX_2_DAY_FREIGHT', 'FedEx 2Day® Freight'),
+            ('FEDEX_3_DAY_FREIGHT', 'FedEx 3Day® Freight'),
+            ('INTERNATIONAL_PRIORITY_FREIGHT', 'FedEx International Priority® Freight'),
+            ('INTERNATIONAL_ECONOMY_FREIGHT', 'FedEx International Economy® Freight'),
+            ('FEDEX_INTERNATIONAL_DEFERRED_FREIGHT', 'FedEx® International Deferred Freight'),
+            ('FEDEX_INTERNATIONAL_CONNECT_PLUS', 'FedEx International Connect Plus®'),
+            ('INTERNATIONAL_FIRST', 'FedEx International First®'),
+            ('FEDEX_INTERNATIONAL_PRIORITY_EXPRESS', 'FedEx International Priority® Express'),
+            ('FEDEX_INTERNATIONAL_PRIORITY', 'FedEx International Priority®'),
+            ('INTERNATIONAL_ECONOMY', 'FedEx International Economy®'),
+            ('INTERNATIONAL_DISTRIBUTION_FREIGHT', 'FedEx Priority DirectDistribution® Freight'),
+            ('INTERNATIONAL_PRIORITY_DISTRIBUTION', 'FedEx Priority DirectDistribution®'),
+            ('INTERNATIONAL_ECONOMY_DISTRIBUTION', 'FedEx Economy DirectDistribution®'),
+            ('INTL_GROUND_DISTRIBUTION', 'International Ground® Distribution'),
+            ('TRANSBORDER_DISTRIBUTION', 'Transborder Distribution'),
+        ],
+        string="FedEx Service (Canada)"
+    )
+    fedex_service_eu = fields.Selection(
+        [
+            # International
+            ('FEDEX_INTERNATIONAL_PRIORITY_EXPRESS', 'FedEx International Priority® Express'),
+            ('INTERNATIONAL_PRIORITY_FREIGHT', 'FedEx International Priority® Freight'),
+            ('FEDEX_INTERNATIONAL_PRIORITY', 'FedEx International Priority®'),
+            ('FEDEX_INTERNATIONAL_CONNECT_PLUS', 'FedEx International Connect Plus®'),
+            ('INTERNATIONAL_ECONOMY', 'FedEx International Economy®'),
+            ('INTERNATIONAL_ECONOMY_FREIGHT', 'FedEx International Economy® Freight'),
+            ('FEDEX_INTERNATIONAL_DEFERRED_FREIGHT', 'FedEx® International Deferred Freight'),
+            ('EUROPE_FIRST_INTERNATIONAL_PRIORITY', 'FedEx Europe First®'),
+            ('INTERNATIONAL_FIRST', 'FedEx International First®'),
+            ('INTERNATIONAL_PRIORITY_DISTRIBUTION', 'FedEx Priority DirectDistribution®'),
+            ('INTERNATIONAL_DISTRIBUTION_FREIGHT', 'International Distribution Freight'),
+            ('INTERNATIONAL_ECONOMY_DISTRIBUTION', 'FedEx Economy DirectDistribution®'),
+            ('FEDEX_REGIONAL_ECONOMY', 'FedEx® Regional Economy'),
+            ('FEDEX_REGIONAL_ECONOMY_FREIGHT', 'FedEx® Regional Economy Freight'),
+            # Domestic
+            ('PRIORITY_OVERNIGHT', 'FedEx Priority Overnight® (Selected Markets)'),
+            ('FEDEX_FIRST', 'FedEx First'),
+            ('FEDEX_PRIORITY_EXPRESS', 'FedEx Priority Express'),
+            ('FEDEX_PRIORITY', 'FedEx Priority'),
+            ('FEDEX_PRIORITY_EXPRESS_FREIGHT', 'FedEx Priority Express Freight'),
+            ('FEDEX_PRIORITY_FREIGHT', 'FedEx Priority Freight'),
+            ('FEDEX_ECONOMY_SELECT', 'FedEx Economy (U.K. only)'),
+        ],
+        string="FedEx Service (Europe)"
+    )
+    fedex_service_lac = fields.Selection(
+        [
+            ('FEDEX_INTERNATIONAL_PRIORITY_EXPRESS', 'FedEx International Priority® Express'),
+            ('FEDEX_INTERNATIONAL_PRIORITY', 'FedEx International Priority®'),
+            ('INTERNATIONAL_ECONOMY', 'FedEx International Economy®'),
+            ('INTERNATIONAL_PRIORITY_FREIGHT', 'FedEx International Priority® Freight'),
+            ('INTERNATIONAL_ECONOMY_FREIGHT', 'FedEx International Economy® Freight'),
+            ('FEDEX_INTERNATIONAL_DEFERRED_FREIGHT', 'FedEx® International Deferred Freight'),
+            ('FIRST_OVERNIGHT', 'FedEx First Overnight® (Mexico)'),
+            ('PRIORITY_OVERNIGHT', 'FedEx Priority Overnight®'),
+            ('STANDARD_OVERNIGHT', 'FedEx Standard Overnight®'),
+            ('INTERNATIONAL_PRIORITY_DISTRIBUTION', 'FedEx Priority DirectDistribution®'),
+            ('FEDEX_EXPRESS_SAVER', 'FedEx Express Saver®'),
+            ('SAME_DAY_CITY', 'FedEx SameDay® City (Mexico)'),
+            ('FEDEX_1_DAY_FREIGHT', 'FedEx 1Day® Freight'),
+            ('FEDEX_2_DAY_FREIGHT', 'FedEx 2Day® Freight'),
+            ('FEDEX_FIRST', 'FedEx First (Chile)'),
+            ('FEDEX_ECONOMY', 'FedEx Economy (Chile)'),
+            ('FEDEX_PRIORITY', 'FedEx Priority (Chile)'),
+            ('FEDEX_PRIORITY_EXPRESS', 'FedEx Priority Express (Chile)'),
+            ('FEDEX_PRIORITY_EXPRESS_FREIGHT', 'FedEx Priority Express Freight (Chile)'),
+            ('FEDEX_PRIORITY_FREIGHT', 'FedEx Priority Freight (Chile)'),
+            ('FEDEX_ECONOMY_FREIGHT', 'FedEx Economy Freight (Chile)'),
+        ],
+        string="FedEx Service (LAC)"
+    )
+    fedex_service_apac = fields.Selection(
+        [
+            ('FEDEX_INTERNATIONAL_PRIORITY_EXPRESS', 'FedEx International Priority® Express'),
+            ('FEDEX_INTERNATIONAL_PRIORITY', 'FedEx International Priority®'),
+            ('INTERNATIONAL_FIRST', 'FedEx International First®'),
+            ('INTERNATIONAL_ECONOMY', 'FedEx International Economy®'),
+            ('INTERNATIONAL_PRIORITY_DISTRIBUTION', 'FedEx Priority DirectDistribution®'),
+            ('INTERNATIONAL_ECONOMY_DISTRIBUTION', 'FedEx Economy DirectDistribution®'),
+            ('FEDEX_INTERNATIONAL_CONNECT_PLUS', 'FedEx International Connect Plus®'),
+            ('INTERNATIONAL_PRIORITY_FREIGHT', 'FedEx International Priority® Freight'),
+            ('INTERNATIONAL_ECONOMY_FREIGHT', 'FedEx International Economy® Freight'),
+            ('FEDEX_INTERNATIONAL_DEFERRED_FREIGHT', 'FedEx® International Deferred Freight'),
+            ('FEDEX_PRIORITY', 'FedEx Priority (Malaysia/Thailand)'),
+            ('FEDEX_PRIORITY_EXPRESS', 'FedEx Priority Express (Thailand)'),
+            ('FEDEX_PRIORITY_EXPRESS_FREIGHT', 'FedEx Priority Express Freight (MY/TH)'),
+            ('FEDEX_PRIORITY_FREIGHT', 'FedEx Priority Freight (Thailand)'),
+        ],
+        string="FedEx Service (APAC)"
+    )
+    fedex_service_meisa = fields.Selection(
+        [
+            ('FEDEX_INTERNATIONAL_PRIORITY_EXPRESS', 'FedEx International Priority® Express'),
+            ('FEDEX_INTERNATIONAL_PRIORITY', 'FedEx International Priority®'),
+            ('INTERNATIONAL_ECONOMY', 'FedEx International Economy®'),
+            ('INTERNATIONAL_PRIORITY_FREIGHT', 'FedEx International Priority® Freight'),
+            ('INTERNATIONAL_ECONOMY_FREIGHT', 'FedEx International Economy® Freight'),
+            ('FEDEX_INTERNATIONAL_DEFERRED_FREIGHT', 'FedEx® International Deferred Freight'),
+            ('FIRST_OVERNIGHT', 'FedEx First Overnight®'),
+            ('PRIORITY_OVERNIGHT', 'FedEx Priority Overnight®'),
+            ('STANDARD_OVERNIGHT', 'FedEx Standard Overnight®'),
+            ('FEDEX_FIRST', 'FedEx First (South Africa)'),
+            ('FEDEX_ECONOMY', 'FedEx Economy (South Africa)'),
+            ('FEDEX_PRIORITY', 'FedEx Priority (South Africa)'),
+            ('FEDEX_PRIORITY_EXPRESS', 'FedEx Priority Express (South Africa)'),
+            ('FEDEX_PRIORITY_EXPRESS_FREIGHT', 'FedEx Priority Express Freight (South Africa)'),
+            ('FEDEX_PRIORITY_FREIGHT', 'FedEx Priority Freight (South Africa)'),
+            ('FEDEX_ECONOMY_FREIGHT', 'FedEx Economy Freight (South Africa)'),
+        ],
+        string="FedEx Service (MEISA)"
+    )
 
-    fedex_service_type = fields.Selection(
-        [('FEDEX_2_DAY', 'Fedex 2 Day'),  # for US Use: 33122 Florida Doral
-         ('FEDEX_2_DAY_AM', 'Fedex 2 Day AM'),  # for US Use: 33122 Florida Doral
-         ('FEDEX_INTERNATIONAL_PRIORITY_EXPRESS', 'FEDEX_INTERNATIONAL_PRIORITY_EXPRESS'),
-         # ('FEDEX_INTERNATIONAL_PRIORITY', 'FEDEX_INTERNATIONAL_PRIORITY'),
-         # ('FEDEX_CUSTOM_CRITICAL_CHARTER_AIR', 'FedEx Custom Critical Air'),
-         # ('FEDEX_CUSTOM_CRITICAL_AIR_EXPEDITE', 'FedEx Custom Critical Air Expedite'),
-         # ('FEDEX_CUSTOM_CRITICAL_AIR_EXPEDITE_EXCLUSIVE_USE', 'FedEx Custom Critical Air Expedite Exclusive Use'),
-         # ('FEDEX_CUSTOM_CRITICAL_AIR_EXPEDITE_NETWORK', 'FedEx Custom Critical Air Expedite Network'),
-         # ('FEDEX_CUSTOM_CRITICAL_POINT_TO_POINT', 'FedEx Custom Critical Point To Point'),
-         # ('FEDEX_CUSTOM_CRITICAL_SURFACE_EXPEDITE', 'FedEx Custom Critical Surface Expedite'),
-         # ('FEDEX_CUSTOM_CRITICAL_SURFACE_EXPEDITE_EXCLUSIVE_USE',
-         #  'FedEx Custom Critical Surface Expedite Exclusive Use'),
-         ('FEDEX_EXPRESS_SAVER', 'Fedex Express Saver'),  # for US Use: 33122 Florida Doral
-         ('FIRST_OVERNIGHT', 'First Overnight'),  # for US
-         ('FEDEX_FIRST_OVERNIGHT_EXTRA_HOURS', 'FedEx First Overnight® EH'),
-         ('FEDEX_GROUND', 'Fedex Ground'),  # When Call the service given the error "Customer not eligible for service"
-         # ('GROUND_HOME_DELIVERY', 'Ground Home Delivery'),
-         # ('FEDEX_CARGO_AIRPORT_TO_AIRPORT', 'FedEx International Airport-to-Airport'),
-         ('FEDEX_INTERNATIONAL_CONNECT_PLUS', 'FedEx International Connect Plus®'),
-         ('INTERNATIONAL_ECONOMY', 'International Economy'),
-         # ('INTERNATIONAL_ECONOMY_DISTRIBUTION', 'FedEx International Economy DirectDistributionSM'),
-         ('INTERNATIONAL_FIRST', 'International First'),
-         # ('FEDEX_CARGO_MAIL', 'FedEx International MailService®'),
-         # ('FEDEX_CARGO_INTERNATIONAL_PREMIUM', 'FedEx International Premium™'),
-         # ('INTERNATIONAL_PRIORITY_DISTRIBUTION', 'FedEx International Priority DirectDistribution®'),
-         ('FEDEX_INTERNATIONAL_PRIORITY', 'FedEx International Priority® (New IP Service)'),
-         ('FEDEX_INTERNATIONAL_PRIORITY_PLUS', 'FedEx International Priority Plus®'),
-         ('PRIORITY_OVERNIGHT', 'Priority Overnight'),  # for US
-         # ('PRIORITY_OVERNIGHT_EXTRA_HOURS', 'FedEx Priority Overnight® EH'),
-         ('SAME_DAY', 'FedEx SameDay®'),
-         ('SAME_DAY_CITY', 'FedEx SameDay® City'),
-         # ('SMART_POST', 'Smart Post'),  # When Call the service given the error "Customer not eligible for service"
-         ('FEDEX_STANDARD_OVERNIGHT_EXTRA_HOURS', 'FedEx Standard Overnight® EH'),  # WORKING FOR us ADDRESS
-         ('STANDARD_OVERNIGHT', 'Standard Overnight'),  # for US Use: 33122 Florida Doral
-         ('TRANSBORDER_DISTRIBUTION_CONSOLIDATION', 'Temp-Assure Air®'),
-         # ('FEDEX_CUSTOM_CRITICAL_TEMP_ASSURE_VALIDATED_AIR', 'Temp-Assure Validated Air®'),
-         # ('FEDEX_CUSTOM_CRITICAL_WHITE_GLOVE_SERVICES', 'White Glove Services®'),
-         ('FEDEX_REGIONAL_ECONOMY', 'FEDEX_REGIONAL_ECONOMY'),
-         ('FEDEX_REGIONAL_ECONOMY_FREIGHT', 'FEDEX_REGIONAL_ECONOMY_FREIGHT'),
-         ('INTERNATIONAL_PRIORITY', 'International Priority'),
-         ('EUROPE_FIRST_INTERNATIONAL_PRIORITY', 'Europe First International Priority'),
-         ('FEDEX_DISTANCE_DEFERRED', 'Fedex Distance Deferred'),
-         # for domestic UK pickup  Error : Customer is eligible.
-         ('FEDEX_NEXT_DAY_AFTERNOON', 'Fedex Next Day Afternoon'),  # for domestic UK pickup
-         ('FEDEX_NEXT_DAY_EARLY_MORNING', 'Fedex Next Day Early Morning'),  # for domestic UK pickup
-         ('FEDEX_NEXT_DAY_END_OF_DAY', 'Fedex Next Day End of Day'),  # for domestic UK pickup
-         ('FEDEX_NEXT_DAY_FREIGHT', 'Fedex Next Day Freight'),  # for domestic UK pickup
-         ('FEDEX_NEXT_DAY_MID_MORNING', 'Fedex Next Day Mid Morning'),  # for domestic UK pickup
-         ], string="Service Type", help="Shipping Services those are accepted by Fedex")
     fedex_default_product_packaging_id = fields.Many2one('stock.package.type', string="Default Package Type")
     fedex_pickup_type = fields.Selection([('CONTACT_FEDEX_TO_SCHEDULE', 'CONTACT_FEDEX_TO_SCHEDULE'),
                                           ('DROPOFF_AT_FEDEX_LOCATION', 'DROPOFF_AT_FEDEX_LOCATION'),
@@ -91,10 +204,18 @@ class DeliveryCarrier(models.Model):
         ('PAPER_7X47', 'PAPER_7X47'),
         ('PAPER_85X11_BOTTOM_HALF_LABEL', 'PAPER_85X11_BOTTOM_HALF_LABEL'),
         ('PAPER_85X11_TOP_HALF_LABEL', 'PAPER_85X11_TOP_HALF_LABEL'),
-        ('PAPER_LETTER', 'PAPER_LETTER')], string="Label Stock Type",
-        help="Specifies the type of paper (stock) on which a document will be printed.")
+        ('PAPER_LETTER', 'PAPER_LETTER'), ('STOCK_4X6', 'STOCK_4X6'),
+        ('STOCK_4X675_LEADING_DOC_TAB', 'STOCK_4X675_LEADING_DOC_TAB'),
+        ('STOCK_4X675_TRAILING_DOC_TAB', 'STOCK_4X675_TRAILING_DOC_TAB'),
+        ('STOCK_4X8', 'STOCK_4X8'),
+        ('STOCK_4X9', 'STOCK_4X9'),
+        ('STOCK_4X9_LEADING_DOC_TAB', 'STOCK_4X9_LEADING_DOC_TAB'),
+        ('STOCK_4X9_TRAILING_DOC_TAB', 'STOCK_4X9_TRAILING_DOC_TAB'),
+        ('STOCK_4X85_TRAILING_DOC_TAB', 'STOCK_4X85_TRAILING_DOC_TAB'),
+        ('STOCK_4X105_TRAILING_DOC_TAB', 'STOCK_4X105_TRAILING_DOC_TAB')], string="Label Stock Type",
+        help="1)Specifies the type of paper on which a document will be printed.2)For ZPL you can only use STOCK")
     fedex_shipping_label_file_type = fields.Selection([('PDF', 'PDF'),
-                                                       ('PNG', 'PNG')], string="Label File Type")
+                                                       ('PNG', 'PNG'), ('ZPLII', 'ZPLII')], string="Label File Type")
 
     fedex_droppoff_type = fields.Selection([('BUSINESS_SERVICE_CENTER', 'Business Service Center'),
                                             ('DROP_BOX', 'Drop Box'),
@@ -117,9 +238,6 @@ class DeliveryCarrier(models.Model):
                                           string="FedEx Payment Type",
                                           help="FedEx Payment Type")
     fedex_onerate = fields.Boolean("Want To Use FedEx OneRate Service?", default=False)
-
-    fedex_third_party_account_number = fields.Char(copy=False, string='FexEx Third-Party Account Number',
-                                                   help="Please Enter the Third Party account number")
     is_cod = fields.Boolean('COD')
     is_signature_required = fields.Boolean(string="Signature")
     signature_options = fields.Selection([('INDIRECT', 'INDIRECT'),
@@ -128,14 +246,76 @@ class DeliveryCarrier(models.Model):
     insured_request = fields.Boolean(string="Insured Request",
                                      help="Use this Insured Request required.",
                                      default=False)
+    fedex_hub_id = fields.Selection([('5015', 'NOMA Northborough - 5015'),
+                                     ('5061', 'WICT Windsor - 5061'),
+                                     ('5087', 'EDNJ Edison - 5087'),
+                                     ('5095', 'NENJ Newark - 5095'),
+                                     ('5097', 'SBNJ South Brunswick - 5097'),
+                                     ('5110', 'NENY Newburgho - 5110'),
+                                     ('5150', 'PTPA Pittsburgh - 5150'),
+                                     ('5183', 'MAPA Macungie - 5183'),
+                                     ('5185', 'ALPA Allentown - 5185'),
+                                     ('5186', 'SCPA Scranton - 5186'),
+                                     ('5194', 'PHPA Philadelphia - 5194'),
+                                     ('5213', 'BAMD Baltimore - 5213'),
+                                     ('5254', 'MAWV Martinsburg - 5254'),
+                                     ('5281', 'CHNC Charlotte - 5281'),
+                                     ('5303', 'ATGA Atlanta - 5303'),
+                                     ('5327', 'ORFL Orlando - 5327'),
+                                     ('5345', 'TAFL Tampa - 5345'),
+                                     ('5379', 'METN Memphis - 5379'),
+                                     ('5431', 'GCOH Grove City - 5431'),
+                                     ('5436', 'GPOH Groveport Ohio - 5436'),
+                                     ('5465', 'ININ Indianapolis - 5465'),
+                                     ('5481', 'DTMI Detroit - 5481'),
+                                     ('5531', 'NBWI New Berlin - 5531'),
+                                     ('5552', 'MPMN Minneapolis - 5552'),
+                                     ('5602', 'WHIL Wheeling - 5602'),
+                                     ('5631', 'STMO St. Louis - 5631'),
+                                     ('5648', 'KCKS Kansas City - 5648'),
+                                     ('5751', 'DLTX Dallas - 5751'),
+                                     ('5771', 'HOTX Houston - 5771'),
+                                     ('5802', 'DNCO Denver - 5802'),
+                                     ('5843', 'SCUT Salt Lake City - 5843'),
+                                     ('5854', 'PHAZ Phoenix - 5854'),
+                                     ('5893', 'RENV Reno - 5893'),
+                                     ('5902', 'LACA Los Angeles - 5902'),
+                                     ('5929', 'COCA Chino - 5929'),
+                                     ('5958', 'SACA Sacramento - 5958'),
+                                     ('5983', 'SEWA Seattle - 5983')], string="Fedex Hub ID")
+    fedex_indicia = fields.Selection([('MEDIA_MAIL', 'MEDIA_MAIL'),
+                                      ('PARCEL_SELECT', 'PARCEL_SELECT'),
+                                      ('PRESORTED_BOUND_PRINTED_MATTER', 'PRESORTED_BOUND_PRINTED_MATTER'),
+                                      ('PRESORTED_STANDARD', 'PRESORTED_STANDARD')], string="Fedex Indicia")
+
+
+    def fedex_selected_service_type(self):
+        region_field_map = {
+            'US': 'fedex_service_us',
+            'CA': 'fedex_service_ca',
+            'LAC': 'fedex_service_lac',
+            'APAC': 'fedex_service_apac',
+            'MEISA': 'fedex_service_meisa',
+            'EU': 'fedex_service_eu',
+        }
+        selected_service_type = getattr(self, region_field_map.get(self.fedex_region, ''), '')
+        return selected_service_type
 
     def get_fedex_address_dict(self, address_id):
+        residential_services = [
+            'GROUND_HOME_DELIVERY',
+            'SMART_POST',
+        ]
+        fedex_selected_service_type =self.fedex_selected_service_type()
+        is_residential = "true" if fedex_selected_service_type in residential_services else "false"
+
         return {
             "address": {
                 "city": address_id.city or "",
                 "stateOrProvinceCode": address_id.state_id and address_id.state_id.code or "",
                 "postalCode": "{0}".format(address_id.zip or ""),
-                "countryCode": address_id.country_id and address_id.country_id.code or ""
+                "countryCode": address_id.country_id and address_id.country_id.code or "",
+                "residential": is_residential
             }
         }
 
@@ -169,29 +349,42 @@ class DeliveryCarrier(models.Model):
                 'Accept': 'application/json',
                 'Authorization': 'Bearer {0}'.format(company_id.fedex_access_token)
             }
+            fedex_selected_service_type = self.fedex_selected_service_type()
+
             request_data = {
-                "accountNumber": {"value": "{0}".format(company_id.fedex_account_number)},
+                "accountNumber": {"value": "{0}".format(self.fedex_account_number)},
                 "requestedShipment": {
                     "shipper": self.get_fedex_address_dict(shipper_address_id),
                     "recipient": self.get_fedex_address_dict(recipient_address_id),
                     "pickupType": self.fedex_pickup_type,
-                    "serviceType": self.fedex_service_type,
+                    "serviceType": fedex_selected_service_type,
                     "packagingType": self.fedex_default_product_packaging_id.shipper_package_code,
                     "rateRequestType": ["{0}".format(self.fedex_request_type)],
                     "shipDateStamp": datetime.now().strftime('%Y-%m-%d'),
-                    "totalWeight": "{0}".format(int(total_weight) or 0),
+                    "totalWeight": ((total_weight) or 0),
                     "requestedPackageLineItems": [
                         {
                             "weight": {
                                 "units": "{0}".format(self.fedex_weight_uom),
-                                "value": int(total_weight)
-                            }
+                                "value": (total_weight)
+                            }, "dimensions": {
+                            "length": self.fedex_default_product_packaging_id.packaging_length or '',
+                            "width": self.fedex_default_product_packaging_id.width or '',
+                            "height": self.fedex_default_product_packaging_id.height or '',
+                            "units": 'IN' if self.fedex_weight_uom == 'LB' else 'CM'
+                        }
                         }
                     ]
                 }
             }
+            if fedex_selected_service_type == 'SMART_POST':
+                request_data.get("requestedShipment").update({"smartPostInfoDetail": {
+                    "indicia": self.fedex_indicia,
+                    "hubId": self.fedex_hub_id
+                }}),
             if self.fedex_onerate:
-                request_data.get("requestedShipment").update({"shipmentSpecialServices": {"specialServiceTypes": ["FEDEX_ONE_RATE"]}})
+                request_data.get("requestedShipment").update(
+                    {"shipmentSpecialServices": {"specialServiceTypes": ["FEDEX_ONE_RATE"]}})
             if self.is_cod:
                 request_data.get("requestedShipment").update(
                     {"shipmentSpecialServices": {"specialServiceTypes": ["COD"],
@@ -201,12 +394,16 @@ class DeliveryCarrier(models.Model):
                                                          "amount": order.amount_total,
                                                          "currency": order.company_id.currency_id.name or "USD"
                                                      }}}})
+            _logger.info("Fedex Rate Request Data :::: %s" % request_data)
             response_data = requests.request("POST", api_url, headers=headers, data=json.dumps(request_data))
+            _logger.info("Fedex Rate Response Data :::: %s" % response_data)
+
             if response_data.status_code in [200, 201]:
                 response_data = response_data.json()
+                _logger.info("Fedex Rate Response Data :::: %s" % response_data)
                 if response_data.get('output') and response_data.get('output').get('rateReplyDetails'):
                     for rateReplyDetail in response_data.get('output').get('rateReplyDetails'):
-                        if self.fedex_service_type == rateReplyDetail.get("serviceType"):
+                        if fedex_selected_service_type == rateReplyDetail.get("serviceType"):
                             for rate_info in rateReplyDetail.get('ratedShipmentDetails'):
                                 return {'success': True, 'price': float(rate_info.get('totalNetFedExCharge')) or 0.0,
                                         'error_message': False, 'warning_message': False}
@@ -224,11 +421,12 @@ class DeliveryCarrier(models.Model):
         address_dict.update({"contact": {"personName": address_id.name,
                                          "emailAddress": address_id.email or "",
                                          "phoneNumber": "%s" % (address_id.phone or ""),
-                                         "companyName": address_id.name}})
-        address_dict.get("address").update({"streetLines": [address_id.street]})
+                                         "companyName":address_id.parent_id.name if address_id.parent_id else ""}})
+        address_dict.get("address").update({"streetLines": [address_id.street or "",address_id.street2 or ""]})
         return address_dict
 
-    def manage_fedex_packages(self, package_count=False, shipping_weight=False, packaging_length=False, width=False,height=False,package_desscription=False):
+    def manage_fedex_packages(self, package_count=False, shipping_weight=False, packaging_length=False, width=False,
+                              height=False, package_desscription=False):
         return {
             "sequenceNumber": "%s" % (package_count),
             "weight": {
@@ -249,10 +447,11 @@ class DeliveryCarrier(models.Model):
         shipper_address_id = pickings.picking_type_id and pickings.picking_type_id.warehouse_id and pickings.picking_type_id.warehouse_id.partner_id
         receiver_id = pickings.partner_id
         company_id = self.company_id
+        package_ids = pickings.move_line_ids.mapped('result_package_id')
         package_list = []
         package_count = 0
         total_bulk_weight = pickings.weight_bulk
-        for package_id in pickings.package_ids:
+        for package_id in package_ids:
             package_count = package_count + 1
             length = package_id.package_type_id.packaging_length if package_id.package_type_id.packaging_length else self.fedex_default_product_packaging_id.packaging_length or ""
             width = package_id.package_type_id.width if package_id.package_type_id.width else self.fedex_default_product_packaging_id.width or ""
@@ -284,16 +483,18 @@ class DeliveryCarrier(models.Model):
 
         try:
             order = pickings.sale_id
+            fedex_selected_service_type = self.fedex_selected_service_type()
+
             request_data = {
                 "mergeLabelDocOption": "LABELS_AND_DOCS",
                 "labelResponseOptions": "LABEL",
-                "accountNumber": {"value": "{0}".format(company_id.fedex_account_number)},
+                "accountNumber": {"value": "{0}".format(self.fedex_account_number)},
                 "shipAction": "CONFIRM",
                 "requestedShipment": {
                     "shipper": self.get_fedex_shipp_address_dict(shipper_address_id),
                     "recipients": [self.get_fedex_shipp_address_dict(receiver_id)],
                     "pickupType": self.fedex_pickup_type,
-                    "serviceType": self.fedex_service_type,
+                    "serviceType": fedex_selected_service_type,
                     "packagingType": self.fedex_default_product_packaging_id.shipper_package_code,
                     "totalWeight": pickings.shipping_weight,
                     "shippingChargesPayment": {
@@ -317,17 +518,21 @@ class DeliveryCarrier(models.Model):
                     "commodities": [
                         {
                             "totalCustomsValue": {
-                                "amount": order.tax_totals.get('amount_total'),
+                                "amount": order.amount_total,
                                 "currency": pickings.sale_id and pickings.sale_id.company_id.currency_id.name or "USD"
                             }
                         }
                     ],
                     "insuranceCharge": {
-                        "amount": order.tax_totals.get('amount_total'),
+                        "amount": order.amount_total,
                         "currency": pickings.sale_id and pickings.sale_id.company_id.currency_id.name or "USD"
                     }
                 }, })
-
+            if fedex_selected_service_type == 'SMART_POST':
+                request_data.get("requestedShipment").update({"smartPostInfoDetail": {
+                    "hubId": self.fedex_hub_id,
+                    "indicia": self.fedex_indicia
+                }}),
             if self.fedex_payment_type != 'SENDER':
                 request_data.get("requestedShipment").get('shippingChargesPayment').update(
                     {"payor": {"responsibleParty": {"accountNumber": {
@@ -423,8 +628,11 @@ class DeliveryCarrier(models.Model):
                 'Accept': 'application/json',
                 'Authorization': 'Bearer {0}'.format(company_id.fedex_access_token)
             }
+            _logger.info("Fedex Shipment API Rquest Data :::: %s" % request_data)
             response_data = requests.request("POST", api_url, headers=headers, data=json.dumps(request_data))
+            _logger.info("Fedex Shipment API Response Data :::: %s" % request_data)
             attachments = []
+            exact_charge = 0.0
             if response_data.status_code in [200, 201]:
                 response_data = response_data.json()
                 _logger.info("Shipment Response Data %s" % response_data)
@@ -439,24 +647,32 @@ class DeliveryCarrier(models.Model):
                                     label_type = 'Fedex'
                                 label_binary_data = binascii.a2b_base64(package_document.get('encodedLabel'))
                                 attachments.append(
-                                    ('%s.%s.%s' % (
-                                    label_type, piece_respone.get('packageSequenceNumber') or carrier_tracking_ref,
-                                    self.fedex_shipping_label_file_type), label_binary_data))
+                                    ('%s.%s.%s' % (label_type,
+                                                   piece_respone.get('packageSequenceNumber') or carrier_tracking_ref,
+                                                   self.fedex_shipping_label_file_type),
+                                     label_binary_data))
+                                exact_charge += piece_respone.get('baseRateAmount')
                         if shipper_address_id.country_id.code != receiver_id.country_id.code:
-                            commercial_label = binascii.a2b_base64(
-                                response_data.get('output').get('transactionShipments')[0].get('shipmentDocuments')[
-                                    0].get(
-                                    'encodedLabel'))
-                            if commercial_label:
+                            decoded_label_data = (
+                                    response_data.get('output')
+                                    and response_data['output'].get('transactionShipments')
+                                    and response_data['output']['transactionShipments'][0].get('shipmentDocuments')
+                                    and response_data['output']['transactionShipments'][0]['shipmentDocuments'][0].get(
+                                'encodedLabel')
+                            )
+                            if decoded_label_data:
+                                commercial_label = binascii.a2b_base64(decoded_label_data)
                                 attachments.append(
                                     ('commercial invoice -%s.%s' % (
                                         carrier_tracking_ref,
                                         self.fedex_shipping_label_file_type),
                                      commercial_label))
-                        msg = (_('<b>Shipment created!</b><br/>'))
+                            else:
+                                pickings.message_post(body="Commercial Label Data Not Found In Shipment Response")
+                        msg = (_('Shipment created!'))
                         pickings.message_post(body=msg, attachments=attachments)
-                        return [{'exact_price': 0,
-                                      'tracking_number': carrier_tracking_ref}]
+                        return [{'exact_price': exact_charge,
+                                 'tracking_number': carrier_tracking_ref}]
                 else:
                     raise ValidationError(response_data)
             else:
@@ -464,18 +680,17 @@ class DeliveryCarrier(models.Model):
         except Exception as e:
             raise ValidationError(e)
 
-
     def fedex_shipping_provider_get_tracking_link(self, pickings):
         res = ""
         for picking in pickings:
             link = "https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber="
-            res = '%s%s' % (link, picking.carrier_tracking_ref)
+            res = '%s %s' % (link, picking.carrier_tracking_ref)
         return res
 
     def fedex_shipping_provider_cancel_shipment(self, picking):
         try:
             request_data = {"accountNumber": {
-                "value": self.company_id.fedex_account_number
+                "value": self.fedex_account_number
             },
                 "senderCountryCode": "US",
                 "deletionControl": "DELETE_ALL_PACKAGES",
@@ -487,10 +702,14 @@ class DeliveryCarrier(models.Model):
                 'Accept': 'application/json',
                 'Authorization': 'Bearer {0}'.format(self.company_id.fedex_access_token)
             }
+            _logger.info("Fedex Cancel Request Data :::: %s " % request_data)
             response_data = requests.request("PUT", api_url, headers=headers, data=json.dumps(request_data))
+            _logger.info("Fedex Cancel Response Data :::: %s " % request_data)
             if response_data.status_code in [200, 201]:
                 response_data = response_data.json()
+                _logger.info("Fedex Cancel Response Data :::: %s " % request_data)
                 if response_data.get('output') and response_data.get('output').get('cancelledShipment'):
+                    _logger.info("Cancel Shipment Successfully.....")
                     return True
                 else:
                     raise ValidationError(response_data)

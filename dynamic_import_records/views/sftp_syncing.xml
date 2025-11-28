@@ -3,20 +3,19 @@
 
     <record id="sftp_syncing_tree" model="ir.ui.view">
         <field name="name">sftp.syncing.tree</field>
-        <field name="model">sftp.syncing</field>
+        <field name="model">dynamic.import.sftp.syncing</field>
         <field name="arch" type="xml">
-            <tree string="SFTP Syncing">
+            <list string="SFTP Syncing">
                 <field name="name"/>
                 <field name="store"/>
-                <field name="active" invisible="1"/>
                 <field name="company_id"/>
-            </tree>
+            </list>
         </field>
     </record>
 
     <record id="sftp_syncing_form" model="ir.ui.view">
         <field name="name">sftp.syncing.form</field>
-        <field name="model">sftp.syncing</field>
+        <field name="model">dynamic.import.sftp.syncing</field>
         <field name="arch" type="xml">
             <form string="SFTP Syncing">
                 <header>
@@ -24,7 +23,7 @@
                             string="Check Connection"/>
                     <button name="click_to_create_cron" type="object" class="btn-secondary"
                             string="Click to create Automatic Cron Jobs"
-                            attrs="{'invisible':[('cron_created','!=',False)]}"/>
+                            invisible="cron_created != False"/>
                 </header>
                 <sheet>
                     <group>
@@ -41,11 +40,25 @@
                         <group>
                             <field name="store"/>
                             <field name="dynamic_import_records_id" domain="[('main_table', '=', True)]"
-                                   attrs="{'required': [('store', '=', 'import_dynamic_records')], 'invisible': [('store', '!=', 'import_dynamic_records')]}"/>
+                                   required="store == 'import_dynamic_records'"
+                                   invisible="store != 'import_dynamic_records'"/>
                             <field name="import_file_path"
-                                   attrs="{'required': [('store', '=', 'import_dynamic_records')], 'invisible': [('store', '!=', 'import_dynamic_records')]}"/>
+                                   required="store == 'import_dynamic_records'"
+                                   invisible="store != 'import_dynamic_records'"/>
+                            <field name="import_type"
+                                   required="store == 'import_dynamic_records'"
+                                   invisible="store != 'import_dynamic_records'"/>
+                            <field name="inventory_location_id"
+                                   required="import_type == 'Inventory'"
+                                   invisible="import_type != 'Inventory'"/>
                             <field name="row_first_as_header"
-                                   attrs="{'required': [('store', '=', 'import_dynamic_records')], 'invisible': [('store', '!=', 'import_dynamic_records')]}"/>
+                                   required="store == 'import_dynamic_records'"
+                                   invisible="store != 'import_dynamic_records'"/>
+                            <field name="split_records"
+                                   invisible="store != 'import_dynamic_records'"/>
+                            <field name="sftp_delimiter"
+                                   required="store == 'import_dynamic_records'"
+                                   invisible="store != 'import_dynamic_records'"/>
                         </group>
                     </group>
                 </sheet>
@@ -55,9 +68,9 @@
 
     <record id="action_sftp_syncing" model="ir.actions.act_window">
         <field name="name">SFTP Syncing</field>
-        <field name="res_model">sftp.syncing</field>
+        <field name="res_model">dynamic.import.sftp.syncing</field>
         <field name="type">ir.actions.act_window</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
     <menuitem id="menu_item_sftp_syncing" name="SFTP Syncing"

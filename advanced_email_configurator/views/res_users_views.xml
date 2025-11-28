@@ -8,13 +8,14 @@
             <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
             <field name="arch" type="xml">
                 <field name="email" widget="email" readonly="0" position="replace"/>
-                <xpath expr="//group[@name='preferences']" position="inside">
+                <xpath expr="//page[@name='preferences_page']" position="inside">
                     <group string="Mail Server Settings" name="mail_server_settings">
                         <field name="is_required_field" invisible="1"/>
                         <field name="email" widget="email" readonly="0" required="True" string="Email"/>
                         <field name="password_preference" readonly="0" password="True"
-                               attrs="{'required': [('is_required_field','=',True)]}" string="Password"/>
-                        <field name="provider_id" readonly="0" attrs="{'required': [('is_required_field','=',True)]}"
+                               required="is_required_field"
+                                string="Password"/>
+                        <field name="provider_id" readonly="0" required="is_required_field"
                                options="{'no_create': True, 'no_open': True}"/>
                         <field name="mail_server_id" invisible="1"/>
                         <field name="incoming_server_id" invisible="1"/>
@@ -29,12 +30,12 @@
         <record id="res_users_view_form_simple_modif_inherit" model="ir.ui.view">
             <field name="name">res.users.view.form.modif.inherit</field>
             <field name="model">res.users</field>
-            <field name="inherit_id" ref="hr.res_users_view_form_profile"/>
+            <field name="inherit_id" ref="hr.res_users_view_form_preferences"/>
             <field name="arch" type="xml">
-                <xpath expr="//page[@name='personal_information']" position="replace">
+                <xpath expr="//page[@name='private_information']" position="replace">
                 </xpath>
-                <xpath expr="//page[@name='hr_settings']" position="replace">
-                </xpath>
+<!--                <xpath expr="//page[@name='hr_settings']" position="replace">-->
+<!--                </xpath>-->
             </field>
         </record>
 
@@ -48,9 +49,9 @@
                         <field name="is_required_field" invisible="1"/>
                         <field name="email" widget="email" readonly="0" required="True"/>
                         <field name="password_preference" password="True"
-                               attrs="{'required': [('is_required_field','=',True)]}"/>
+                               required="is_required_field"/>
                         <field name="mail_server_id" invisible="1"/>
-                        <field name="provider_id" readonly="0" attrs="{'required': [('is_required_field','=',True)]}"
+                        <field name="provider_id" readonly="0" required="is_required_field"
                                options="{'no_create': True, 'no_open': True}"/>
                         <field name="incoming_server_id" invisible="1"/>
                         <br/>

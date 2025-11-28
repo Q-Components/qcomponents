@@ -11,7 +11,7 @@
     'author': "ODOO INC",
     'website': "http://www.odoo.com",
     'category': 'Uncategorized',
-    'version': '1.0',
+    'version': '19.0.1.0',
     'license': 'OPL-1',
     'depends': ['website'],
 }

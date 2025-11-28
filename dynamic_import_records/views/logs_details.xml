@@ -4,13 +4,13 @@
         <record id="view_log_book_tree_view" model="ir.ui.view">
             <field name="name">view_log_book_tree_view</field>
             <field name="model">log.book</field>
-            <field name="type">tree</field>
+            <field name="type">list</field>
             <field name="arch" type="xml">
-                <tree string="Logs" create='false' edit='false'>
+                <list string="Logs" create='false' edit='false'>
                     <field name="name"/>
                     <field name="file_name"/>
                     <field name="create_date"/>
-                </tree>
+                </list>
             </field>
         </record>
 
@@ -30,17 +30,19 @@
                                 <field name="create_date"/>
                             </group>
                         </div>
-                        <group string="Log Details">
-                            <group>
-                                <field name="log_detail_ids" nolabel="1" colspan="4">
-                                    <tree decoration-danger="fault_operation == 1" string="Main Logs">
-                                        <field name="name"/>
-                                        <field name="fault_operation"/>
-                                        <field name="log_message"/>
-                                    </tree>
-                                </field>
-                            </group>
-                        </group>
+                        <notebook>
+                            <page string="Log Details" name="log_details">
+                                <group>
+                                    <field name="log_detail_ids" nolabel="1" colspan="4">
+                                        <list decoration-danger="fault_operation == 1" string="Main Logs">
+                                            <field name="name"/>
+                                            <field name="fault_operation"/>
+                                            <field name="log_message"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </page>
+                        </notebook>
                     </sheet>
                 </form>
             </field>
@@ -58,14 +60,14 @@
         <record id="view_logs_tree_view" model="ir.ui.view">
             <field name="name">view_logs_tree_view</field>
             <field name="model">log.book.lines</field>
-            <field name="type">tree</field>
+            <field name="type">list</field>
             <field name="arch" type="xml">
-                <tree string="Logs Line" create='false' edit='false'>
+                <list string="Logs Line" create='false' edit='false'>
                     <field name="name"/>
                     <field name="log_id"/>
                     <field name="create_date"/>
                     <field name="log_message"/>
-                </tree>
+                </list>
             </field>
         </record>
 

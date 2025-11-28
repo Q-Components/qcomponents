@@ -24,7 +24,7 @@ class CreateOrderFromProducts(models.TransientModel):
                         'product_id': product.id,
                         'name': product.display_name or product.name,
                         'product_uom_qty': 1,
-                        'product_uom': product.uom_id.id,
+                        'product_uom_id': product.uom_id.id,
                         'price_unit': product.lst_price,
                     }
                     sale_order_line.create(order_line)

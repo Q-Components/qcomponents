@@ -12,7 +12,7 @@
     'price': 159.00,
     'currency': 'USD',
     'website': 'https://silentinfotech.com',
-    'version': '16.0.1.0.0',
+    'version': '19.0.1.0',
     'application': True,
     'installable': True,
     'auto_install': False,

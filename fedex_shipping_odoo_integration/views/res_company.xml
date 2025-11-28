@@ -11,18 +11,13 @@
                     <group>
                         <field name="use_fedex_shipping_provider"/>
                     </group>
-                    <group attrs="{'invisible': [('use_fedex_shipping_provider', '!=', True)]}">
-                        <field name="fedex_api_url"
-                               attrs="{'required':[('use_fedex_shipping_provider','=',True)]}"/>
-                        <field name="fedex_client_id"
-                               attrs="{'required':[('use_fedex_shipping_provider','=',True)]}"/>
-                        <field name="fedex_client_secret"
-                               attrs="{'required':[('use_fedex_shipping_provider','=',True)]}" password="True"/>
-                        <field name="fedex_account_number"
-                               attrs="{'required':[('use_fedex_shipping_provider','=',True)]}"/>
+                    <group invisible = "use_fedex_shipping_provider != True">
+                        <field name="fedex_api_url" required = "use_fedex_shipping_provider != False"/>
+                        <field name="fedex_client_id" required = "use_fedex_shipping_provider != False"/>
+                        <field name="fedex_client_secret" required = "use_fedex_shipping_provider != False" password="True"/>
+<!--                        <field name="fedex_account_number" required = "use_fedex_shipping_provider != False"/>-->
                         <field name="fedex_access_token"/>
                         <button type="object" class="fa fa-arrow-right oe_link"
-                                attrs="{'invisible': [('use_fedex_shipping_provider', '!=', True)]}"
                                 name="generate_fedex_access_token" string="Access Token"/>
                     </group>
                 </page>
