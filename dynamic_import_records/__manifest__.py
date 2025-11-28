@@ -15,6 +15,7 @@
         'views/ftp_syncing.xml',
         'views/logs_details.xml',
         'wizard/dynamic_import_records_wizard.xml',
+        
     ],
     "external_dependencies": {
         "python": ["xlrd", "binascii"],
