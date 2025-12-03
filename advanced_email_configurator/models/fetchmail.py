@@ -35,6 +35,7 @@ class FetchmailServer(models.Model):
              "downloaded. Only available with IMAP", default=datetime.now())
 
 
+
     @api.model
     def _fetch_from_date_imap(self, imap_server, count):
         MailThread = self.env['mail.thread']
