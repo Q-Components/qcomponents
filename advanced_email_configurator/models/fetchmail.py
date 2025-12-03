@@ -36,7 +36,6 @@ class FetchmailServer(models.Model):
 
 
 
-
     @api.model
     def _fetch_from_date_imap(self, imap_server, count):
         MailThread = self.env['mail.thread']
