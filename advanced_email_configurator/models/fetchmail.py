@@ -34,6 +34,7 @@ class FetchmailServer(models.Model):
         help="Remote emails with a date greater than this will be "
              "downloaded. Only available with IMAP", default=datetime.now())
 
+
     @api.model
     def _fetch_from_date_imap(self, imap_server, count):
         MailThread = self.env['mail.thread']
@@ -97,7 +98,7 @@ class FetchmailServer(models.Model):
                     self.write({'last_internal_date': last_date})
                     self._cr.commit()
 
-     
+
         return {
             'count': count,
             'failed': failed,
