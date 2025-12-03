@@ -35,16 +35,16 @@ class FetchmailServer(models.Model):
              "downloaded. Only available with IMAP", default=datetime.now())
 
     @api.model
-    def _fetch_from_date_imap(self, imap_server, count, failed):
+    def _fetch_from_date_imap(self, imap_server, count):
         MailThread = self.env['mail.thread']
+        failed = 0  # v19: failed should be handled internally
         messages = []
         date_uids = {}
         last_date = False
 
-        # last_internal_date = datetime.strptime(self.last_internal_date,"%Y-%m-%d %H:%M:%S")
         last_internal_date = self.last_internal_date
 
-        # This is for convert date of month any lang to en_us
+        # normalize month
         month_index = fields.Date.from_string(last_internal_date).month
         month_abbr = babel.dates.get_month_names('abbreviated', locale='en_US')[month_index]
         last_internal_date_str = last_internal_date.strftime('%d-%b-%Y')
@@ -52,71 +52,57 @@ class FetchmailServer(models.Model):
         last_internal_date_list[1] = month_abbr
         last_internal_date_str = '-'.join(str(i) for i in last_internal_date_list)
 
+        # IMAP search
         search_status, uids = imap_server.search(
             None,
-            'UNSEEN','SINCE', '%s' % last_internal_date_str
+            'UNSEEN', 'SINCE', '%s' % last_internal_date_str
         )
         new_uids = uids[0].split()
-        _logger.info("new_uids : {0} Search Status : {1}".format(new_uids,search_status))
+        _logger.info("new_uids : %s Search Status : %s", new_uids, search_status)
+
         for new_uid in new_uids:
-            fetch_status, date = imap_server.fetch(
-                new_uid,
-                'INTERNALDATE'
-            )
+            fetch_status, date = imap_server.fetch(new_uid, 'INTERNALDATE')
             internaldate = imaplib.Internaldate2tuple(date[0])
-            internaldate_msg = datetime.fromtimestamp(
-                time.mktime(internaldate)
-            )
+            internaldate_msg = datetime.fromtimestamp(time.mktime(internaldate))
             if internaldate_msg > last_internal_date:
                 messages.append(new_uid)
                 date_uids[new_uid] = internaldate_msg
 
-        # result_unseen, data_unseen = imap_server.search(None, 'UNSEEN','SINCE',imap_date)
+        # Process
         for num in messages:
-            # SEARCH command *always* returns at least the most
-            # recent message, even if it has already been synced
-            res_id = None
-
             result, data = imap_server.fetch(num, '(RFC822)')
             if data and data[0]:
                 try:
-                    res_id = MailThread.message_process(
+                    MailThread.message_process(
                         self.object_id.model,
                         data[0][1],
                         save_original=self.original,
-                        strip_attachments=(not self.attach))
+                        strip_attachments=(not self.attach)
+                    )
                 except Exception:
-                    _logger.exception(
-                        'Failed to process mail \
-                        from %s server %s.',
-                        self.type,
-                        self.name)
+                    _logger.exception('Failed to process mail from IMAP server.')
                     failed += 1
 
-                _logger.info("DATA : {}".format(data[1].decode('UTF-8')))
-                if data[1] and 'Seen' not in data[1].decode('UTF-8'):
-                    #imap_server.uid('STORE', uid, '+FLAGS', '(\\Seen)')
+                # mark as seen
+                if data[1] and 'Seen' not in data[1].decode('utf-8'):
                     imap_server.store(num, '+FLAGS', '\\Seen')
-                    _logger.info("Inside If Condition")
                 else:
-                    #imap_server.uid('STORE', uid, '-FLAGS', '(\\Seen)')
                     imap_server.store(num, '-FLAGS', '\\Seen')
-                _logger.info("num Info : {}".format(num.decode('utf-8')))
-                # if num.decode('utf-8') in data_unseen[0].decode('utf-8'):
-                #     imap_server.store(num, '-FLAGS', '\\Seen')
+
                 self._cr.commit()
                 count += 1
-                last_date = date_uids[num] or False #datetime.now() or
-                _logger.info("LAST DATE : {}".format(last_date))
+
+                last_date = date_uids[num] or False
                 if last_date:
-                    vals = {'last_internal_date': last_date}
-                    if 'server_type' in vals:
-                        vals.pop('server_type')
-                    if 'is_ssl' in vals:
-                        vals.pop('is_ssl')
-                    self.write(vals)
+                    self.write({'last_internal_date': last_date})
                     self._cr.commit()
-        return count, failed, last_date
+
+     
+        return {
+            'count': count,
+            'failed': failed,
+            'last_date': last_date,
+        }
 
     def fetch_mail(self):
         # Fetch Email
@@ -136,8 +122,8 @@ class FetchmailServer(models.Model):
                 try:
                     imap_server = server.connect()
                     imap_server.select()
-                    count, failed, last_date = server.with_context(**context)._fetch_from_date_imap(imap_server, count,
-                                                                                                    failed)
+                    count, failed, last_date = server.with_context(**context)._fetch_from_date_imap(imap_server, count
+                                                                                                    )
                 except Exception:
                     _logger.exception("General failure when trying to fetch mail by date from %s server %s.",
                                       server.type, server.name)
