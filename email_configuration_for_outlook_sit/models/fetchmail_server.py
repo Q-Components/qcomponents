@@ -16,5 +16,5 @@ class FetchmailOutlookServer(models.Model):
                                    , related='mail_server_id.type', index=True, ondelete={'outlook': 'set default'})
 
     @api.model
-    def _fetch_from_date_imap(self, imap_server, count):
-        super(FetchmailOutlookServer, self)._fetch_from_date_imap(imap_server, count)
+    def _fetch_from_date_imap(self, imap_server, count,failed):
+        super(FetchmailOutlookServer, self)._fetch_from_date_imap(imap_server, count,failed)
