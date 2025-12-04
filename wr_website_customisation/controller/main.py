@@ -22,10 +22,16 @@ MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT = IMAGE_LIMITS = (1024, 768)
 LOC_PER_SITEMAP = 45000
 SITEMAP_CACHE_TIME = datetime.timedelta(hours=12)
 
+
+import logging
+
+_logger = logging.getLogger(__name__)
+
 class WebsiteSale(http.Controller):
 
     @http.route('/quick/shop', type='http', auth="public", website=True, sitemap=True)
     def website_quick_shop(self, **kw):
+        _logger.info("==================================website_quick_shop")
         return request.render("wr_website_customisation.QuickShop", {})
 
     def get_filters_query(self, filter):
@@ -59,6 +65,7 @@ class WebsiteSale(http.Controller):
             """
             request.env.cr.execute(query)
             products_ids = request.env.cr.fetchall()
+            _logger.info("==================================products_ids %s" % products_ids)
             products_ids = [product[0] for product in products_ids]
             products_ids = request.env['product.product'].sudo().browse(products_ids)
             products = [{
@@ -86,6 +93,7 @@ class WebsiteSale(http.Controller):
             """)
             total_products = request.env.cr.fetchall()
             total_products = total_products[0][0]
+            _logger.info("==================================total_products %s" % total_products)
             max_offset = math.ceil(total_products / post.get('limit') or 1)
             max_offset = (max_offset - 1) * post.get('limit')
             return {
