@@ -238,6 +238,9 @@ class DeliveryCarrier(models.Model):
                                           string="FedEx Payment Type",
                                           help="FedEx Payment Type")
     fedex_onerate = fields.Boolean("Want To Use FedEx OneRate Service?", default=False)
+
+    fedex_third_party_account_number = fields.Char(copy=False, string='FexEx Third-Party Account Number',
+                                                   help="Please Enter the Third Party account number")
     is_cod = fields.Boolean('COD')
     is_signature_required = fields.Boolean(string="Signature")
     signature_options = fields.Selection([('INDIRECT', 'INDIRECT'),
