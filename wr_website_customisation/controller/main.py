@@ -49,6 +49,7 @@ class WebsiteSale(http.Controller):
 
     @http.route(['/fetch_quick_shop_products'], type='json', auth="public", website=True, sitemap=False)
     def fetch_quick_shop_products(self, **post):
+        _logger.info("==================================fetch_quick_shop_products")
         if 'term' in post:
             query = f"""
                 select pp.id from product_product pp
