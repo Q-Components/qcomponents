@@ -49,6 +49,7 @@ class WebsiteSale(http.Controller):
     @http.route(['/fetch_quick_shop_products'], type='json', auth="public", website=True, sitemap=False)
     def fetch_quick_shop_products(self, **post):
         _logger.info("=============================quick shop products")
+        _logger.info("==============================post %s" % post)
         if 'term' in post:
             query = f"""
                 select pp.id from product_product pp
@@ -65,6 +66,7 @@ class WebsiteSale(http.Controller):
             """
             request.env.cr.execute(query)
             products_ids = request.env.cr.fetchall()
+            _logger.info("==============================product_ids %s" % products_ids)
             products_ids = [product[0] for product in products_ids]
             products_ids = request.env['product.product'].sudo().browse(products_ids)
             products = [{
@@ -90,6 +92,7 @@ class WebsiteSale(http.Controller):
                 or pt.x_studio_alternate_number::text ilike '%{post.get('term')}%'
                 or pt.default_code ilike '%{post.get('term')}%')
             """)
+
             total_products = request.env.cr.fetchall()
             total_products = total_products[0][0]
             max_offset = math.ceil(total_products / post.get('limit') or 1)
