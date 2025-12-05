@@ -38,7 +38,7 @@
         <!-- Product list extra fields -->
         <template id="add_extra_fields_on_product_view" inherit_id="website_sale.products_item"
                   name="Show Extra Fields On Products" priority="20">
-            <xpath expr="//h2[hasclass('o_wsale_products_item_title')]" position="after">
+            <xpath expr="//h2[contains(@class, 'o_wsale_products_item_title')]" position="after">
                 <div>
                     <a class="text-primary text-decoration-none" itemprop="x_studio_alternate_number"
                        t-att-content="product.x_studio_alternate_number"
