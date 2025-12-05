@@ -43,7 +43,6 @@
     </template>
     <template id="product" inherit_id="website_sale.product">
 
-
         <xpath expr="//div[@id='product_detail_main']/div[1]" position="attributes">
             <attribute name="class" add="d-none"/>
         </xpath>
@@ -54,8 +53,6 @@
                 <a href="/quick/shop">All Products</a>
             </li>
         </xpath>
-
     </template>
-
 
 </odoo>
