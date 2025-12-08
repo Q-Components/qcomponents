@@ -151,10 +151,10 @@
                                         </h6>
                                         <div>
                                             <span style="font-size: 95%;"><t t-esc="product.qty_available"/></span>
-                                            <span style="font-size: 75%;" t-if="product.uom_id and product.uom_id.length &gt; 0">
+                                            <span style="font-size: 75%;margin-right:4px;" t-if="product.uom_id and product.uom_id.length &gt; 0">
                                                 <t t-esc="product.uom_id[1]"/>
                                             </span>
-                                            <span style="font-size: 75%;">left in stock.</span>
+                                            <span style="font-size: 75%;margin-right:4px;">left in stock.</span>
                                         </div>
                                     </div>
                                 </div>
