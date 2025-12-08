@@ -10,7 +10,7 @@
 
     'author': 'ErpMstar Solutions',
     'category': 'eCommerce',
-    'version': '19.0.0.1',
+    'version': '19.0.1.0.0',
 
     # any module necessary for this one to work correctly
     'depends': ['website_sale'],
