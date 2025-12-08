@@ -49,7 +49,6 @@ publicWidget.registry.QuickShopTemplate = publicWidget.Widget.extend({
     events: {
         "click .pagination-prev-btn": "_clickPaginationPrevButton",
         "click .pagination-next-btn": "_clickPaginationNextButton",
-        "click .pagination-page-btn": "_clickPaginationPageButton", 
         "keyup input[type='search']": "_keyupSearchProduct",
         "click a.js_decrease_qty": "_clickDecreaseQty",
         "click a.js_increase_qty": "_clickIncreaseQty",
@@ -73,20 +72,6 @@ publicWidget.registry.QuickShopTemplate = publicWidget.Widget.extend({
             this.offset = this.data.next_offset;
         }
         this.load_quick_shop_products().then(() => this._render());
-    },
-
-    _clickPaginationPageButton(ev) {
-        ev.preventDefault();
-        const new_offset = Number($(ev.currentTarget).data("offset"));
-        this.offset = new_offset;
-        this.load_quick_shop_products().then(() => this._render());
-    },
-
-    computePages() {
-        const pages = [];
-        const total_pages = Math.ceil(this.data.total_products / this.limit);
-        for (let i = 1; i <= total_pages; i++) pages.push(i);
-        this.data.pages = pages;
     },
 
     _clickDecreaseQty(ev) {
@@ -163,7 +148,6 @@ publicWidget.registry.QuickShopTemplate = publicWidget.Widget.extend({
         });
         if (result?.success) {
             this.data = result;
-            this.computePages();
             this._render();
         }
     },

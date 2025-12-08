@@ -166,27 +166,31 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="products_pager d-flex justify-content-center pt-5 pb-3">
-                                <ul class="pagination m-0 align-items-center">
-                                    
+                                <ul class="pagination m-0 align-items-center gap-2">
                                     <li t-attf-class="page-item #{widget.offset == 0 ? 'disabled' : ''}">
                                         <button class="page-link pagination-prev-btn" type="button">
-                                            <span class="oi oi-chevron-left"></span>
+                                            Prev
                                         </button>
                                     </li>
-
-                                    <t t-foreach="widget.data.pages" t-as="page" t-key="page">
-                                        <li t-attf-class="page-item #{page == Math.ceil(widget.offset / widget.limit) + 1 ? 'active' : ''}">
-                                            <button type="button"
-                                                    class="page-link pagination-page-btn"
-                                                    t-att-data-offset="(page - 1) * widget.limit">
-                                                <t t-esc="page"/>
-                                            </button>
-                                        </li>
-                                    </t>
-
-                                    <li t-attf-class="page-item #{widget.data.total_products == (widget.data.next_offset &gt; widget.data.total_products ? widget.data.total_products : widget.data.next_offset) ? 'disabled' : ''}">
+                                    <li class="page-item disabled">
+                                        <a class="" style="position: relative;margin-left: -1px;display: block;padding: 0.375rem 0.75rem;color: #c55114;background-color: #FFF;border: 1px solid #dee2e6;">
+                                            <t t-esc="widget.data.current_offset"/>
+                                            -
+                                            <t t-esc="widget.data.next_offset &gt; widget.data.total_products
+                                                ? widget.data.total_products
+                                                : widget.data.next_offset"/>
+                                            /
+                                            <t t-esc="widget.data.total_products"/>
+                                            Products
+                                        </a>
+                                    </li>
+                                    <li t-attf-class="page-item #{widget.data.total_products ==
+                                        (widget.data.next_offset &gt; widget.data.total_products
+                                        ? widget.data.total_products
+                                        : widget.data.next_offset)
+                                        ? 'disabled' : ''}">
                                         <button class="page-link pagination-next-btn" type="button">
-                                            <span class="oi oi-chevron-right"></span>
+                                            Next
                                         </button>
                                     </li>
 
