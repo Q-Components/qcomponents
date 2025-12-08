@@ -17,7 +17,8 @@
     "data": [],
     'assets': {
         'web.assets_backend': [
-            'wr_listview_display_stock/static/src/views/list/*',
+            '/wr_listview_display_stock/static/src/views/list/list_controller.js',
+            '/wr_listview_display_stock/static/src/views/list/list_controller.xml',
         ],
     }
 }
