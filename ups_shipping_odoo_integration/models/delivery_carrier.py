@@ -454,9 +454,9 @@ class DeliveryCarrier(models.Model):
                             if rec.move_id.bom_line_id and rec.move_id.bom_line_id.bom_id:
                                 parcel_value_for_bulk_weight += single_unit_price * rec.quantity
                             else:
-                                parcel_value_for_bulk_weight += find_sale_line_id.price_unit * rec.quantity + find_sale_line_id.price_unit * rec.quantity * ((find_sale_line_id.tax_id and find_sale_line_id.tax_id.amount or 0.0)/100)
+                                parcel_value_for_bulk_weight += find_sale_line_id.price_unit * rec.quantity + find_sale_line_id.price_unit * rec.quantity * ((find_sale_line_id.tax_id and sum(find_sale_line_id.tax_ids.mapped('amount')) or 0.0)/100)
                         else:
-                            parcel_value_for_bulk_weight += find_sale_line_id.price_unit * rec.quantity + find_sale_line_id.price_unit * rec.quantity * ((find_sale_line_id.tax_id and find_sale_line_id.tax_id.amount or 0.0)/100)
+                            parcel_value_for_bulk_weight += find_sale_line_id.price_unit * rec.quantity + find_sale_line_id.price_unit * rec.quantity * ((find_sale_line_id.tax_id and sum(find_sale_line_id.tax_ids.mapped('amount')) or 0.0)/100)
                     else:
                         parcel_value_for_bulk_weight = rec.product_id.lst_price * rec.qty_done
             if not picking.backorder_id:
