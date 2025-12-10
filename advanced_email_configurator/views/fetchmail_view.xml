@@ -18,7 +18,7 @@
                 <attribute name="invisible">1</attribute>
             </field>
             <field name="server_type" position="attributes" >
-                <attribute name="attrs">{'readonly': [('state','!=', 'draft')]}</attribute>
+                <attribute name="readonly">state != 'draft'</attribute>
             </field>
         </field>
     </record>

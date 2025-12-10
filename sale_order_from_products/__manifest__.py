@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Create Sale Order from Products",
-    "version": "16.00.08.05.2023",
+    "version": "19.0.1.0",
     "category": "Sale",
     "summary": '',
     "license": '',

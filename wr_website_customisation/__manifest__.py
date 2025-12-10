@@ -2,7 +2,7 @@
 
 {
     "name": "Website Customisation",
-    "version": "1.0",
+    "version": "19.0.1.0.1",
     "category": "Website",
     'summary': 'Website Customisation',
     "description": """
@@ -17,8 +17,8 @@
     ],
     'assets': {
         'web.assets_frontend': [
-            'wr_website_customisation/static/src/js/quick_shop.js',
-            'wr_website_customisation/static/src/xml/quick_shop.xml',
+            '/wr_website_customisation/static/src/js/quick_shop.js',
+            '/wr_website_customisation/static/src/xml/quick_shop.xml'
         ],
     },
     "auto_install": False,

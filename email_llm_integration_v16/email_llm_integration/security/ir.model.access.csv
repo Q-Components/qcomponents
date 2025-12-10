@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_email_llm,access_email_llm,model_email_llm,,1,1,1,1
-access_processed_emails,access_processed_emails,model_processed_emails,,1,1,1,1

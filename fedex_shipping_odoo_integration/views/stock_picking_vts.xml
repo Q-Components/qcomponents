@@ -8,18 +8,19 @@
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
                 <button name="create_return_order" string="FedEx Return" type="object"
-                        attrs="{'invisible': ['|','|','|',('picking_type_code', '=', 'outgoing'),('state','in',('done','cancel')),('carrier_tracking_ref','!=',False),('carrier_id','=',False)]}"/>
+                        invisible="picking_type_code == 'outgoing' or state in ['done','cancel'] or carrier_tracking_ref or not carrier_id"/>
                 <button name="export_order_to_fedex" string="Export to Fedex" type="object"
-                        attrs="{'invisible': ['|','|','|','|',('picking_type_code', '!=', 'outgoing'),('state','!=','done'),('carrier_tracking_ref','!=',False),('carrier_id','=',False),('delivery_type','!=','fedex_shipping_provider')]}"/>
+                        invisible="picking_type_code != 'outgoing' or state != 'done' or carrier_tracking_ref or not carrier_id or delivery_type != 'fedex_shipping_provider'"
+                        />
             </xpath>
         </field>
     </record>
 
-    <record id="fedex_view_stock_quant_package_details" model="ir.ui.view">
+    <record id="fedex_view_stock_package_details" model="ir.ui.view">
         <field name="name">Fedex Package Configuration</field>
-        <field name="model">stock.quant.package</field>
+        <field name="model">stock.package</field>
         <field name="type">form</field>
-        <field name="inherit_id" ref="stock.view_quant_package_form"/>
+        <field name="inherit_id" ref="stock.stock_package_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='location_id']" position="after">
                 <field name="custom_tracking_number" readonly="1"/>

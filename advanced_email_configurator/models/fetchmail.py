@@ -54,10 +54,10 @@ class FetchmailServer(models.Model):
 
         search_status, uids = imap_server.search(
             None,
-            'UNSEEN','SINCE', '%s' % last_internal_date_str
+            'UNSEEN', 'SINCE', '%s' % last_internal_date_str
         )
         new_uids = uids[0].split()
-        _logger.info("new_uids : {0} Search Status : {1}".format(new_uids,search_status))
+        _logger.info("new_uids : {0} Search Status : {1}".format(new_uids, search_status))
         for new_uid in new_uids:
             fetch_status, date = imap_server.fetch(
                 new_uid,
@@ -95,18 +95,18 @@ class FetchmailServer(models.Model):
 
                 _logger.info("DATA : {}".format(data[1].decode('UTF-8')))
                 if data[1] and 'Seen' not in data[1].decode('UTF-8'):
-                    #imap_server.uid('STORE', uid, '+FLAGS', '(\\Seen)')
+                    # imap_server.uid('STORE', uid, '+FLAGS', '(\\Seen)')
                     imap_server.store(num, '+FLAGS', '\\Seen')
                     _logger.info("Inside If Condition")
                 else:
-                    #imap_server.uid('STORE', uid, '-FLAGS', '(\\Seen)')
+                    # imap_server.uid('STORE', uid, '-FLAGS', '(\\Seen)')
                     imap_server.store(num, '-FLAGS', '\\Seen')
                 _logger.info("num Info : {}".format(num.decode('utf-8')))
                 # if num.decode('utf-8') in data_unseen[0].decode('utf-8'):
                 #     imap_server.store(num, '-FLAGS', '\\Seen')
                 self._cr.commit()
                 count += 1
-                last_date = date_uids[num] or False #datetime.now() or
+                last_date = date_uids[num] or False  # datetime.now() or
                 _logger.info("LAST DATE : {}".format(last_date))
                 if last_date:
                     vals = {'last_internal_date': last_date}
@@ -117,6 +117,7 @@ class FetchmailServer(models.Model):
                     self.write(vals)
                     self._cr.commit()
         return count, failed, last_date
+
 
     def fetch_mail(self):
         # Fetch Email
@@ -136,8 +137,8 @@ class FetchmailServer(models.Model):
                 try:
                     imap_server = server.connect()
                     imap_server.select()
-                    count, failed, last_date = server.with_context(**context)._fetch_from_date_imap(imap_server, count,
-                                                                                                    failed)
+                    count, failed, last_date = server.with_context(**context)._fetch_from_date_imap(imap_server, count,failed
+                                                                                                    )
                 except Exception:
                     _logger.exception("General failure when trying to fetch mail by date from %s server %s.",
                                       server.type, server.name)

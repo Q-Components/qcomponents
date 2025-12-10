@@ -6,6 +6,6 @@ import smtplib
 
 
 class ResUser(models.Model):
-    _inherit = ['res.users']
+    _inherit = 'res.users'
 
     smtp_authentication = fields.Selection([('login', 'Username')],default='login')

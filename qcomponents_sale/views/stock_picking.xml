@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             <xpath expr="//div[@class='oe_button_box']" position="inside">
                 <button type="object" name="action_view_account_invoice" string="Invoice" icon="fa-pencil-square-o"
-                        attrs="{'invisible':[('account_invoice_ids','=',[])]}">
+                        invisible="not account_invoice_ids">
                     <field name="account_invoice_ids" invisible="1"/>
                 </button>
             </xpath>

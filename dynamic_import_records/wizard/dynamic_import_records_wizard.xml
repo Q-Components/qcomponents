@@ -8,9 +8,12 @@
                 <sheet>
                     <group>
                         <field name="dynamic_import_records_id" domain="[('main_table', '=', True)]"/>
+                        <field name="import_type"/>
+                        <field name="inventory_location_id" invisible="import_type == 'Other'"/>
                         <field name="filename" invisible="1" />
                         <field name="import_file" filename="filename" />
                         <field name="row_first_as_header"/>
+                        <field name="csv_file_delimiter"/>
                     </group>
                 </sheet>
                 <footer>

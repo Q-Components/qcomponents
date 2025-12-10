@@ -10,8 +10,8 @@ class ResCompany(models.Model):
     fedex_api_url = fields.Char(string="FedEx API URL", copy=False, default="https://apis-sandbox.fedex.com")
     fedex_client_id = fields.Char(string="FedEx Client ID", copy=False)
     fedex_client_secret = fields.Char(string="FedEx Client Secret", copy=False)
-    fedex_account_number = fields.Char(copy=False, string='Account Number',
-                                       help="The account number sent to you by Fedex after registering for Web Services.")
+    # fedex_account_number = fields.Char(copy=False, string='Account Number',
+    #                                    help="The account number sent to you by Fedex after registering for Web Services.")
     fedex_access_token = fields.Char(string="FedEx Access Token", copy=False)
 
     def auto_generate_fedex_access_token(self):
@@ -40,11 +40,13 @@ class ResCompany(models.Model):
                         'effect': {
                             'fadeout': 'slow',
                             'message': "Yeah! Token has been retrieved.",
-                            'img_url': '/web/static/src/img/smile.svg',
+                            'img_url': '/web/static/img/smile.svg',
                             'type': 'rainbow_man',
                         }
                     }
                 else:
                     raise ValidationError(response_data)
+            else:
+                raise ValidationError(response_data.text)
         except Exception as e:
             raise ValidationError(e)

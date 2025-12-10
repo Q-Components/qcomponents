@@ -6,6 +6,8 @@ class StockPicking(models.Model):
     _inherit = "stock.picking"
 
     account_invoice_ids = fields.Many2many('account.move', string="Account Invoice", copy=False)
+    x_studio_field_erYmc = fields.Many2one('account.payment.term', string="Payment Terms")
+
 
     def generate_account_payment(self, invoice_obj):
         if invoice_obj.move_type == 'out_invoice':
@@ -91,3 +93,7 @@ class StockPicking(models.Model):
                 result['views'] = [(res and res.id or False, 'form')]
                 result['res_id'] = self.account_invoice_ids.id
             return result
+
+
+
+

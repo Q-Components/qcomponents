@@ -11,16 +11,16 @@
                     <field name="use_skuvault_warehouse_management" />
                 </xpath>
                 <xpath expr="//notebook[last()]" position="after">
-                        <notebook attrs="{'invisible': [('use_skuvault_warehouse_management', '!=', True)]}">
+                        <notebook invisible="not use_skuvault_warehouse_management">
                             <page string="Skuvault Configuration" >
                                 <group>
                                     <group>
-                                        <field name="skuvault_api_url" attrs="{'required':[('use_skuvault_warehouse_management','=',True)]}" />
-                                        <field name="skuvault_email_id" attrs="{'required':[('use_skuvault_warehouse_management','=',True)]}" />
-                                        <field name="skuvault_password" attrs="{'required':[('use_skuvault_warehouse_management','=',True)]}" />
+                                        <field name="skuvault_api_url" required="use_skuvault_warehouse_management" />
+                                        <field name="skuvault_email_id"  required="use_skuvault_warehouse_management" />
+                                        <field name="skuvault_password"  required="use_skuvault_warehouse_management"/>
 
-                                        <field name="skuvault_modify_after_date" attrs="{'required':[('use_skuvault_warehouse_management','=',True)]}" />
-                                        <field name="skuvault_modify_before_date" attrs="{'required':[('use_skuvault_warehouse_management','=',True)]}" />
+                                        <field name="skuvault_modify_after_date" required="use_skuvault_warehouse_management" />
+                                        <field name="skuvault_modify_before_date" required="use_skuvault_warehouse_management"/>
 
 
                                         <field name="skuvault_tenantToken" />

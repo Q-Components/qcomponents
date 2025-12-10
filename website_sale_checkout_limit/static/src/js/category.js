@@ -1,42 +1,24 @@
-odoo.define('hide_checkout', function (require) {
-   'use strict';
+/** @odoo-module **/
 
-   var t = require('website_sale.utils')
+import websiteSaleUtils from '@website_sale/js/website_sale_utils';
 
-   t.updateCartNavBar = function updateCartNavBar(data) {
-       $(".my_cart_quantity")
-        .parents('li.o_wsale_my_cart').removeClass('d-none').end()
-        .addClass('o_mycart_zoom_animation').delay(300)
-        .queue(function () {
-            $(this)
-                .toggleClass('fa fa-warning', !data.cart_quantity)
-                .attr('title', data.warning)
-                .text(data.cart_quantity || '')
-                .removeClass('o_mycart_zoom_animation')
-                .dequeue();
+const originalUpdateCartNavBar = websiteSaleUtils.updateCartNavBar;
+
+websiteSaleUtils.updateCartNavBar = function (data) {
+
+    originalUpdateCartNavBar.apply(this, arguments);
+    
+    const res = data['website_sale.check'];
+
+    if (res) {
+        document.querySelectorAll('.checkout_one').forEach(el => {
+            el.classList.remove("disabled");
         });
-
-    $(".js_cart_lines").first().before(data['website_sale.cart_lines']).end().remove();
-    $(".js_cart_summary").replaceWith(data['website_sale.short_cart_summary']);
-
-      //***** Custom Data*****
-      var res = data['website_sale.check']
-      if (res) {
-         $('.checkout_one').removeClass("disabled")
-         $('#message').addClass("d-none")
-      }
-      else {
-         $('.checkout_one').addClass("disabled")
-         $('#message').removeClass("d-none")
-      }
-      // *******
-      
-   }
-})
-
-
-
-
-
-
-
+        document.getElementById('message')?.classList.add("d-none");
+    } else {
+        document.querySelectorAll('.checkout_one').forEach(el => {
+            el.classList.add("disabled");
+        });
+        document.getElementById('message')?.classList.remove("d-none");
+    }
+};

@@ -1,4 +1,4 @@
-from odoo.exceptions import Warning,ValidationError
+from odoo.exceptions import ValidationError
 from odoo import models, fields, api, _
 
 class FedExPackageDetails(models.Model):
@@ -129,5 +129,5 @@ class FedExPackageDetails(models.Model):
                         'carrier_price': res[0].get('exact_price', 0.0)})
 
 class FedExPackageDetails(models.Model):
-    _inherit = "stock.quant.package"
+    _inherit = "stock.package"
     custom_tracking_number = fields.Char(string = "FedEx Tracking Number", help = "If tracking number available print it in this field.")

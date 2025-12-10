@@ -7,7 +7,7 @@ import smtplib
 
 
 class ResUser(models.Model):
-    _inherit = ['res.users']
+    _inherit = 'res.users'
 
     smtp_authentication = fields.Selection(selection_add=[('outlook', 'Outlook OAuth Authentication')])
     outgoing_mail_id = fields.Many2one('ir.mail_server', string='User')

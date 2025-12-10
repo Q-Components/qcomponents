@@ -91,7 +91,7 @@ class PorductProduct(models.Model):
                                 'default_code': product_data.get('Sku'),
                                 'name': product_data.get('PartNumber', '') or product_data.get('Sku'),
                                 'weight': product_data.get('WeightValue'),
-                                'type': 'product',
+                                'type': 'consu',
                                 'supplier_name': product_data.get('Supplier'),
                                 'brand_name':product_data.get('Brand'),
                                 'standard_price': product_data.get('Cost')}

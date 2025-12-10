@@ -7,32 +7,53 @@
         <field name="arch" type="xml">
             <xpath expr="//page[@name='destination']" position='before'>
                 <page string="Configuration" name="fedex_configuration"
-                      attrs="{'invisible': [('delivery_type', '!=', 'fedex_shipping_provider')]}">
+                      invisible="delivery_type != 'fedex_shipping_provider'">
                     <group>
+                        <group >
+                            <field name="company_id" required="delivery_type == 'fedex_shipping_provider'"/>
+                            <field name="fedex_account_number" required="delivery_type == 'fedex_shipping_provider'"/>
+                            <field name="fedex_region" required="delivery_type == 'fedex_shipping_provider'"/>
+                            <!-- US Service Field -->
+                            <field name="fedex_service_us"
+                                   invisible="fedex_region != 'US'" required="fedex_region == 'US'"/>
+
+                            <!-- Canada Service Field -->
+                            <field name="fedex_service_ca"
+                                   invisible="fedex_region != 'CA'" required="fedex_region == 'CA'"/>
+
+                            <!-- Europe Service Field -->
+                            <field name="fedex_service_eu"
+                                   invisible="fedex_region != 'EU'" required="fedex_region == 'EU'"/>
+
+                            <!-- LAC Service Field -->
+                            <field name="fedex_service_lac"
+                                   invisible="fedex_region != 'LAC'" required="fedex_region == 'LAC'"/>
+
+                            <!-- APAC Service Field -->
+                            <field name="fedex_service_apac"
+                                   invisible="fedex_region != 'APAC'" required="fedex_region == 'APAC'"/>
+
+                            <!-- MEISA Service Field -->
+                            <field name="fedex_service_meisa"
+                                   invisible="fedex_region != 'MEISA'" required="fedex_region == 'MEISA'"/>
+
+                            <field name="fedex_hub_id"/>
+                            <field name="fedex_indicia"/>
+                            <field name="fedex_pickup_type"/>
+                            <field name="fedex_default_product_packaging_id"/>
+                            <field name="fedex_request_type"/>
+                            <field name="fedex_payment_type"/>
+                            <field name="fedex_weight_uom"/>
+                        </group>
                         <group>
-                            <field name="company_id"
-                                   attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
-                            <field name="fedex_request_type"
-                                   attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
-                            <field name="fedex_weight_uom"
-                                   attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
-                            <field name="fedex_service_type"
-                                   attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
-                            <field name="fedex_payment_type"
-                                   attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
-                            <field name="fedex_pickup_type"
-                                   attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
-                            <field name="fedex_default_product_packaging_id"
-                                   attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
                             <field name="fedex_shipping_label_stock_type"
-                                   attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
+                                   required="delivery_type == 'fedex_shipping_provider'"/>
                             <field name="fedex_shipping_label_file_type"
-                                   attrs="{'required': [('delivery_type', '=', 'fedex_shipping_provider')]}"/>
-                            <field name="fedex_onerate"/>
+                                   required="delivery_type == 'fedex_shipping_provider'"/>
                             <field name="is_cod"/>
                             <field name="is_signature_required"/>
-                            <field name="signature_options"
-                                   attrs="{'invisible': [('is_signature_required', '=', False)], 'required': [('is_signature_required', '=', True)]}"/>
+                            <field name="signature_options" invisible="is_signature_required == False"
+                                   required="is_signature_required == True"/>
                             <field name="insured_request"/>
                             <field name="fedex_onerate"/>
                         </group>
