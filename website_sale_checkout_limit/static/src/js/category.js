@@ -8,8 +8,7 @@ websiteSaleUtils.updateCartNavBar = function (data) {
 
     originalUpdateCartNavBar.apply(this, arguments);
     
-    const res = data['website_sale.check'];
-
+    const res = data['website_sale_check'];
     if (res) {
         document.querySelectorAll('.checkout_one').forEach(el => {
             el.classList.remove("disabled");
