@@ -11,20 +11,19 @@
                     <group>
                         <field name="use_ups_shipping_provider"/>
                     </group>
-                    <group attrs="{'invisible': [('use_ups_shipping_provider', '!=', True)]}">
-                        <field name="ups_api_url" attrs="{'required':[('use_ups_shipping_provider','=',True)]}"/>
-                        <field name="ups_userid" attrs="{'required':[('use_ups_shipping_provider','=',True)]}"/>
-                        <field name="ups_password" attrs="{'required':[('use_ups_shipping_provider','=',True)]}"/>
-                        <field name="ups_shipper_number" attrs="{'required':[('use_ups_shipping_provider','=',True)]}"/>
-                        <field name="ups_client_id" attrs="{'required':[('use_ups_shipping_provider','=',True)]}"/>
-                        <field name="ups_client_secret" attrs="{'required':[('use_ups_shipping_provider','=',True)]}"/>
+                    <group invisible="use_ups_shipping_provider != True">
+                        <field name="ups_api_url" required="use_ups_shipping_provider != False"/>
+                        <field name="ups_userid" required="use_ups_shipping_provider != False"/>
+                        <field name="ups_password" required="use_ups_shipping_provider != False"/>
+                        <field name="ups_shipper_number" required="use_ups_shipping_provider != False"/>
+                        <field name="ups_client_id" required="use_ups_shipping_provider != False"/>
+                        <field name="ups_client_secret" required="use_ups_shipping_provider != False"/>
                         <button name="ups_generate_token" type="object" string="Generate Authentication Token"
                                 class="fa fa-arrow-right oe_link"/>
                     </group>
                     <group>
-                        <field name="ups_api_token"/>
+                        <field name="ups_api_token" invisible="use_ups_shipping_provider != True"/>
                     </group>
-
                 </page>
             </xpath>
         </field>

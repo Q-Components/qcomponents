@@ -1,6 +1,6 @@
 {
     'name': 'QC INVOICE REPORT',
-    'version': '16.23.05.2023',
+    'version': '19.0.1.0',
     'Summary': 'Invoice Report',
     'description': '',
     'license': 'OPL-1',

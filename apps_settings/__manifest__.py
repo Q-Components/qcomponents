@@ -1,6 +1,6 @@
 {
     'name': 'Apps Setting',
-    'version': '16.0.0',
+    'version': '19.0.0',
     'summary': ''' Module for Manange App Settings.''',
     'depends': [
         'base',

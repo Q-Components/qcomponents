@@ -52,8 +52,8 @@ class WebsiteSale(http.Controller):
                 and pp.active = 't'
                 and pt.is_published = 't'
                 and (pt.website_id = {request.website.id} or pt.website_id is null )
-                and (pt.name ILIKE '%{post.get('term')}%'
-                or pt.x_studio_alternate_number ilike '%{post.get('term')}%'
+                and (pt.name::text ILIKE '%{post.get('term')}%'
+                or pt.x_studio_alternate_number::text ilike '%{post.get('term')}%'
                 or pt.default_code ilike '%{post.get('term')}%') {self.get_filters_query(post.get('active_filter'))}
                 limit {post.get('limit', 20)} OFFSET {post.get('offset', 0)}
             """
@@ -80,8 +80,8 @@ class WebsiteSale(http.Controller):
                 and pp.active = 't'
                 and pt.is_published = 't'
                 and (pt.website_id = {request.website.id} or pt.website_id is null )
-                and (pt.name ILIKE '%{post.get('term')}%'
-                or pt.x_studio_alternate_number ilike '%{post.get('term')}%'
+                and (pt.name::text ILIKE '%{post.get('term')}%'
+                or pt.x_studio_alternate_number::text ilike '%{post.get('term')}%'
                 or pt.default_code ilike '%{post.get('term')}%')
             """)
             total_products = request.env.cr.fetchall()

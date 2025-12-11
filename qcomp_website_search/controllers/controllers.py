@@ -5,15 +5,19 @@ from odoo.addons.website_sale.controllers.main import WebsiteSale
 
 class WebsiteSaleSearch(WebsiteSale):
 
-    def _get_search_domain(self, search, category, attrib_values, search_in_description=True):
+    def _get_search_domain(
+        self, search, category, attrib_values,
+        search_in_description=True, **kwargs      # <-- REQUIRED FOR ODOO 16–19
+    ):
         domains = [request.website.sale_product_domain()]
+
         if search:
             for srch in search.split(" "):
                 subdomains = [
                     [('name', 'ilike', srch)],
                     [('x_studio_alternate_number', 'ilike', srch)],
                     [('description_sale', 'ilike', srch)],
-                    [('product_variant_ids.default_code', 'ilike', srch)]
+                    [('product_variant_ids.default_code', 'ilike', srch)],
                 ]
                 if search_in_description:
                     subdomains.append([('description', 'ilike', srch)])
@@ -36,6 +40,7 @@ class WebsiteSaleSearch(WebsiteSale):
                     domains.append([('attribute_line_ids.value_ids', 'in', ids)])
                     attrib = value[0]
                     ids = [value[1]]
+
             if attrib:
                 domains.append([('attribute_line_ids.value_ids', 'in', ids)])
 

@@ -3,8 +3,9 @@ from odoo.exceptions import ValidationError, UserError
 import paramiko
 
 
-class SftpSyncing(models.Model):
-    _name = "sftp.syncing"
+class DynamicImportSftpSyncing(models.Model):
+    _name = "dynamic.import.sftp.syncing"
+    _description = "SFTP Syncing"
 
     name = fields.Char("Server name", required=True)
     sftp_host = fields.Char("Host", required=True)
@@ -14,10 +15,28 @@ class SftpSyncing(models.Model):
     store = fields.Selection([('import_dynamic_records', 'Import Dynamic Records')], string="Store")
     cron_created = fields.Boolean(string="Cron Created", default=False, copy=False)
     import_file_path = fields.Char(string="File Import Path", default="/tmp")
+    import_type = fields.Selection(
+        selection=[('Inventory', 'Inventory'), ('Other', 'Other')],
+        default="Other",
+        string="Which type of data import?"
+    )
+    inventory_location_id = fields.Many2one(
+        comodel_name='stock.location',
+        string='Inventory Location'
+    )
     active = fields.Boolean('Active', default=True)
     company_id = fields.Many2one("res.company", "Company")
     dynamic_import_records_id = fields.Many2one("dynamic.import.records", "Dynamic Import Record")
     row_first_as_header = fields.Boolean(string="Use first row as a header?", default=True)
+    sftp_delimiter = fields.Char(
+        string="CSV File Delimiter"
+    )
+    split_records = fields.Boolean(
+        string='Split the records of a file',
+        copy=False,
+        default=False,
+        help='If a file is too large in size or contains too many lines, split its records to ensure smooth processing.'
+    )
 
     def connect_sftp(self):
         try:
@@ -79,23 +98,21 @@ class SftpSyncing(models.Model):
             raise UserError(
                 _("Error while get file and folders name from Server! Here is what we got instead:\n %s") % (e))
 
-    def create_cron_job(self, cron_name, code_method, interval_number=10, interval_type='minutes', numbercall=1):
+    def create_cron_job(self, cron_name, code_method, interval_number=10, interval_type='minutes'):
         self.env['ir.cron'].create({
             'name': cron_name,
-            'model_id': self.env.ref('dynamic_import_records.model_sftp_syncing').id,
+            'model_id': self.env.ref('dynamic_import_records.model_dynamic_import_sftp_syncing').id,
             'state': 'code',
             'code': code_method,
             'interval_number': interval_number,
             'interval_type': interval_type,
-            'numbercall': numbercall,
-            'doall': True,
             'active': False,
             'user_id': 1
         })
 
     def click_to_create_cron(self):
         if not self.store:
-            raise ValidationError(_("PLease Select Your 3PL store."))
+            raise ValidationError(_("PLease Select Store."))
         if hasattr(self, '{}_create_schedule_actions'.format(self.store)):
             getattr(self, '{}_create_schedule_actions'.format(self.store))()
         self.cron_created = True
@@ -105,10 +122,11 @@ class SftpSyncing(models.Model):
                 [('code', '=', "model.import_dynamic_records({})".format(self.id))]):
             cron_name = "SFTP - [{}] import file fetch".format(self.name)
             code_method = "model.sftp_import_file({})".format(self.id)
-            self.create_cron_job(cron_name, code_method, interval_number=2, interval_type='hours', numbercall=-1)
+            self.create_cron_job(cron_name, code_method, interval_number=2, interval_type='hours')
 
     def sftp_import_file(self, sftp_id):
         sftp_server_ids = self.browse(sftp_id)
         dynamic_import_record = sftp_server_ids.dynamic_import_records_id
         dynamic_import = self.env['dynamic.import.records.wizard']
-        dynamic_import.action_submit_button(sftp_server_ids, dynamic_import_record)
+        dynamic_import.action_submit_button(sftp_id=sftp_server_ids,
+                                            matched_record_of_import_records=dynamic_import_record)

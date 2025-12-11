@@ -1,21 +1,30 @@
 /** @odoo-module **/
 
-import { listView } from '@web/views/list/list_view';
-import { ListController } from '@web/views/list/list_controller';
-import fieldUtils from 'web.field_utils';
+import { patch } from "@web/core/utils/patch";
+import { ListController } from "@web/views/list/list_controller";
+import { formatFloat } from "@web/views/fields/formatters";
 
-export class InheritListController extends ListController {
-    getProductQuantity(){
-        var total_qty = 0;
-        console.log("this >>>>>>>> ", this.model.rootParams);
-        this.model.root.selection.map(function(rec){
-            total_qty += rec.data.qty_available;
-        });
-        return fieldUtils.format.float(total_qty, null);
-    }
-    get isVisibleQuantity(){
-        return this.model.rootParams && this.model.rootParams.resModel == 'product.product' && this.model.rootParams.viewMode == 'list';
-    }
-}
+patch(ListController.prototype, {
 
-listView.Controller = InheritListController;
+    getProductQuantity() {
+        let total_qty = 0;
+
+        const selection = this.model?.root?.selection || [];
+
+        for (const rec of selection) {
+            total_qty += rec?.data?.qty_available || 0;
+        }
+
+        return formatFloat(total_qty, { digits: [16, 2] });
+    },
+
+    get isVisibleQuantity() {
+        const root = this.model?.root;
+        
+        return (
+            root?.resModel === "product.product" &&
+            (root.selection?.length || 0) > 0
+        );
+    },
+
+});

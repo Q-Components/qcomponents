@@ -2,7 +2,7 @@
 
 {
     'name': 'Stripe Fees Extension',
-    'version': '1.0',
+    'version': '19.0.0.1',
     'author': 'Craftsync Technologies',
     'maintainer': 'Craftsync Technologies',
     'category': 'Accounting',

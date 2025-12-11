@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="dynamic_import_ftp_syncing_tree" model="ir.ui.view">
+        <field name="name">dynamic.import.ftp.syncing.tree</field>
+        <field name="model">dynamic.import.ftp.syncing</field>
+        <field name="arch" type="xml">
+            <list string="FTP Syncing">
+                <field name="name"/>
+                <field name="store"/>
+                <field name="company_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dynamic_import_ftp_syncing_form" model="ir.ui.view">
+        <field name="name">dynamic.import.ftp.syncing.form</field>
+        <field name="model">dynamic.import.ftp.syncing</field>
+        <field name="arch" type="xml">
+            <form string="FTP Syncing">
+                <header>
+                    <button name="action_check_ftp_connection" type="object" class="btn-primary"
+                            string="Check Connection"/>
+                    <button name="click_to_create_cron" type="object" class="btn-secondary"
+                            string="Click to create Automatic Cron Jobs" invisible="cron_created != False"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="active" invisible="1"/>
+                            <field name="name" required="1"/>
+                            <field name="ftp_url" required="1"/>
+                            <field name="ftp_username" required="1"/>
+                            <field name="ftp_password" required="1"/>
+                            <field name="ftp_port" required="1"/>
+                            <field name="company_id"/>
+                            <field name="cron_created" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="store"/>
+                            <field name="dynamic_import_records_id" domain="[('main_table', '=', True)]"
+                                   required="store == 'import_dynamic_records'"
+                                   invisible="store != 'import_dynamic_records'"/>
+                            <field name="import_file_path"
+                                   required="store == 'import_dynamic_records'"
+                                   invisible="store != 'import_dynamic_records'"/>
+                            <field name="import_type"
+                                   required="store == 'import_dynamic_records'"
+                                   invisible="store != 'import_dynamic_records'"/>
+                            <field name="inventory_location_id"
+                                   required="import_type == 'Inventory'"
+                                   invisible="import_type != 'Inventory'"/>
+                            <field name="row_first_as_header"
+                                   required="store == 'import_dynamic_records'"
+                                   invisible="store != 'import_dynamic_records'"/>
+                            <field name="split_records"
+                                   invisible="store != 'import_dynamic_records'"/>
+                            <field name="ftp_delimiter"
+                                   required="store == 'import_dynamic_records'"
+                                   invisible="store != 'import_dynamic_records'"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_dynamic_import_ftp_syncing" model="ir.actions.act_window">
+        <field name="name">FTP Syncing</field>
+        <field name="res_model">dynamic.import.ftp.syncing</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_item_ftp_syncing" name="FTP Syncing"
+              parent="dynamic_import_records.menu_dynamic_import_records"
+              action="dynamic_import_records.action_dynamic_import_ftp_syncing" sequence="5"/>
+</odoo>

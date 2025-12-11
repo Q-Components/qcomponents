@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Email Configuration For Outlook',
-    'version': '16.0.1.0.0',
+    'version': '19.0.1.0',
     'summary': '''Email Configuration For Outlook is  Effortlessly sync your emails between Odoo and Outlook,
      ensuring all your communications are centralized and up to date across both platforms. This module simplifies
       the setup of incoming and outgoing mail servers by automatically configuring them directly from your preferences.

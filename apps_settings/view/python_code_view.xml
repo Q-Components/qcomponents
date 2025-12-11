@@ -5,18 +5,18 @@
        <record id="python_code_execute_tree_view_extended" model="ir.ui.view">
             <field name="name">python.code.execute.tree.view.extended</field>
             <field name="model">python.code.execute</field>
-            <field name="type">tree</field>
+           <!-- <field name="type">tree</field>-->
             <field name="arch" type="xml">
-            	<tree string="Python Code">
+            	<list string="Python Code">
             		<field name="name" />
-            	</tree>
+            	</list>
             </field>
        </record>
     
         <record id="python_code_execute_form_view_extended" model="ir.ui.view">
             <field name="name">python.code.execute.form.view.extended</field>
             <field name="model">python.code.execute</field>
-            <field name="type">form</field>
+         <!--   <field name="type">form</field>-->
             <field name="arch" type="xml">
              <form string="Execute Code">
              <sheet>
@@ -38,15 +38,14 @@
 
         <record id="action_python_code_execute" model="ir.actions.act_window">
             <field name="name">Execute</field>
-            <field name="type">ir.actions.act_window</field>
             <field name="res_model">python.code.execute</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="view_id" ref="python_code_execute_tree_view_extended"/>
         </record>
         
         <menuitem
         	name="Python Code Execute"
-            parent="base.menu_administration"
+            parent="base.menu_custom"
             id="python_code_execute_menuitem_id"
             action="action_python_code_execute"
             groups="base.group_erp_manager" />
