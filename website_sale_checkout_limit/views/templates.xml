@@ -2,14 +2,12 @@
 <odoo>
     <data>
 
-        <!-- Cart warning message -->
-        <template id="cart_message" inherit_id="website_sale.cart_summary_content">
-            <xpath expr="//div[1]" position="before">
-                <t t-set="order" t-value="website_sale_order"/>
-                <t t-set="min_amount" t-value="order and order.amount_total >= 100"/> <!-- Replace 100 with your minimum -->
-                <t t-set="message" t-value="'Minimum cart amount is 100.'"/>
+        <template id="cart" inherit_id="website_sale.cart">
+            <xpath expr="//div[@id='shop_cart']/div[@class='d-flex align-items-center mb-3']" position="before">
+                <t t-set="min_amount" t-value="website.check_cart_amount()"/>
+                <t t-set="message" t-value="website.info_message()"/>
                 <div id="message" t-attf-class="col-12 #{'d-none' if min_amount else ''}">
-                    <div class="alert alert-warning my-2">
+                    <div class="alert alert-warning my-2 checkout_one">
                         <em>
                             <i class="fa fa-info-circle"/>
                             <t t-esc="message"/>
@@ -17,22 +15,43 @@
                     </div>
                 </div>
             </xpath>
+<!--            <xpath expr="//div[hasclass('oe_cart')]//div[hasclass('justify-content-between')]/div[hasclass('flex-column')]/a"-->
+<!--                   position="attributes">-->
+<!--                <attribute name="t-attf-class">btn btn-primary float-right checkout_one-->
+<!--                    #{"disabled" if not website.check_cart_amount() else ""}-->
+<!--                </attribute>-->
+<!--            </xpath>-->
+
+
         </template>
 
-        <!-- Checkout button control -->
+
         <template id="checkout_button_limit" inherit_id="website_sale.navigation_buttons">
             <xpath expr="//a[@name='website_sale_main_button']" position="attributes">
-                <attribute name="t-attf-class">btn btn-primary w-100
-                    #{'disabled' if not website_sale_order or website_sale_order.amount_total &lt; 100 else ''}
+                <attribute name="t-attf-class">btn btn-primary w-100 checkout_one
+                    #{"disabled" if not website.check_cart_amount() else ""}
+<!--                    #{'disabled' if not website_sale_order or website_sale_order.amount_total &lt; 100 else ''}-->
                 </attribute>
             </xpath>
 
-            <xpath expr="//a[@name='website_sale_main_button']" position="attributes">
-                <attribute name="t-att-href">
-                    #{'' if not website_sale_order or website_sale_order.amount_total &lt; 100 else next_website_checkout_step_href}
-                </attribute>
-            </xpath>
+<!--            <xpath expr="//a[@name='website_sale_main_button']" position="attributes">-->
+<!--                <attribute name="t-att-href">-->
+<!--                    #{"disabled" if not website.check_cart_amount() else ""}-->
+<!--&lt;!&ndash;                    #{'' if not website_sale_order or website_sale_order.amount_total &lt; 100 else next_website_checkout_step_href}&ndash;&gt;-->
+<!--                </attribute>-->
+<!--                -->
+<!--            </xpath>-->
+
         </template>
+
+
+<!--        <template id="short_cart_summary" inherit_id="website_sale.short_cart_summary">-->
+<!--            <xpath expr="//a" position="attributes">-->
+<!--                <attribute name="t-attf-class">btn btn-secondary float-end d-none d-xl-inline-block checkout_one-->
+<!--                    #{"disabled" if not website.check_cart_amount() else ""}-->
+<!--                </attribute>-->
+<!--            </xpath>-->
+<!--        </template>-->
 
 
         <!-- Product list extra fields -->
