@@ -2,13 +2,18 @@
 
 from odoo import models, fields, api
 from odoo.http import request
-# from odoo.addons.http_routing.models.ir_http import slug  unslug
+# from odoo.addons.http_routing.models.ir_http import  unslug
+try:
+    import slugify as slugify_lib
+except ImportError:
+    slugify_lib = None
 
 class Website(models.Model):
     _inherit = "website"
 
     def check_cart_amount(self):
-        order = request.website.sale_get_order()
+        # order = request.website.sale_get_order()
+        order = request.website._get_and_cache_current_cart()
         ircsudo = self.env['ir.config_parameter'].sudo()
         min_checkout_amount = ircsudo.get_param('website_sale_checkout_limit.min_checkout_amount')
         min_amount_type = ircsudo.get_param('website_sale_checkout_limit.min_amount_type')
