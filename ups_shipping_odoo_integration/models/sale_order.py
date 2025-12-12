@@ -113,3 +113,14 @@ class SaleOrder(models.Model):
                 raise ValidationError(response.text)
         except Exception as E:
             raise ValidationError(E)
+
+    def action_confirm(self):
+        res = super().action_confirm()
+        for order in self:
+            for picking in order.picking_ids:
+                if order.carrier_id:
+                    picking.carrier_id = order.carrier_id.id
+                if order.payment_term_id:
+                    picking.x_studio_field_erYmc = order.payment_term_id.id
+
+        return res
