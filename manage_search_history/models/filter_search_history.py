@@ -15,6 +15,7 @@ class FilterSearchHistory(models.Model):
                                      "When left empty the filter applies to all menus "
                                      "for this model.")
     
+    
 
     @api.model
     def _list_all_models(self):
