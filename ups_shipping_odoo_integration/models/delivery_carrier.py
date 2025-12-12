@@ -368,7 +368,7 @@ class DeliveryCarrier(models.Model):
                     "Code": "%s" % (
                             package_id.package_type_id and package_id.package_type_id.shipper_package_code)
                 },
-                "ReferenceNumber": {"Value": package_id.name or ""},
+                "ReferenceNumber": {"Value": picking.sale_id and picking.sale_id.client_order_ref or ""},
                 "Dimensions": {
                     "UnitOfMeasurement": {
                         "Code": "CM" if self.ups_weight_uom == "KGS" else "IN",
@@ -468,7 +468,7 @@ class DeliveryCarrier(models.Model):
                     "Code": "%s" % (
                             self.ups_provider_package_id and self.ups_provider_package_id.shipper_package_code)
                 },
-                "ReferenceNumber": {"Value": picking.name or ""},
+                "ReferenceNumber": {"Value": picking.sale_id and picking.sale_id.client_order_ref or ""},
                 "Dimensions": {
                     "UnitOfMeasurement": {
                         "Code": "CM" if self.ups_weight_uom == "KGS" else "IN",
@@ -804,7 +804,7 @@ class DeliveryCarrier(models.Model):
         if picking.sale_id.use_ups_third_party_account:
             thirdparty_payment = payload.get('ShipmentRequest').get('Shipment').get('PaymentInformation').get(
                 'ShipmentCharge')
-            thirdparty_payment.update({"BillThirdParty": {
+            thirdparty_payment.update({"BillReceiver": {
                 "AccountNumber": account_number,
                 "Address": {
                     "PostalCode": party_zip,
