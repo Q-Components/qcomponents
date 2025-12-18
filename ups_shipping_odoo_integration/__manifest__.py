@@ -20,6 +20,8 @@
         'view/delivery_carrier.xml',
         'view/sale_order.xml',
         'view/stock_picking.xml',
+        'view/stock_package.xml',
+        'view/stock_move.xml',
     ],
     # Odoo Store Specific
     'images': ['static/description/cover.gif'],

@@ -28,7 +28,7 @@
                         </group>
                         <group>
                             <field name="negotiated_rate"/>
-                            <field name="insured_request"/>
+<!--                            <field name="insured_request"/>-->
                             <field name="saturdaydelivery"/>
                             <field name="commercial_invoice"/>
                             <field name="signature_required"/>

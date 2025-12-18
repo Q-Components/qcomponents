@@ -399,12 +399,12 @@ class DeliveryCarrier(models.Model):
                                 "DeliveryConfirmation": {"DCISType": self.signature_required}})
                         package_signature = True
             # Insurance And Declared Value
-            if self.insured_request:
+            if package_id.insured_request:
                 package_service_option.update({
                     "DeclaredValue": {
                         "CurrencyCode": '{}'.format(
                             self.company_id and self.company_id.currency_id and self.company_id.currency_id.name or " "),
-                        "MonetaryValue": str(parcel_value_for_package)
+                        "MonetaryValue": str(package_id.insured_amount)
                     }
                 })
             # for COD
@@ -498,14 +498,14 @@ class DeliveryCarrier(models.Model):
                             "DeliveryConfirmation": {"DCISType": self.signature_required}})
                         package_signature = True
             # Insurance And Declared Value
-            if self.insured_request:
-                package_service_option.update({
-                    "DeclaredValue": {
-                        "CurrencyCode": '{}'.format(
-                            self.company_id and self.company_id.currency_id and self.company_id.currency_id.name or " "),
-                        "MonetaryValue": str(parcel_value_for_bulk_weight)
-                    }
-                })
+            # if self.insured_request:
+            #     package_service_option.update({
+            #         "DeclaredValue": {
+            #             "CurrencyCode": '{}'.format(
+            #                 self.company_id and self.company_id.currency_id and self.company_id.currency_id.name or " "),
+            #             "MonetaryValue": str(parcel_value_for_bulk_weight)
+            #         }
+            #     })
             if self.ups_cod_parcel and self.ups_cod_service == "package_level":
                 package_service_option.update({"COD": {
                     "CODFundsCode": self.ups_cod_fund_code,
