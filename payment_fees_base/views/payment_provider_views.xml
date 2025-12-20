@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="payment_provider_fees_form_inherit" model="ir.ui.view">
+        <field name="name">payment.provider.fees.form.inherit</field>
+        <field name="model">payment.provider</field>
+        <field name="inherit_id" ref="payment.payment_provider_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='is_published']" position="after">
+                <field name="support_fees" invisible="1" />
+            </xpath>
+            <xpath expr="//page[@name='configuration']" position="after">
+                <page string="Fees" name="fees" invisible="support_fees == False">
+                    <group name="payment_fees">
+                        <field name="fees_active" />
+                        <field name="fees_dom_fixed" invisible="fees_active == False" />
+                        <field name="fees_dom_var" invisible="fees_active == False" />
+                        <field name="fees_int_fixed" invisible="fees_active == False" />
+                        <field name="fees_int_var" invisible="fees_active == False" />
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

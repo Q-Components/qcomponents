@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="payment_transaction_fees_form_inherit" model="ir.ui.view">
+        <field name="name">payment.transaction.fees.form.inherit</field>
+        <field name="model">payment.transaction</field>
+        <field name="inherit_id" ref="payment.payment_transaction_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount']" position="after">
+                <field name="fees" />
+            </xpath>
+        </field>
+    </record>
+
+    <record id="payment_transaction_fees_list_inherit" model="ir.ui.view">
+        <field name="name">payment.transaction.fees.list.inherit</field>
+        <field name="model">payment.transaction</field>
+        <field name="inherit_id" ref="payment.payment_transaction_list" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount']" position="after">
+                <field name="fees" />
+            </xpath>
+        </field>
+    </record>
+</odoo>

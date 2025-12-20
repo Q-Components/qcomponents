@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="method_form_payment_fees" inherit_id="payment.method_form" name="Payment Form: Payment Fees">
+        <xpath expr="//t[@t-if='is_test']" position="after">
+            <t t-if="provider_sudo.fees_active and amount and currency">
+                <span class="badge rounded-pill text-bg-secondary ms-1">
+                    +
+                    <t t-esc="provider_sudo.get_fees(amount, partner_id)"
+                        t-options="{'widget': 'monetary', 'display_currency': currency}" />
+                    Fees
+                </span>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="token_form_payment_fees" inherit_id="payment.token_form" name="Payment Token Form: Payment Fees">
+        <xpath expr="//t[@t-if='is_test']" position="after">
+            <t t-if="token_sudo.provider_id.fees_active and amount and currency">
+                <span class="badge rounded-pill text-bg-secondary ms-1">
+                    +
+                    <t t-esc="token_sudo.provider_id.get_fees(amount, partner_id)"
+                        t-options="{'widget': 'monetary', 'display_currency': currency}" />
+                    Fees
+                </span>
+            </t>
+        </xpath>
+    </template>
+</odoo>
