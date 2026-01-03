@@ -23,7 +23,8 @@ class PorductProduct(models.Model):
     @api.depends('name', 'x_studio_alternate_number')
     def _compute_name_and_alternate_number(self):
         for record in self:
-            record.name_and_alternate_number = record.name + " " + record.x_studio_alternate_number
+            if record.x_studio_alternate_number:
+                record.name_and_alternate_number = record.name + " " + record.x_studio_alternate_number
 
     name_and_alternate_number = fields.Char(
         string="Name and Alternate Number",
