@@ -72,6 +72,7 @@
                     <field name="brand_name" />
                     <field name="supplier_name" />
                     <field name="sku_location" />
+                    <field name="name_and_alternate_number" optional="hide" />
                 </xpath>
             </field>
         </record>

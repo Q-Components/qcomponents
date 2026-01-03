@@ -20,6 +20,18 @@ class PorductProduct(models.Model):
     x_studio_alternate_number = fields.Char(string='Alternate Number',related='product_tmpl_id.x_studio_alternate_number',readonly=False,store=True,index=True)
     alternate_number = fields.Char('Alternate Number', index=True)
 
+    @api.depends('name', 'x_studio_alternate_number')
+    def _compute_name_and_alternate_number(self):
+        for record in self:
+            record.name_and_alternate_number = record.name + " " + record.x_studio_alternate_number
+
+    name_and_alternate_number = fields.Char(
+        string="Name and Alternate Number",
+        compute="_compute_name_and_alternate_number",
+        store=True,
+        index=True
+    )
+
     def _sync_alternate_number(self):
         for rec in self:
             rec.alternate_number = rec.product_tmpl_id.alternate_number
