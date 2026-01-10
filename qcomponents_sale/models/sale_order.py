@@ -20,7 +20,7 @@ class SaleOrder(models.Model):
         )
 
         if pickings:
-            vals['x_studio_tracking_reference'] = ', '.join(
+            vals['carrier_tracking_reference'] = ', '.join(
                 pickings.mapped('carrier_tracking_ref')
             )
 
