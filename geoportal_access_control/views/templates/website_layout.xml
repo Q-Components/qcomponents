@@ -1,0 +1,8 @@
+<!-- location_checker/views/templates.xml -->
+<odoo>
+    <template id="location_checker_template" name="Location Checker Template" inherit_id="website.layout">
+        <xpath expr="//body" position="inside">
+            <div id="location_checker_widget"></div>
+        </xpath>
+    </template>
+</odoo>

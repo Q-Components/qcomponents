@@ -1,0 +1,32 @@
+<!-- location_checker/views/res_config_settings_views.xml -->
+<odoo>
+    <record id="res_config_settings_view_form_inherit_location_checker" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.location.checker</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="website.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="website_info_settings" position="inside">
+
+                <setting>
+                    <div class="content-group"> 
+                        <h2>Location Restrictions</h2>
+                        <div class="row mt8">
+                            <label class="col-lg-3" string="Not Allowed Countries" for="not_allowed_country_ids"/>
+                            <field name="not_allowed_country_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}" title="Not allowed country on your website"/>
+                        </div>
+                         <div class="row mt8">
+                            <label class="col-lg-3" string="Not Allowed States" for="not_allowed_state_ids"/>
+                            <field name="not_allowed_state_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}" title="Not allowed state on your website"/>
+                        </div>
+                        <div class="row mt8">
+                            <label class="col-lg-3" string="Warning Message" for="custom_msg"/>
+                            <field name="custom_msg" />
+                        </div>
+                       
+                    </div>
+                </setting>
+                
+            </block>
+        </field>
+    </record>
+</odoo>
