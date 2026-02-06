@@ -33,18 +33,14 @@ class PaymentTransaction(models.Model):
 
     def _extract_amount_data(self, payment_data):
         """Override of payment to extract the amount and currency from the payment data."""
-        if self.provider_code != "paypal" or not self.fees:
+        if self.provider_code != 'paypal' or not self.fees:
             return super()._extract_amount_data(payment_data)
 
-        if self.operation == "refund":
-            payment_data = payment_data["refund"]
-        else:  # 'online_direct', 'online_token', 'offline'
-            payment_data = payment_data["payment_intent"]
-        amount = payment_utils.to_major_currency_units(
-            payment_data.get("amount", 0), self.currency_id
-        )
-        currency_code = payment_data.get("currency", "").upper()
+        amount_data = payment_data.get('amount', {})
+        amount = float(amount_data.get("value", 0.0))
+        currency_code = amount_data.get('currency_code')
+
         return {
             "amount": amount - self.fees,
-            "currency_code": currency_code,
+            'currency_code': currency_code,
         }
