@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="website_visitor_view_form_inherit_ip" model="ir.ui.view">
+        <field name="name">website.visitor.form.ip</field>
+        <field name="model">website.visitor</field>
+        <field name="inherit_id" ref="website.website_visitor_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@id='general_info']/group[1]" position="inside">
+                <field name="user_ip" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
