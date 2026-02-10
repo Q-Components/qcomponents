@@ -28,7 +28,8 @@ and displays customizable warning messages for users in restricted areas, enhanc
     # Data files for views and templates
     'data': [
         'views/res_config_settings_views.xml',
-        'views/templates/website_layout.xml'
+        'views/templates/website_layout.xml',
+        'views/website_visitor_views.xml'
     ],
 
     # Frontend assets (JavaScript, CSS)
