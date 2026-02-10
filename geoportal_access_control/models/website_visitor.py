@@ -1,10 +1,14 @@
 from odoo import models, fields
 from odoo.http import request
+from werkzeug.exceptions import Forbidden
+from odoo.addons.base.models.ir_http import IrHttp
+import logging
+_logger = logging.getLogger(__name__)
 
 class WebsiteVisitor(models.Model):
     _inherit = "website.visitor"
 
-    user_ip = fields.Char("Visitor IP", readonly=True, index=True)
+    user_ip = fields.Char("Visitor IP", index=True)
 
     def _upsert_visitor(self, access_token, force_track_values=None):
         ip = None
