@@ -35,11 +35,11 @@ and displays customizable warning messages for users in restricted areas, enhanc
     ],
 
     # Frontend assets (JavaScript, CSS)
-    # 'assets': {
-    #     'web.assets_frontend': [
-    #         'geoportal_access_control/static/src/js/location_checker.js',
-    #     ],
-    # },
+    'assets': {
+        'web.assets_frontend': [
+            'geoportal_access_control/static/src/js/location_checker.js',
+        ],
+    },
     'images': ['static/description/location_restriction.gif'],
     'installable': True,
     'application': True,
