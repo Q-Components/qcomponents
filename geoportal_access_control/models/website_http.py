@@ -48,15 +48,11 @@ class Http(models.AbstractModel):
         if country_code:
             not_allowed_country_ids = request.env['ir.config_parameter'].sudo().get_param('geoportal_access_control.not_allowed_country_ids','[]')
 
-            _logger.warning("Blocked countries param raw: %s",not_allowed_country_ids)
-
             blocked_ids = json.loads(not_allowed_country_ids or "[]")
 
             if blocked_ids:
                 blocked_countries = request.env['res.country'].sudo().browse(blocked_ids)
                 blocked_codes = blocked_countries.mapped('code')
-
-                _logger.warning("Blocked ISO codes: %s", blocked_codes)
 
                 if country_code in blocked_codes:
                     _logger.warning("Blocked country access: %s (%s)", country_name, country_code)
