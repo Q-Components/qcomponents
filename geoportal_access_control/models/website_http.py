@@ -17,6 +17,9 @@ class Http(models.AbstractModel):
 
         path = request.httprequest.path or ""
 
+        if path.startswith("/get_user_location"):
+            return super()._dispatch(endpoint)
+
         if path.startswith(("/web", "/longpolling", "/websocket", "/static")):
             return super()._dispatch(endpoint)
 
