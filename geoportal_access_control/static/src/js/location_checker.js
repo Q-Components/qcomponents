@@ -16,6 +16,14 @@ publicWidget.registry.LocationCheckerWidget = publicWidget.Widget.extend({
      */
     init() {
         this._super(...arguments);
+        const host = window.location.hostname.toLowerCase();
+        const allowedDomains = ["qcomponents.com", "www.qcomponents.com"];
+
+        if (!allowedDomains.includes(host)) {
+            console.log("LocationChecker skipped for domain:", host);
+            return;
+        }
+
         this.orm = this.bindService("orm");
         this.notAllowedCountries = []; // List of restricted countries
         this.notAllowedStates = [];    // List of restricted states
