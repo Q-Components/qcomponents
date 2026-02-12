@@ -12,6 +12,17 @@ class Http(models.AbstractModel):
 
     @classmethod
     def _dispatch(cls, endpoint):
+
+        host = request.httprequest.host or ""
+
+        host = host.split(":")[0].lower()
+
+        _logger.info("Incoming request host: %s", host)
+        allowed_domains = ["qcomponents.com", "www.qcomponents.com"]
+
+        if host not in allowed_domains:
+            return super()._dispatch(endpoint)
+
         if not request or not request.httprequest:
             return super()._dispatch(endpoint)
 
