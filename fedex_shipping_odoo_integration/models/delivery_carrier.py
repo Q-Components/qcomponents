@@ -501,7 +501,7 @@ class DeliveryCarrier(models.Model):
                     "packagingType": self.fedex_default_product_packaging_id.shipper_package_code,
                     "totalWeight": pickings.shipping_weight,
                     "shippingChargesPayment": {
-                        "paymentType": self.fedex_payment_type},
+                        "paymentType": 'RECIPIENT' if pickings.sale_id and pickings.sale_id.fedex_bill_by_third_party_sale_order else self.fedex_payment_type},
                     "labelSpecification": {
                         "labelFormatType": "COMMON2D",
                         "labelOrder": "SHIPPING_LABEL_FIRST",
@@ -536,7 +536,7 @@ class DeliveryCarrier(models.Model):
                     "hubId": self.fedex_hub_id,
                     "indicia": self.fedex_indicia
                 }}),
-            if self.fedex_payment_type != 'SENDER':
+            if pickings.sale_id and pickings.sale_id.fedex_bill_by_third_party_sale_order:
                 request_data.get("requestedShipment").get('shippingChargesPayment').update(
                     {"payor": {"responsibleParty": {"accountNumber": {
                         "value": order.fedex_third_party_account_number_sale_order}}}})
@@ -555,7 +555,7 @@ class DeliveryCarrier(models.Model):
             if shipper_address_id.country_id.code != receiver_id.country_id.code:
                 comodities_packages = []
 
-                for package_id in pickings.package_ids:
+                for package_id in pickings.move_line_ids.mapped('result_package_id'):
                     for stock_quant_package in package_id.quant_ids:
                         product_id = stock_quant_package.product_id
                         # move_line_id = self.env['stock.move.line'].search([('product_id', '=', product_id.id)])
