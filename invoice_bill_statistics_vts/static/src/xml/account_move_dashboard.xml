@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Dashboard Banner Template -->
+    <t t-name="account_move.AccountMoveDashboardBanner">
+        <div class="o_account_move_dashboard_banner p-3 bg-light border-bottom">
+            <div class="row g-3">
+                <!-- Today -->
+                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-start border-2 border-primary rounded-3 h-100 cursor-pointer"
+                    t-on-click="() => this.openAction('action_today_amount')">
+                        <div class="card-body text-center p-3">
+                            <div class="mb-2"><i class="fa fa-calendar fa-lg text-primary"/></div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">Today Amount</div>
+                            <div class="fs-5 fw-bold text-primary">
+                                <t t-esc="state.currency_symbol"/>
+                                <t t-esc="state.today_amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Weekly -->
+                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-start border-2 border-success rounded-3 h-100 cursor-pointer"
+                        t-on-click="() => this.openAction('action_weekly_amount')">
+                        <div class="card-body text-center p-3">
+                            <div class="mb-2"><i class="fa fa-bar-chart fa-lg text-success"/></div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">Weekly Amount</div>
+                            <div class="fs-5 fw-bold text-success">
+                                <t t-esc="state.currency_symbol"/>
+                                <t t-esc="state.weekly_amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Monthly -->
+                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-start border-2 border-info rounded-3 h-100 cursor-pointer"
+                        t-on-click="() => this.openAction('action_monthly_amount')">
+                        <div class="card-body text-center p-3">
+                            <div class="mb-2"><i class="fa fa-line-chart fa-lg text-info"/></div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">Monthly Amount</div>
+                            <div class="fs-5 fw-bold text-info">
+                                <t t-esc="state.currency_symbol"/>
+                                <t t-esc="state.monthly_amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Partially Paid -->
+                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-start border-2 border-danger rounded-3 h-100 cursor-pointer"
+                    t-on-click="() => this.openAction('action_partial_paid')">
+                        <div class="card-body text-center p-3">
+                            <div class="mb-2"><i class="fa fa-clock-o fa-lg text-danger"/></div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">Partially Paid</div>
+                            <div class="fs-5 fw-bold text-danger">
+                                <t t-esc="state.partial_paid"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Unpaid -->
+                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-start border-2 border-warning rounded-3 h-100 cursor-pointer"
+                          t-on-click="() => this.openAction('action_unpaid')">
+                        <div class="card-body text-center p-3">
+                            <div class="mb-2"><i class="fa fa-money fa-lg text-warning"/></div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">Unpaid</div>
+                            <div class="fs-5 fw-bold text-warning">
+                                <t t-esc="state.unpaid"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Overdue -->
+                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-start border-2 border-danger rounded-3 h-100 cursor-pointer"
+                        t-on-click="() => this.openAction('action_overdue')">
+                        <div class="card-body text-center p-3">
+                            <div class="mb-2">
+                                <i class="fa fa-exclamation-triangle fa-lg text-danger"/>
+                            </div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">Overdue</div>
+                            <div class="fs-5 fw-bold text-danger">
+                                <t t-esc="state.overdue"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="account_move.AccountMoveListRenderer"
+       t-inherit="web.ListRenderer"
+       t-inherit-mode="primary">
+        <xpath expr="//div[hasclass('o_list_renderer')]" position="attributes">
+        <attribute name="style">height: auto;</attribute>
+    </xpath>
+        <xpath expr="//div[hasclass('o_list_renderer')]" position="before">
+            <AccountMoveDashboardBanner/>
+        </xpath>
+    </t>
+
+</templates>

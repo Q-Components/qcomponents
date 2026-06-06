@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="res_partner_form_inherit_shipping_discount" model="ir.ui.view">
+        <field name="name">res.partner.from.inherit.shipping.discount</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='property_delivery_carrier_id']" position="after">
+                <field name="shipping_rate_discount" widget="percentage" class="w-25"/>
+                <field name="sale_order_discount" widget="percentage" class="w-25"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

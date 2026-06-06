@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="choose_delivery_carrier_form_inherit_advance_fee" model="ir.ui.view">
+       <field name="name">choose.delivery.carrier.form.inherit.advanced.fee</field>
+        <field name="model">choose.delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.choose_delivery_carrier_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='carrier_id']" position="after">
+                <field name="delivery_method_margin" widget="percentage"/>
+                <field name="insurance_fee"/>
+                 <field name="fuel_surcharge"/>
+                 <field name="remote_area_surcharge"/>
+                <field name="partner_discount" widget="percentage" class="w-25"/>
+            </xpath>
+            <xpath expr="//form/group" position="inside">
+                <group>
+                    <div class="alert alert-info">
+                        <strong>Cost Calculation</strong><br/>
+                        Cost = Carrier Rate + Carrier Margin + Remote Area Surcharge
+                        <br/>
+                        + Fuel Surcharge + Insurance Fee - Partner Shipping Discount
+                    </div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

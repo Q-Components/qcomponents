@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_website_form_inherit_product_search" model="ir.ui.view">
+        <field name="name">website.form.inherit.product.search</field>
+        <field name="model">website</field>
+        <field name="inherit_id" ref="website.view_website_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Product Search" name="product_search_tab">
+                    <group string="Dynamic Search Configuration">
+                        <field name="product_search_field_ids"
+                               widget="many2many_tags"
+                               domain="[('model','in',['product.template','product.product']),('store','=',True),('ttype', 'in', ['char', 'text', 'html'])]"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

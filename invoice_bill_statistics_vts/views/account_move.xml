@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+        <record id="customer_invoice_search_filter_date" model="ir.ui.view">
+        <field name="name">customer.invoice.search.filter.date</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//filter[@name='not_sent']" position="after">
+                <separator/>
+                    <filter string="Today" name="today"
+                            domain="[('invoice_date', '&gt;=', context_today()),('move_type','in',['out_invoice','in_invoice']),
+                                    ('invoice_date', '&lt;', context_today() + relativedelta(days=1))]"/>
+
+                    <filter string="This Week (Mon-Sun)" name="this_week"
+                        domain="[
+                            ('invoice_date', '&gt;=', (context_today() + relativedelta(weekday=0, days=-6)).strftime('%Y-%m-%d')),
+                            ('invoice_date', '&lt;=', (context_today() + relativedelta(weekday=6)).strftime('%Y-%m-%d')),
+                            ('move_type','in',['out_invoice','in_invoice'])
+                        ]"/>
+                    <filter string="This Month" name="this_month"
+                                domain="[('invoice_date', '&gt;=', context_today().strftime('%Y-%m-01')),
+                            ('invoice_date', '&lt;', (context_today() + datetime.timedelta(days=31)).strftime('%Y-%m-01')),
+                            ('move_type','in',['out_invoice','in_invoice'])]" />
+
+                    <filter string="This Quarter" name="current_quarter"
+                            domain="[('invoice_date', '&gt;=', (context_today() + relativedelta(months=-((context_today().month - 1) % 3), day=1)).strftime('%Y-%m-%d')),
+                            ('invoice_date', '&lt;', (context_today() + relativedelta(months=3 - ((context_today().month - 1) % 3), day=1)).strftime('%Y-%m-%d')),
+                            ('move_type','in',['out_invoice','in_invoice'])]"/>
+                <separator/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="invoice_list_dashboard" model="ir.ui.view">
+        <field name="name">invoice.list.dashboard</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_out_invoice_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="js_class">account_move_dashboard_list</attribute>
+            </xpath>
+        </field>
+    </record>
+
+     <record id="bill_list_dashboard" model="ir.ui.view">
+        <field name="name">bill.list.dashboard</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_in_invoice_bill_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="js_class">account_move_dashboard_list</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

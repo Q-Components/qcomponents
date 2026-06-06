@@ -1,0 +1,92 @@
+Dynamic Website Product Search | Dynamic Product Search for Website
+
+
+Overview:
+==========
+Dynamic Website Product Search enhances the default Odoo website shop search by allowing administrators to configure searchable product fields directly from the backend.
+Instead of limiting product search to standard fields only, this module gives full flexibility to choose additional fields such as product name, internal reference, barcode, descriptions, and custom text fields. Customers can then search products on the website using values stored in those selected fields.
+This module is ideal for businesses with large product catalogs that need faster and smarter product discovery.
+
+
+Features:
+==========
+Dynamic Search Field Configuration:
+Select searchable product fields directly from Website without coding.
+
+Supports Product Template & Variants:
+Supports search using fields from both Product Template and Product Variants.
+
+Website Shop Search Integration:
+Works with the default Odoo website shop search.
+
+Autocomplete Search Support:
+Enhances website autocomplete search suggestions.
+
+Custom Field Search:
+Supports custom created text fields.
+
+Multi Website Compatible:
+Configure separate search fields for each website.
+
+
+Process:
+=========
+Navigate to Website → Configuration → Websites and open your desired website record.
+
+
+1.png
+
+Go to the Product Search tab. Inside the Dynamic Search Configuration section, you will find the Product Search Fields option. This allows you to dynamically select specific product fields that should be used for website search functionality.
+
+2.png
+
+
+Inside the Product Search Fields, you will find both product and variant fields available for selection. You can select multiple fields to be used for website search, such as Internal Reference, Barcode, Description, or any custom fields, enabling a dynamic and flexible product search experience.
+
+3.png
+
+Product contains values in the fields selected in the website configuration, those values will be used in the website search results and will help users find the product on the website.
+
+4.png
+
+
+Go to Website → Shop, click on the search panel, and enter the product search value. The website will automatically suggest products based on the values of the configured search fields.
+
+5.png
+
+We have also enabled product variant support, allowing barcode values from product variants to be used for website search. This helps users find the correct product directly using the variant barcode.
+
+6.png
+
+Inside the website, click on the search icon to open the search popup. Then enter a value in the search field. The global search will work based on the website configuration and will show autocomplete suggestions for products. This helps users easily find products using dynamic product search fields.
+
+7.png
+
+
+FAQs:
+=====
+Q1. Does this replace default Odoo search?
+No. It extends the existing Odoo website product search.
+
+Q2. Can I search by barcode?
+Yes. If barcode field is selected in Product Search settings.
+
+Q3. Can I search custom fields?
+Yes. Supports custom stored text, char, and html fields.
+
+Q4. Does it support product variants?
+Yes. Variant fields from product.product are supported.
+
+Q5. Is coding required?
+No. Admin can configure fields directly from backend.
+
+Q6. Does it support multiple websites?
+Yes. Each website can have its own search configuration.
+
+Q7. Will it affect existing products?
+No. It only improves search functionality.
+
+Q8. Is autocomplete supported?
+Yes. Website autocomplete search also uses configured fields.
+
+PLUS COMMON

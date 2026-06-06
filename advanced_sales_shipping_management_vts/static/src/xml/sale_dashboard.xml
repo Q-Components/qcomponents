@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Dashboard Banner Template -->
+    <t t-name="advance_sales.SaleDashboardBanner">
+        <div class="o_sale_dashboard_banner p-3 bg-light border-bottom">
+            <div class="row g-3">
+                <!-- Today Sales -->
+                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-start border-2 border-primary rounded-3 h-100 cursor-pointer"
+                        t-on-click="() => this.openAction('action_today_sales')">
+                        <div class="card-body text-center p-3">
+                            <div class="mb-2"><i class="fa fa-calendar fa-lg text-primary"/></div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">Today Sales</div>
+                            <div class="fs-5 fw-bold text-primary">
+                                <t t-esc="state.currency_symbol"/>
+                                <t t-esc="state.today_sales.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Weekly Sales -->
+                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-start border-2 border-success rounded-3 h-100 cursor-pointer"
+                        t-on-click="() => this.openAction('action_weekly_sales')">
+                        <div class="card-body text-center p-3">
+                            <div class="mb-2"><i class="fa fa-bar-chart fa-lg text-success"/></div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">Weekly Sales</div>
+                            <div class="fs-5 fw-bold text-success">
+                                <t t-esc="state.currency_symbol"/>
+                                <t t-esc="state.weekly_sales.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Monthly Sales -->
+                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-start border-2 border-info rounded-3 h-100 cursor-pointer"
+                        t-on-click="() => this.openAction('action_monthly_sales')">
+                        <div class="card-body text-center p-3">
+                            <div class="mb-2"><i class="fa fa-line-chart fa-lg text-info"/></div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">Monthly Sales</div>
+                            <div class="fs-5 fw-bold text-info">
+                                <t t-esc="state.currency_symbol"/>
+                                <t t-esc="state.monthly_sales.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pending Orders -->
+                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-start border-2 border-danger rounded-3 h-100 cursor-pointer"
+                        t-on-click="() => this.openAction('action_pending_orders')">
+                        <div class="card-body text-center p-3">
+                            <div class="mb-2"><i class="fa fa-clock-o fa-lg text-danger"/></div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">Pending Orders</div>
+                            <div class="fs-5 fw-bold text-danger">
+                                <t t-esc="state.pending_orders"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Partial Delivered -->
+                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-start border-2 border-warning rounded-3 h-100 cursor-pointer"
+                        t-on-click="() => this.openAction('action_pending_deliveries')">
+                        <div class="card-body text-center p-3">
+                            <div class="mb-2"><i class="fa fa-truck fa-lg text-warning"/></div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">Pending Deliveries</div>
+                            <div class="fs-5 fw-bold text-warning">
+                                <t t-esc="state.pending_deliveries"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Overdue Quotations -->
+                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-start border-2 border-danger rounded-3 h-100 cursor-pointer"
+                        t-on-click="() => this.openAction('action_overdue_quotations')">
+                        <div class="card-body text-center p-3">
+                            <div class="mb-2">
+                                <i class="fa fa-exclamation-triangle fa-lg text-danger"/>
+                            </div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">Overdue Quotations</div>
+                            <div class="fs-5 fw-bold text-danger">
+                                <t t-esc="state.overdue_quotations"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="advance_sales.SaleListRenderer"
+       t-inherit="web.ListRenderer"
+       t-inherit-mode="primary">
+        <xpath expr="//div[hasclass('o_list_renderer')]" position="attributes">
+        <attribute name="style">height: auto;</attribute>
+    </xpath>
+        <xpath expr="//div[hasclass('o_list_renderer')]" position="before">
+            <SaleDashboardBanner/>
+        </xpath>
+    </t>
+
+</templates>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="sale_order_search_filter_date" model="ir.ui.view">
+        <field name="name">sale.order.search.filter.date</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//filter[@name='my_sale_orders_filter']" position="after">
+                <separator/>
+                <filter
+                    string="Unshipped Sale Order Products"
+                    name="filter_unshipped"
+                    domain="[('has_unshipped_products', '=', True)]"/>
+                <separator/>
+                    <filter string="Today" name="today"
+                            domain="[('date_order', '&gt;=', context_today()),
+                                    ('date_order', '&lt;', context_today() + relativedelta(days=1))]"/>
+
+                    <filter string="This Week (Mon-Sun)" name="this_week"
+                        domain="[
+                            ('date_order', '&gt;=', (context_today() + relativedelta(weekday=0, days=-6)).strftime('%Y-%m-%d')),
+                            ('date_order', '&lt;=', (context_today() + relativedelta(weekday=6)).strftime('%Y-%m-%d'))
+                        ]"/>
+                    <filter string="This Month" name="this_month"
+                                domain="[('date_order', '&gt;=', context_today().strftime('%Y-%m-01')),
+                            ('date_order', '&lt;', (context_today() + datetime.timedelta(days=31)).strftime('%Y-%m-01'))]" />
+
+                    <filter string="This Quarter" name="current_quarter"
+                            domain="[('date_order', '&gt;=', (context_today() + relativedelta(months=-((context_today().month - 1) % 3), day=1)).strftime('%Y-%m-%d')),
+                            ('date_order', '&lt;', (context_today() + relativedelta(months=3 - ((context_today().month - 1) % 3), day=1)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="sale_order_form_inherit_payment_button" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.payment.button</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_create_payment" type="object" string="Register Payment" invisible="state !=  'sale' or total_order_amount == 0.0"/>
+            </xpath>
+            <field name="partner_id" position="after">
+                <field name="total_order_amount" invisible="1"/>
+            </field>
+
+        </field>
+    </record>
+
+    <odoo>
+    <record id="sale_order_list_dashboard" model="ir.ui.view">
+        <field name="name">sale.order.list.dashboard</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="js_class">sale_dashboard_list</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+
+
+</odoo>
