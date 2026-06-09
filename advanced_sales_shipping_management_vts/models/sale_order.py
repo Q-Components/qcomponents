@@ -92,23 +92,41 @@ class SaleOrder(models.Model):
         }
 
     def _get_pending_delivered(self):
-        days = int(self.env['ir.config_parameter'].sudo().get_param(
-            'advanced_sales_shipping_management_vts.pending_delivery_days'
-        ))
+        days = int(
+            self.env['ir.config_parameter'].sudo().get_param(
+                'advanced_sales_shipping_management_vts.pending_delivery_days',
+                default=90,
+            )
+        )
+
         from_date = date.today() - relativedelta(days=days)
 
-        backorder_pickings = self.env['stock.picking'].search([
-            ('sale_id', '!=', False),
-            ('backorder_id', '!=', False),
-            ('state', '!=', 'cancel'),
+        lines = self.env['sale.order.line'].search([
+            ('order_id.state', 'in', ['sale', 'done']),
+            ('order_id.date_order', '>=', from_date),
+            ('is_delivery', '=', False),
+            ('display_type', '=', False),
+            ('product_id.type', '=', 'consu'),
         ])
-        sale_ids_with_backorder = backorder_pickings.mapped('sale_id').ids
 
-        return self.search_count([
-            ('date_order', '>=', from_date),
-            ('id', 'in', sale_ids_with_backorder),
-            ('id', 'in', self._search_unshipped('=', True)[0][2]),
-        ])
+        pending_order_ids = set(
+            lines.filtered(
+                lambda l: l.product_uom_qty > l.qty_delivered
+            ).mapped('order_id').ids
+        )
+
+        if not pending_order_ids:
+            return 0
+
+        backorder_sale_ids = set(
+            self.env['stock.picking'].search([
+                ('sale_id', 'in', list(pending_order_ids)),
+                ('backorder_id', '!=', False),
+                ('state', '!=', 'cancel'),
+            ]).mapped('sale_id').ids
+        )
+
+        return len(backorder_sale_ids)
 
     def _get_overdue_sale_orders(self):
         days = int(
@@ -208,23 +226,35 @@ class SaleOrder(models.Model):
         }
 
     def action_pending_deliveries(self):
-        days = int(self.env['ir.config_parameter'].sudo().get_param(
-            'advanced_sales_shipping_management_vts.pending_delivery_days'
-        ))
+        days = int(
+            self.env['ir.config_parameter'].sudo().get_param(
+                'advanced_sales_shipping_management_vts.pending_delivery_days',
+                default=90,
+            )
+        )
+
         from_date = date.today() - relativedelta(days=days)
 
-        backorder_pickings = self.env['stock.picking'].search([
-            ('sale_id', '!=', False),
-            ('backorder_id', '!=', False),
-            ('state', '!=', 'cancel'),
+        lines = self.env['sale.order.line'].search([
+            ('order_id.state', 'in', ['sale', 'done']),
+            ('order_id.date_order', '>=', from_date),
+            ('is_delivery', '=', False),
+            ('display_type', '=', False),
+            ('product_id.type', '=', 'consu'),
         ])
-        sale_ids_with_backorder = backorder_pickings.mapped('sale_id').ids
 
-        domain = [
-            ('date_order', '>=', from_date),
-            ('id', 'in', sale_ids_with_backorder),
-            ('id', 'in', self._search_unshipped('=', True)[0][2]),
-        ]
+        pending_order_ids = set(
+            lines.filtered(
+                lambda l: l.product_uom_qty > l.qty_delivered
+            ).mapped('order_id').ids
+        )
+
+        if pending_order_ids:
+            pending_order_ids = self.env['stock.picking'].search([
+                ('sale_id', 'in', list(pending_order_ids)),
+                ('backorder_id', '!=', False),
+                ('state', '!=', 'cancel'),
+            ]).mapped('sale_id').ids
 
         return {
             'type': 'ir.actions.act_window',
@@ -232,7 +262,7 @@ class SaleOrder(models.Model):
             'res_model': 'sale.order',
             'view_mode': 'list,form',
             'views': [[False, 'list'], [False, 'form']],
-            'domain': domain,
+            'domain': [('id', 'in', pending_order_ids)],
         }
 
     def action_overdue_sale_orders(self):
