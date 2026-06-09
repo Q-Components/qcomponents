@@ -14,7 +14,7 @@
     "license": "OPL-1",
 
     # Dependencies
-    "depends": ["sale_management","delivery",],
+    "depends": ["sale_management","stock_delivery",],
 
     # Views
     "data": [

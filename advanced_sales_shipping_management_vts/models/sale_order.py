@@ -23,10 +23,6 @@ class SaleOrder(models.Model):
         ])
         unshipped_ids = []
         for order in orders:
-            has_backorder = any(picking.backorder_id for picking in order.picking_ids)
-
-            if not has_backorder:
-                continue
             product_lines = order.order_line.filtered(
                 lambda line: not line.is_delivery
                              and not line.display_type
@@ -101,7 +97,10 @@ class SaleOrder(models.Model):
         from_date = date.today() - relativedelta(days=days)
         domain = self._search_unshipped('=', True)
         domain.append(('date_order', '>=', from_date))
-        return self.search_count(domain)
+        orders = self.search(domain).filtered(
+            lambda so: any(picking.backorder_id for picking in so.picking_ids)
+        )
+        return len(orders)
 
     def _get_overdue_sale_orders(self):
         days = int(
@@ -114,6 +113,7 @@ class SaleOrder(models.Model):
         overdue_invoices = self.env['account.move'].search([
             ('move_type', '=', 'out_invoice'),
             ('state', '=', 'posted'),
+            ('payment_state', 'in', ['not_paid', 'partial']),
             ('invoice_date_due', '<', date.today()),
             ('invoice_date', '>=', from_date),
         ])
@@ -204,13 +204,16 @@ class SaleOrder(models.Model):
         from_date = date.today() - relativedelta(days=days)
         domain = self._search_unshipped('=', True)
         domain.append(('date_order', '>=', from_date))
+        order_ids = self.search(domain).filtered(
+            lambda so: any(picking.backorder_id for picking in so.picking_ids)
+        ).ids
         return {
             'type': 'ir.actions.act_window',
             'name': 'Pending Deliveries',
             'res_model': 'sale.order',
             'view_mode': 'list,form',
             'views': [[False, 'list'], [False, 'form']],
-            'domain': domain
+            'domain': [('id', 'in', order_ids)],
         }
 
     def action_overdue_sale_orders(self):
@@ -224,6 +227,7 @@ class SaleOrder(models.Model):
         overdue_invoices = self.env['account.move'].search([
             ('move_type', '=', 'out_invoice'),
             ('state', '=', 'posted'),
+            ('payment_state', 'in', ['not_paid', 'partial']),
             ('invoice_date_due', '<', date.today()),
             ('invoice_date', '>=', from_date),
         ])
@@ -246,18 +250,17 @@ class SaleOrder(models.Model):
         today = date.today()
         month_start = today.replace(day=1)
 
-        customer_ids = self.search([
-            ('state', '=', 'sale'),
-            ('partner_id.create_date', '>=', f'{month_start} 00:00:00'),
-        ]).mapped('partner_id').ids
 
         return {
             'type': 'ir.actions.act_window',
-            'name': 'New Customers This Month',
-            'res_model': 'res.partner',
+            'name': 'New Customers This Month Sales Order',
+            'res_model': 'sale.order',
             'view_mode': 'list,form',
             'views': [[False, 'list'], [False, 'form']],
-            'domain': [('id', 'in', customer_ids)],
+             'domain': [
+            ('state', '=', 'sale'),
+            ('partner_id.create_date', '>=', month_start),
+        ],
         }
 
 
