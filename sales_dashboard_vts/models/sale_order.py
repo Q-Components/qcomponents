@@ -451,6 +451,7 @@ class SaleOrder(models.Model):
 
         previous_returns = 0
         previous_shipping_charges = 0
+        previous_avg_order_value = 0
         if date_from and date_to:
 
             current_from = fields.Date.to_date(
