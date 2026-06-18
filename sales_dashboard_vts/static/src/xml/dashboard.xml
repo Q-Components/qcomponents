@@ -1,0 +1,742 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+
+    <t t-name="sales_dashboard_vts.SalesDashboard">
+        <div class="container-fluid py-3 sales-dashboard-theme">
+            <div class="row g-2 mb-1">
+
+                <div class="d-flex justify-content-start">
+
+                    <div class="card border dashboard-date-card">
+                        <div class="card-body py-2 px-3">
+
+                            <div class="d-flex align-items-center gap-2">
+
+                                <i class="fa fa-calendar"/>
+
+                                <input type="date"
+                                       class="border-0 bg-transparent"
+                                       t-model="state.filters.date_from"/>
+
+                                <span>-</span>
+
+                                <input type="date"
+                                       class="border-0 bg-transparent"
+                                       t-model="state.filters.date_to"/>
+
+                                <button class="btn btn-primary"
+                                        t-on-click="loadDashboardData">
+                                    Apply
+                                </button>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <!-- KPI Cards Row -->
+            <div class="row g-2 mb-2">
+
+                <!-- Total Sales -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openRecords(
+                            'sale.order',
+                            'Sales Orders',
+                            [['state', 'in', ['sale', 'done']]]
+                         )">
+
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-success">
+                                <i class="fa fa-money text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Total Sales</div>
+
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.currency.symbol"/>
+                                    <t t-esc="state.dashboard_data.kpis.total_sales || 0"/>
+                                </h5>
+
+                                <small t-if="state.dashboard_data.kpis.total_sales_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.total_sales_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.total_sales_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Orders -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openRecords(
+                            'sale.order',
+                            'Sale Orders',
+                            [['state', 'in', ['sale', 'done']]]
+                         )">
+
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-primary">
+                                <i class="fa fa-shopping-bag text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Total Orders</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.kpis.total_sale_orders || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.total_sale_orders_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.total_sale_orders_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.total_sale_orders_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quotations -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openRecords(
+                            'sale.order',
+                            'Quotations',
+                            [['state', 'in', ['draft', 'sent']]]
+                         )">
+
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-purple">
+                                <i class="fa fa-file-text-o text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Quotations</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.kpis.total_quotations || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.total_quotations_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.total_quotations_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.total_quotations_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+               
+                <!-- Average Order Value -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card">
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-info">
+                                <i class="fa fa-shopping-cart text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Avg Order Value</div>
+
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.currency.symbol"/>
+                                    <t t-esc="state.dashboard_data.kpis.avg_order_value || 0"/>
+                                </h5>
+
+                                <small t-if="state.dashboard_data.kpis.avg_order_value_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.avg_order_value_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.avg_order_value_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cancelled Orders -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openRecords(
+                            'sale.order',
+                            'Cancelled Orders',
+                            [['state', '=', 'cancel']]
+                         )">
+
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-cancel">
+                                <i class="fa fa-times-circle text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Cancelled Orders</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.kpis.cancelled_orders || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.cancelled_orders_change >= 0"
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.cancelled_orders_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-success">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.cancelled_orders_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- Total Returns -->
+                <!-- Total Returns -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openReturnRecords()">
+
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-warning">
+                                <i class="fa fa-undo text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Total Returns</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.kpis.total_returns || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.total_returns_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.total_returns_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.total_returns_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-2 mb-2">
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openInvoiceRecords(
+                            state.dashboard_data.records.invoice_ids,
+                            'Customer Invoices'
+                         )">
+
+                        <div class="card-body d-flex align-items-center">
+                            <div class="sales-icon bg-secondary">
+                                <i class="fa fa-file-text text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Total Invoices</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.kpis.total_invoices || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.total_invoices_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.total_invoices_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.total_invoices_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card">
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-danger">
+                                <i class="fa fa-exclamation-circle text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Unpaid Amount</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.currency.symbol"/>
+                                    <t t-esc="state.dashboard_data.kpis.unpaid_amount || 0"/>
+                                </h5>
+
+                                <small t-if="state.dashboard_data.kpis.unpaid_amount_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.unpaid_amount_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.unpaid_amount_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openDeliveryRecords(
+                            state.dashboard_data.records.delivery_ids || [],
+                            'Pending Deliveries'
+                         )">
+
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-primary">
+                                <i class="fa fa-truck text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Delivery Pending</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.kpis.delivery_pending || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.delivery_pending_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.delivery_pending_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.delivery_pending_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card">
+
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-success">
+                                <i class="fa fa-line-chart text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Gross Profit</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.currency.symbol"/>
+                                    <t t-esc="state.dashboard_data.kpis.profit || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.profit_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.profit_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.profit_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card">
+
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-info">
+                                <i class="fa fa-percent text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Gross Margin</div>
+
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.kpis.gross_margin || 0"/>%
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.gross_margin_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.gross_margin_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.gross_margin_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+                <!-- Total Shipping Charges -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openShippingRecords()">
+
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-teal">
+                                <i class="fa fa-truck text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Total Shipping Charges</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.currency.symbol"/>
+                                    <t t-esc="state.dashboard_data.kpis.total_shipping_charges || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.total_shipping_charges_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.total_shipping_charges_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.total_shipping_charges_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-2 mb-2">
+               <div class="col-3">
+                   <div class="card dashboard-chart-card dashboard-chart-primary shadow-lg border-0 h-100">
+                       <div class="card-header bg-white">
+                           <h5 class="mb-0">
+                               Monthly Sales Trend
+                           </h5>
+                       </div>
+
+                       <div class="card-body">
+                           <div class="chart-scroll-wrapper">
+                               <canvas id="monthlySalesChart"
+                                       style="height:220px;"/>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card dashboard-chart-card dashboard-chart-success shadow-lg border-0 h-100">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                Top Products
+                            </h5>
+
+                            <div class="d-flex align-items-center gap-1"
+                                 t-if="topProductsTotalPages > 1">
+
+                                <button class="btn btn-sm btn-light p-1 px-2"
+                                        t-on-click="prevTopProductsPage"
+                                        t-att-disabled="state.topProductsPage === 0">
+                                    <i class="fa fa-chevron-left"/>
+                                </button>
+
+                                <span class="small text-muted">
+                                    <t t-esc="state.topProductsPage + 1"/> / <t t-esc="topProductsTotalPages"/>
+                                </span>
+
+                                <button class="btn btn-sm btn-light p-1 px-2"
+                                        t-on-click="nextTopProductsPage"
+                                        t-att-disabled="state.topProductsPage >= topProductsTotalPages - 1">
+                                    <i class="fa fa-chevron-right"/>
+                                </button>
+
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div style="height:220px;">
+                                <canvas id="topProductsChart"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card dashboard-chart-card dashboard-chart-purple shadow-lg border-0 h-100">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                Top Customers
+                            </h5>
+
+                            <div class="d-flex align-items-center gap-1"
+                                 t-if="topCustomersTotalPages > 1">
+
+                                <button class="btn btn-sm btn-light p-1 px-2"
+                                        t-on-click="prevTopCustomersPage"
+                                        t-att-disabled="state.topCustomersPage === 0">
+                                    <i class="fa fa-chevron-left"/>
+                                </button>
+
+                                <span class="small text-muted">
+                                    <t t-esc="state.topCustomersPage + 1"/> / <t t-esc="topCustomersTotalPages"/>
+                                </span>
+
+                                <button class="btn btn-sm btn-light p-1 px-2"
+                                        t-on-click="nextTopCustomersPage"
+                                        t-att-disabled="state.topCustomersPage >= topCustomersTotalPages - 1">
+                                    <i class="fa fa-chevron-right"/>
+                                </button>
+
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div style="height:220px;">
+                                <canvas id="topCustomersChart"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card dashboard-chart-card dashboard-chart-info shadow-lg border-0 h-100">
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                City Wise Quantity Sold
+                            </h5>
+
+                            <div class="d-flex align-items-center gap-1"
+                                 t-if="cityQuantityTotalPages > 1">
+
+                                <button class="btn btn-sm btn-light p-1 px-2"
+                                        t-on-click="prevCityQuantityPage"
+                                        t-att-disabled="state.cityQuantityPage === 0">
+                                    <i class="fa fa-chevron-left"/>
+                                </button>
+
+                                <span class="small text-muted">
+                                    <t t-esc="state.cityQuantityPage + 1"/> / <t t-esc="cityQuantityTotalPages"/>
+                                </span>
+
+                                <button class="btn btn-sm btn-light p-1 px-2"
+                                        t-on-click="nextCityQuantityPage"
+                                        t-att-disabled="state.cityQuantityPage >= cityQuantityTotalPages - 1">
+                                    <i class="fa fa-chevron-right"/>
+                                </button>
+
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div style="height:220px;">
+                                <canvas id="cityQuantityChart"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="row g-2 mb-2">
+                <div class="col-lg-3 col-md-6">
+                    <div class="card dashboard-chart-card dashboard-chart-warning shadow-lg border-0 h-100">
+                        <div class="card-header bg-white border-0">
+                            <h5 class="mb-0">Invoice Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div style="height:220px;">
+                                <canvas id="invoiceStatusChart"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <div class="card dashboard-chart-card dashboard-chart-danger shadow-lg border-0 h-100">
+
+                        <div class="card-header bg-white border-0">
+                            <h5 class="mb-0">
+                                Orders By Delivery Status
+                            </h5>
+                        </div>
+
+                        <div class="card-body">
+                            <div style="height:220px;">
+                                <canvas id="deliveryStatusChart"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="card dashboard-chart-card dashboard-chart-teal shadow-lg border-0 h-100">
+
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                Carrier-wise Shipping Cost
+                            </h5>
+
+                            <div class="d-flex align-items-center gap-1"
+                                 t-if="carrierShippingTotalPages > 1">
+
+                                <button class="btn btn-sm btn-light p-1 px-2"
+                                        t-on-click="prevCarrierShippingPage"
+                                        t-att-disabled="state.carrierShippingPage === 0">
+                                    <i class="fa fa-chevron-left"/>
+                                </button>
+
+                                <span class="small text-muted">
+                                    <t t-esc="state.carrierShippingPage + 1"/> / <t t-esc="carrierShippingTotalPages"/>
+                                </span>
+
+                                <button class="btn btn-sm btn-light p-1 px-2"
+                                        t-on-click="nextCarrierShippingPage"
+                                        t-att-disabled="state.carrierShippingPage >= carrierShippingTotalPages - 1">
+                                    <i class="fa fa-chevron-right"/>
+                                </button>
+
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div style="height:220px;">
+                                <canvas id="carrierShippingChart"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card shadow-lg border-0 h-100 alert-card">
+
+                        <div class="card-header border-0 alert-card-header">
+                            <h5 class="mb-0">
+                                Alerts &amp; Action Required
+                            </h5>
+                        </div>
+
+                        <div class="card-body p-3">
+
+                            <div class="alert-item">
+                                <div class="alert-left">
+                                    <div class="alert-icon warning">
+                                        <i class="fa fa-exclamation-triangle"/>
+                                    </div>
+                                    <span>Stock Shortage on Ordered Items</span>
+                                </div>
+
+                                <span class="alert-badge warning">
+                                    <t t-esc="state.dashboard_data.alerts.stock_shortage"/>
+                                </span>
+                            </div>
+
+                            <div class="alert-item">
+                                <div class="alert-left">
+                                    <div class="alert-icon danger">
+                                        <i class="fa fa-file-text-o"/>
+                                    </div>
+                                    <span>Invoice Overdue</span>
+                                </div>
+
+                                <span class="alert-badge danger">
+                                    <t t-esc="state.dashboard_data.alerts.invoice_overdue"/>
+                                </span>
+                            </div>
+
+                            <div class="alert-item">
+                                <div class="alert-left">
+                                    <div class="alert-icon primary">
+                                        <i class="fa fa-truck"/>
+                                    </div>
+                                    <span>Orders Pending Delivery &gt; 7 Days</span>
+                                </div>
+
+                                <span class="alert-badge primary">
+                                    <t t-esc="state.dashboard_data.alerts.pending_delivery_7"/>
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </t>
+</templates>
