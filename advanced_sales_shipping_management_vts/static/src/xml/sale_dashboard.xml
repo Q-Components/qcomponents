@@ -47,19 +47,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Pending Orders -->
-                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
-                    <div class="card shadow-sm border-start border-2 border-danger rounded-3 h-100 cursor-pointer"
-                        t-on-click="() => this.openAction('action_pending_orders')">
-                        <div class="card-body text-center p-3">
-                            <div class="mb-2"><i class="fa fa-clock-o fa-lg text-danger"/></div>
-                            <div class="text-muted fs-6 fw-semibold mb-1">Pending Orders</div>
-                            <div class="fs-5 fw-bold text-danger">
-                                <t t-esc="state.pending_orders"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <!-- Partial Delivered -->
                 <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
                     <div class="card shadow-sm border-start border-2 border-warning rounded-3 h-100 cursor-pointer"
@@ -76,14 +63,29 @@
                 <!-- Overdue Quotations -->
                 <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
                     <div class="card shadow-sm border-start border-2 border-danger rounded-3 h-100 cursor-pointer"
-                        t-on-click="() => this.openAction('action_overdue_quotations')">
+                        t-on-click="() => this.openAction('action_overdue_sale_orders')">
                         <div class="card-body text-center p-3">
                             <div class="mb-2">
                                 <i class="fa fa-exclamation-triangle fa-lg text-danger"/>
                             </div>
-                            <div class="text-muted fs-6 fw-semibold mb-1">Overdue Quotations</div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">Overdue Sale Orders</div>
                             <div class="fs-5 fw-bold text-danger">
-                                <t t-esc="state.overdue_quotations"/>
+                                <t t-esc="state.overdue_sale_orders"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-start border-2 border-success rounded-3 h-100 cursor-pointer"
+                        t-on-click="() => this.openAction('action_new_customers_this_month')">
+                        <div class="card-body text-center p-3">
+                            <div class="mb-2">
+                                <i class="fa fa-user-plus fa-lg text-success"/>
+                            </div>
+                            <div class="text-muted fs-6 fw-semibold mb-1">New Customers This Month</div>
+                            <div class="fs-5 fw-bold text-success">
+                                <t t-esc="state.new_customer_this_month"/>
                             </div>
                         </div>
                     </div>

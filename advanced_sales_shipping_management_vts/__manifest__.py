@@ -14,7 +14,7 @@
     "license": "OPL-1",
 
     # Dependencies
-    "depends": ["sale_management","delivery",],
+    "depends": ["sale_management","stock_delivery",],
 
     # Views
     "data": [
@@ -23,6 +23,7 @@
         "wizard/payment_wizard.xml",
         "views/res_partner_view.xml",
         "views/sale_order_view.xml",
+        "views/res_config_settings_view.xml",
     ],
     # assets
     'assets': {

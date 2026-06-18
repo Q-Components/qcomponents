@@ -42,56 +42,125 @@ class SaleOrder(models.Model):
         currency = self.env.company.currency_id
 
         # Today
-        today_orders = self.search([
-            ('state', '=', 'sale'),
-            ('date_order', '>=', f'{today} 00:00:00'),
-            ('date_order', '<=', f'{today} 23:59:59'),
-        ])
+        today_sales_result = self._read_group(
+            [
+                ('state', '=', 'sale'),
+                ('date_order', '>=', f'{today} 00:00:00'),
+                ('date_order', '<=', f'{today} 23:59:59'),
+            ],
+            aggregates=['amount_total:sum'],
+        )
+
+        today_sales = today_sales_result[0][0] if today_sales_result else 0.0
 
         # This Week
         week_start = today - relativedelta(days=today.weekday())
         week_end = week_start + relativedelta(days=6)
-        weekly_orders = self.search([
-            ('state', '=', 'sale'),
-            ('date_order', '>=', f'{week_start} 00:00:00'),
-            ('date_order', '<=', f'{week_end} 23:59:59'),
-        ])
+        weekly_sales_result = self._read_group(
+            [
+                ('state', '=', 'sale'),
+                ('date_order', '>=', f'{week_start} 00:00:00'),
+                ('date_order', '<=', f'{week_end} 23:59:59'),
+            ],
+            aggregates=['amount_total:sum'],
+        )
+
+        weekly_sales = weekly_sales_result[0][0] if weekly_sales_result else 0.0
 
         # This Month
         month_start = today.replace(day=1)
         month_end = (month_start + relativedelta(months=1)) - relativedelta(days=1)
-        monthly_orders = self.search([
-            ('state', '=', 'sale'),
-            ('date_order', '>=', f'{month_start} 00:00:00'),
-            ('date_order', '<=', f'{month_end} 23:59:59'),
-        ])
+        monthly_sales_result = self._read_group(
+            [
+                ('state', '=', 'sale'),
+                ('date_order', '>=', f'{month_start} 00:00:00'),
+                ('date_order', '<=', f'{month_end} 23:59:59'),
+            ],
+            aggregates=['amount_total:sum'],
+        )
 
-        # Pending Orders
-        pending_count = self.search_count([
-            ('state', 'in', ['draft', 'sent']),
-        ])
+        monthly_sales = monthly_sales_result[0][0] if monthly_sales_result else 0.0
 
         return {
-            'today_sales': sum(today_orders.mapped('amount_total')),
-            'weekly_sales': sum(weekly_orders.mapped('amount_total')),
-            'monthly_sales': sum(monthly_orders.mapped('amount_total')),
-            'pending_orders': pending_count,
+            'today_sales': today_sales or 0.0,
+            'weekly_sales': weekly_sales or 0.0,
+            'monthly_sales': monthly_sales or 0.0,
             'pending_deliveries': self._get_pending_delivered(),
-            'overdue_quotations': self._get_overdue_quotations(),
+            'overdue_sale_orders': self._get_overdue_sale_orders(),
+            "new_customer_this_month": self._get_new_customers_this_month(),
             'currency_symbol': currency.symbol or '$',
         }
 
     def _get_pending_delivered(self):
-        domain = self._search_unshipped('=', True)
-        return self.search_count(domain)
+        days = int(
+            self.env['ir.config_parameter'].sudo().get_param(
+                'advanced_sales_shipping_management_vts.pending_delivery_days',
+                default=90,
+            )
+        )
 
-    def _get_overdue_quotations(self):
-        return self.search_count([
-            ('state', 'in', ['draft', 'sent']),
-            ('validity_date', '<', date.today()),
-            ('validity_date', '!=', False),
+        from_date = date.today() - relativedelta(days=days)
+
+        lines = self.env['sale.order.line'].search([
+            ('order_id.state', 'in', ['sale', 'done']),
+            ('order_id.date_order', '>=', from_date),
+            ('is_delivery', '=', False),
+            ('display_type', '=', False),
+            ('product_id.type', '=', 'consu'),
         ])
 
+        pending_order_ids = set(
+            lines.filtered(
+                lambda l: l.product_uom_qty > l.qty_delivered
+            ).mapped('order_id').ids
+        )
+
+        if not pending_order_ids:
+            return 0
+
+        backorder_sale_ids = set(
+            self.env['stock.picking'].search([
+                ('sale_id', 'in', list(pending_order_ids)),
+                ('backorder_id', '!=', False),
+                ('state', '!=', 'cancel'),
+            ]).mapped('sale_id').ids
+        )
+
+        return len(backorder_sale_ids)
+
+    def _get_overdue_sale_orders(self):
+        days = int(
+            self.env["ir.config_parameter"].sudo().get_param(
+                "advanced_sales_shipping_management_vts.overdue_sale_days",)
+        )
+
+        from_date = date.today() - relativedelta(days=days)
+
+        overdue_invoices = self.env['account.move'].search([
+            ('move_type', '=', 'out_invoice'),
+            ('state', '=', 'posted'),
+            ('payment_state', 'in', ['not_paid', 'partial']),
+            ('invoice_date_due', '<', date.today()),
+            ('invoice_date', '>=', from_date),
+        ])
+
+        return self.search_count([
+            ('state', '=', 'sale'),
+            ('invoice_ids', 'in', overdue_invoices.ids),
+        ])
+
+
+    def _get_new_customers_this_month(self):
+        today = date.today()
+
+        month_start = today.replace(day=1)
+
+        customer_ids = self.search([
+            ('state', '=', 'sale'),
+            ('partner_id.create_date', '>=', month_start),
+        ]).mapped('partner_id').ids
+
+        return len(set(customer_ids))
 
     @api.onchange("order_line")
     def apply_partner_discount(self):
@@ -156,40 +225,91 @@ class SaleOrder(models.Model):
             ],
         }
 
-    def action_pending_orders(self):
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Pending Orders',
-            'res_model': 'sale.order',
-            'view_mode': 'list,form',
-            'views': [[False, 'list'], [False, 'form']],
-            'domain': [
-                ('state', 'in', ['draft', 'sent']),
-            ],
-        }
-
     def action_pending_deliveries(self):
+        days = int(
+            self.env['ir.config_parameter'].sudo().get_param(
+                'advanced_sales_shipping_management_vts.pending_delivery_days',
+                default=90,
+            )
+        )
+
+        from_date = date.today() - relativedelta(days=days)
+
+        lines = self.env['sale.order.line'].search([
+            ('order_id.state', 'in', ['sale', 'done']),
+            ('order_id.date_order', '>=', from_date),
+            ('is_delivery', '=', False),
+            ('display_type', '=', False),
+            ('product_id.type', '=', 'consu'),
+        ])
+
+        pending_order_ids = set(
+            lines.filtered(
+                lambda l: l.product_uom_qty > l.qty_delivered
+            ).mapped('order_id').ids
+        )
+
+        if pending_order_ids:
+            pending_order_ids = self.env['stock.picking'].search([
+                ('sale_id', 'in', list(pending_order_ids)),
+                ('backorder_id', '!=', False),
+                ('state', '!=', 'cancel'),
+            ]).mapped('sale_id').ids
+
         return {
             'type': 'ir.actions.act_window',
             'name': 'Pending Deliveries',
             'res_model': 'sale.order',
             'view_mode': 'list,form',
             'views': [[False, 'list'], [False, 'form']],
-            'domain': self._search_unshipped('=', True),
+            'domain': [('id', 'in', pending_order_ids)],
         }
 
-    def action_overdue_quotations(self):
+    def action_overdue_sale_orders(self):
+        days = int(
+            self.env["ir.config_parameter"].sudo().get_param(
+                "advanced_sales_shipping_management_vts.overdue_sale_days")
+        )
+
+        from_date = date.today() - relativedelta(days=days)
+
+        overdue_invoices = self.env['account.move'].search([
+            ('move_type', '=', 'out_invoice'),
+            ('state', '=', 'posted'),
+            ('payment_state', 'in', ['not_paid', 'partial']),
+            ('invoice_date_due', '<', date.today()),
+            ('invoice_date', '>=', from_date),
+        ])
+
+        overdue_order_ids = self.search([
+            ('state', '=', 'sale'),
+            ('invoice_ids', 'in', overdue_invoices.ids),
+        ]).ids
+
         return {
             'type': 'ir.actions.act_window',
-            'name': 'Overdue Quotations',
+            'name': 'Overdue Sale Orders',
             'res_model': 'sale.order',
             'view_mode': 'list,form',
             'views': [[False, 'list'], [False, 'form']],
-            'domain': [
-                ('state', 'in', ['draft', 'sent']),
-                ('validity_date', '<', date.today()),
-                ('validity_date', '!=', False),
-            ],
+            'domain': [('id', 'in', overdue_order_ids)],
+        }
+
+    def action_new_customers_this_month(self):
+        today = date.today()
+        month_start = today.replace(day=1)
+
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'New Customers This Month Sales Order',
+            'res_model': 'sale.order',
+            'view_mode': 'list,form',
+            'views': [[False, 'list'], [False, 'form']],
+             'domain': [
+            ('state', '=', 'sale'),
+            ('partner_id.create_date', '>=', month_start),
+        ],
         }
 
 

@@ -16,10 +16,10 @@ class SaleDashboardBanner extends Component {
             today_sales: 0,
             weekly_sales: 0,
             monthly_sales: 0,
-            pending_orders: 0,
             pending_deliveries: 0,
             currency_symbol: '$',
-            overdue_quotations: 0,
+            overdue_sale_orders: 0,
+            new_customer_this_month:0,
         });
         onWillStart(async () => {
             const result = await this.orm.call(
