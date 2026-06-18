@@ -37,7 +37,6 @@ class Http(models.AbstractModel):
         # ---------------- COUNTRY DETECTION ----------------
         country_code = None
         country_name = None
-
         try:
             if getattr(request, "geoip", None):
                 country_code = request.geoip.country_code
@@ -45,8 +44,6 @@ class Http(models.AbstractModel):
                 _logger.info("Visitor country detected: %s (%s)", country_name, country_code)
         except Exception as e:
             _logger.debug("GeoIP lookup failed: %s", e)
-
-        records = request.env['website.blocked.ip'].sudo().search([('active', '=', True)])
 
         # ---------------- COUNTRY BLOCK CHECK ----------------
         if country_code:
