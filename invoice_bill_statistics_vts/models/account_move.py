@@ -77,6 +77,7 @@ class AccountMove(models.Model):
             'res_model': 'account.move',
             'view_mode': 'list,form',
             'views': [[False, 'list'], [False, 'form']],
+            'context': {'default_move_type': move_type},
             'domain': [
                 ('move_type', '=', move_type),
                 ('state', '=', 'posted'),
@@ -97,6 +98,7 @@ class AccountMove(models.Model):
             'res_model': 'account.move',
             'view_mode': 'list,form',
             'views': [(False, 'list'), (False, 'form')],
+            'context': {'default_move_type': move_type},
             'domain': [
                 ('move_type', '=', move_type),
                 ('state', '=', 'posted'),
@@ -118,6 +120,7 @@ class AccountMove(models.Model):
             'res_model': 'account.move',
             'view_mode': 'list,form',
             'views': [(False, 'list'), (False, 'form')],
+            'context': {'default_move_type': move_type},
             'domain': [
                 ('move_type', '=', move_type),
                 ('state', '=', 'posted'),
@@ -135,6 +138,7 @@ class AccountMove(models.Model):
             'res_model': 'account.move',
             'view_mode': 'list,form',
             'views': [(False, 'list'), (False, 'form')],
+            'context': {'default_move_type': move_type},
             'domain': [
                 ('move_type', '=', move_type),
                 ('state', '=', 'posted'),
@@ -151,6 +155,7 @@ class AccountMove(models.Model):
             'res_model': 'account.move',
             'view_mode': 'list,form',
             'views': [(False, 'list'), (False, 'form')],
+            'context': {'default_move_type': move_type},
             'domain': [
                 ('move_type', '=', move_type),
                 ('state', '=', 'posted'),
@@ -167,6 +172,7 @@ class AccountMove(models.Model):
             'res_model': 'account.move',
             'view_mode': 'list,form',
             'views': [(False, 'list'), (False, 'form')],
+            'context': {'default_move_type': move_type},
             'domain': [
                 ('move_type', '=', move_type),
                 ('state', '=', 'posted'),
