@@ -24,7 +24,7 @@ class SaleDashboardBanner extends Component {
         onWillStart(async () => {
             const result = await this.orm.call(
                 "sale.order",
-                "get_dashboard_data",
+                "get_custom_dashboard_data",
                 []
             );
             Object.assign(this.state, result);

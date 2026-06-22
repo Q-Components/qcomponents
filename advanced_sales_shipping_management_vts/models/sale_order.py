@@ -37,7 +37,7 @@ class SaleOrder(models.Model):
 
 
     @api.model
-    def get_dashboard_data(self):
+    def get_custom_dashboard_data(self):
         today = date.today()
         currency = self.env.company.currency_id
 

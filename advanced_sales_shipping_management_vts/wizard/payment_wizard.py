@@ -10,8 +10,7 @@ class PaymentWizard(models.TransientModel):
                                 default=lambda self: self.env['account.journal'].search([('type', '=', 'bank')],
                                                                                         limit=1))
     payment_method_line_id = fields.Many2one(comodel_name='account.payment.method.line', string='Payment Method',
-                                             domain="[('id', 'in', available_payment_method_line_ids)]",
-                                             default=lambda self: self.env['account.payment.method.line'].search([],limit=1))
+                                             domain="[('id', 'in', available_payment_method_line_ids)]")
     available_payment_method_line_ids = fields.Many2many('account.payment.method.line',
                                                          compute='_compute_payment_method_line_fields',
                                                          help="for adding domain", store=True)
@@ -33,6 +32,10 @@ class PaymentWizard(models.TransientModel):
         res['amount'] = ord.total_order_amount if ord else 0
         res['currency_id'] = ord.pricelist_id.currency_id.id
         return res
+
+    @api.onchange('journal_id')
+    def _onchange_journal_id(self):
+        self.payment_method_line_id = self.available_payment_method_line_ids[:1]
 
     @api.depends('journal_id', 'currency_id')
     def _compute_payment_method_line_fields(self):
