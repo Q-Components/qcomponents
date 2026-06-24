@@ -587,6 +587,53 @@ class SaleOrder(models.Model):
             sale_orders,
             total_sales
         )
+        purchase_domain = [('date_approve', '>=', f"{date_from} 00:00:00"), ('date_approve', '<=', f"{date_to} 23:59:59"),('state','in',['purchase'])]
+        purchase_orders = self.env['purchase.order'].search(purchase_domain)
+
+        supplier_sales = {}
+
+        for po in purchase_orders:
+            supplier = po.partner_id.name or "Unknown Supplier"
+
+            supplier_sales[supplier] = (
+                supplier_sales.get(supplier, 0)
+                + po.amount_total
+            )
+
+        top_suppliers_chart = [
+            {
+                "supplier": supplier,
+                "amount": amount
+            }
+            for supplier, amount in sorted(
+                supplier_sales.items(),
+                key=lambda item: item[1],
+                reverse=True
+            )[:10]
+        ]
+
+
+        product_purchase = {}
+
+        for line in purchase_orders.mapped('order_line'):
+            product = line.product_id.name or "Unknown Product"
+
+            product_purchase[product] = (
+                product_purchase.get(product, 0.0)
+                + line.product_qty
+            )
+
+        top_products_purchase_chart = [
+            {
+                "product": product,
+                "qty": round(qty, 2),
+            }
+            for product, qty in sorted(
+                product_purchase.items(),
+                key=lambda item: item[1],
+                reverse=True
+            )[:10]
+        ]
 
         monthly_sales = self.read_group(
             [('state', 'in', ['sale'])],
@@ -852,5 +899,7 @@ class SaleOrder(models.Model):
                
                 "delivery_status": delivery_chart_data,
                 "carrier_shipping": carrier_shipping_chart,
+                "top_suppliers": top_suppliers_chart,
+                "top_purchased_products": top_products_purchase_chart,
             }
         }

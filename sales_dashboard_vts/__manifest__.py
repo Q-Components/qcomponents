@@ -40,7 +40,7 @@
     'description': """""",
 
     # Dependencies
-    'depends': ['sale_management','stock','stock_delivery'],
+    'depends': ['sale_management','stock','stock_delivery','purchase'],
 
     # Views
     'data': [

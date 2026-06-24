@@ -21,6 +21,9 @@ class SalesDashboard extends Component {
 
         this.carrierShippingPageSize = 5;
         this.carrierShippingChartInstance = null;
+        this.topSuppliersChartInstance = null;
+        
+
 
         const formatDate = (date) => {
             const year = date.getFullYear();
@@ -65,6 +68,8 @@ class SalesDashboard extends Component {
             this.renderCityQuantityChart();
             this.renderDeliveryStatusChart();
             this.renderCarrierShippingChart();
+            this.renderTopSuppliersChart(); 
+            this.renderTopPurchasedProductsChart();
             
         });
     }
@@ -255,6 +260,205 @@ class SalesDashboard extends Component {
     }
 
     // Graphs
+    renderTopSuppliersChart() {
+
+        const allData =
+            this.state.dashboard_data?.charts?.top_suppliers || [];
+
+        const canvas = document.getElementById("topSuppliersChart");
+
+        console.log("TOP SUPPLIERS DATA =>", allData);  
+
+        if (!canvas) {
+            console.warn("Canvas not found: topSuppliersChart");
+            return;
+        }
+
+        if (!allData.length) {
+            console.warn("No supplier data found");
+            return;
+        }
+
+        const labels = allData.map(item => item.supplier || "Unknown");
+        const values = allData.map(item => item.amount || 0);
+
+        // destroy old chart if exists
+        if (this.topSuppliersChartInstance) {
+            this.topSuppliersChartInstance.destroy();
+        }
+
+        this.topSuppliersChartInstance = new Chart(canvas, {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Top Suppliers",
+                    data: values,
+                    backgroundColor: "#22C55E",
+                    borderRadius: 6,
+                    maxBarThickness: 20,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                return Number(context.raw || 0).toLocaleString();
+                            }
+                        }
+                    }
+                },
+
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 30,
+                            minRotation: 0
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    renderTopPurchasedProductsChart() {
+
+        const allData =
+            this.state.dashboard_data.charts?.top_purchased_products || [];
+
+        const canvas =
+            document.getElementById("topPurchasedProductsChart");
+
+        if (!canvas || !allData.length) {
+            return;
+        }
+
+        if (this.topPurchasedProductsChartInstance) {
+            this.topPurchasedProductsChartInstance.destroy();
+        }
+
+        const labels = allData.map(item => item.product);
+        // const amounts = allData.map(item => item.amount);
+        const qty = allData.map(item => item.qty)
+
+        const formatAmount = (value) => {
+            if (value >= 1000000) {
+                return (value / 1000000).toFixed(1) + "M";
+            }
+            if (value >= 1000) {
+                return (value / 1000).toFixed(1) + "K";
+            }
+            return value.toLocaleString();
+        };
+
+        this.topPurchasedProductsChartInstance = new Chart(canvas, {
+            type: "bar",
+
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: qty,
+                    backgroundColor: "#14B8A6",
+                    borderRadius: 6,
+                    barThickness: 14,
+                }]
+            },
+
+            options: {
+                indexAxis: "y",
+
+                responsive: true,
+                maintainAspectRatio: false,
+
+                layout: {
+                    padding: {
+                        right: 60
+                    }
+                },
+
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return formatAmount(context.raw);
+                            }
+                        }
+                    }
+                },
+
+                scales: {
+                    x: {
+                        display: false,
+                        grid: {
+                            display: false
+                        },
+                        border: {
+                            display: false
+                        }
+                    },
+
+                    y: {
+                        grid: {
+                            display: false
+                        },
+
+                        border: {
+                            display: false
+                        },
+
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            },
+
+            plugins: [{
+                id: "valueLabels",
+
+                afterDatasetsDraw(chart) {
+
+                    const { ctx } = chart;
+
+                    ctx.save();
+
+                    chart.getDatasetMeta(0).data.forEach(
+                        (bar, index) => {
+
+                            ctx.fillStyle = "#374151";
+                            ctx.font = "12px Arial";
+
+                            ctx.fillText(
+                                formatAmount(qty[index]),
+                                bar.x + 10,
+                                bar.y + 4
+                            );
+                        }
+                    );
+
+                    ctx.restore();
+                }
+            }]
+        });
+    }
+
     renderMonthlySalesChart() {
 
         const chartData =

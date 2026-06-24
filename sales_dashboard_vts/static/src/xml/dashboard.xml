@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
 
     <t t-name="sales_dashboard_vts.SalesDashboard">
-        <div class="container-fluid py-3 sales-dashboard-theme">
+        <div class="container-fluid py-3 sales-dashboard-theme h-100 overflow-auto" style="min-height:0; max-height:100%;">
             <div class="row g-2 mb-1">
 
                 <div class="d-flex justify-content-start">
@@ -643,7 +643,7 @@
                     </div>
                 </div>
 
-                <div class="col-lg-3 col-md-6">
+                <!-- <div class="col-lg-3 col-md-6">
                     <div class="card dashboard-chart-card dashboard-chart-teal shadow-lg border-0 h-100">
 
                         <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
@@ -676,6 +676,21 @@
                         <div class="card-body">
                             <div style="height:220px;">
                                 <canvas id="carrierShippingChart"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div> -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="card dashboard-chart-card dashboard-chart-teal shadow-lg border-0 h-100">
+
+                        <div class="card-header bg-white border-0">
+                            <h5 class="mb-0">Top 10 Suppliers</h5>
+                        </div>
+
+                        <div class="card-body">
+                            <div style="height:220px;">
+                                <canvas id="topSuppliersChart"/>
                             </div>
                         </div>
 
@@ -735,6 +750,25 @@
 
                     </div>
                 </div>
+            </div>
+            <div class="row g-2 mb-2">
+               <div class="col-lg-6">
+                   <div class="card dashboard-chart-card dashboard-chart-success shadow-lg border-0 h-100">
+
+                       <div class="card-header bg-white border-0">
+                           <h5 class="mb-0">
+                               Top 10 Purchased Products
+                           </h5>
+                       </div>
+
+                       <div class="card-body">
+                           <div style="height:300px;">
+                               <canvas id="topPurchasedProductsChart"/>
+                           </div>
+                       </div>
+
+                   </div>
+               </div> 
             </div>
 
         </div>
