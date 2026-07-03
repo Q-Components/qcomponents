@@ -1,6 +1,7 @@
 from odoo import api, models, fields
-from datetime import timedelta
-
+from datetime import timedelta,date, datetime, time
+from dateutil.relativedelta import relativedelta
+import pytz
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
@@ -98,6 +99,60 @@ class SaleOrder(models.Model):
             "stock_shortage_order_ids": stock_shortage_orders.ids,
             "invoice_overdue_ids": overdue_invoices.ids,
             "pending_delivery_order_ids": pending_delivery_orders.ids,
+        }
+
+    @api.model
+    def get_custom_dashboard_data(self):
+        today = fields.Date.context_today(self)
+        currency = self.env.company.currency_id
+        today_start, today_end = self._get_user_period_utc(today,today)
+        # Today
+        today_sales_result = self._read_group(
+            [
+                ('state', '=', 'sale'),
+                ('date_order', '>=', f'{today_start}'),
+                ('date_order', '<=', f'{today_end}'),
+            ],
+            aggregates=['amount_total:sum'],
+        )
+
+        today_sales = today_sales_result[0][0] if today_sales_result else 0.0
+
+        # This Week
+        week_start = today - relativedelta(days=today.weekday())
+        week_end = week_start + relativedelta(days=6)
+        week_start_utc, week_end_utc = self._get_user_period_utc(week_start,week_end)
+        weekly_sales_result = self._read_group(
+            [
+                ('state', '=', 'sale'),
+                ('date_order', '>=', f'{week_start_utc}'),
+                ('date_order', '<=', f'{week_end_utc}'),
+            ],
+            aggregates=['amount_total:sum'],
+        )
+
+        weekly_sales = weekly_sales_result[0][0] if weekly_sales_result else 0.0
+
+        # This Month
+        month_start = today.replace(day=1)
+        month_end = (month_start + relativedelta(months=1)) - relativedelta(days=1)
+        month_start_utc, month_end_utc = self._get_user_period_utc(month_start,month_end)
+        monthly_sales_result = self._read_group(
+            [
+                ('state', '=', 'sale'),
+                ('date_order', '>=', f'{month_start_utc}'),
+                ('date_order', '<=', f'{month_end_utc}'),
+            ],
+            aggregates=['amount_total:sum'],
+        )
+
+        monthly_sales = monthly_sales_result[0][0] if monthly_sales_result else 0.0
+
+        return {
+            'today_sales': today_sales or 0.0,
+            'weekly_sales': weekly_sales or 0.0,
+            'monthly_sales': monthly_sales or 0.0,
+            'currency_symbol': currency.symbol or '$',
         }
 
     def _get_returns_data(self, sale_orders):
@@ -388,11 +443,116 @@ class SaleOrder(models.Model):
             "gross_margin": round(gross_margin, 2),
         }
 
+    def _get_user_period_utc(self, start_date, end_date):
+        """
+        Convert user's local date range into UTC datetime range.
+        """
+        user_tz = pytz.timezone(self.env.user.tz or 'UTC')
+        local_start = user_tz.localize(datetime.combine(start_date, time.min))
+        local_end = user_tz.localize(datetime.combine(end_date, time.max))
+        utc_start = local_start.astimezone(pytz.UTC).replace(tzinfo=None)
+        utc_end = local_end.astimezone(pytz.UTC).replace(tzinfo=None)
+        return utc_start, utc_end
+
+    def _get_quarterly_sales_data(self):
+        today = date.today()
+
+        # Current Quarter
+        current_quarter = ((today.month - 1) // 3) + 1
+        quarter_start_month = (current_quarter - 1) * 3 + 1
+        quarter_start = date(today.year, quarter_start_month, 1)
+        quarter_end = (quarter_start + relativedelta(months=3) - relativedelta(days=1))
+        # Previous Quarter
+        previous_quarter_end = quarter_start - relativedelta(days=1)
+        previous_quarter_start_month = (((previous_quarter_end.month - 1) // 3) * 3) + 1
+        previous_quarter_start = date(
+            previous_quarter_end.year,
+            previous_quarter_start_month,
+            1
+        )
+        current_quarter_result = self._read_group(
+            [
+                ('state', '=', 'sale'),
+                ('date_order', '>=', f'{quarter_start} 00:00:00'),
+                ('date_order', '<=', f'{quarter_end} 23:59:59'),
+            ],
+            aggregates=['amount_total:sum'],
+        )
+        previous_quarter_result = self._read_group(
+            [
+                ('state', '=', 'sale'),
+                ('date_order', '>=', f'{previous_quarter_start} 00:00:00'),
+                ('date_order', '<=', f'{previous_quarter_end} 23:59:59'),
+            ],
+            aggregates=['amount_total:sum'],
+        )
+        current_quarter_sales = (
+            current_quarter_result[0][0]
+            if current_quarter_result else 0.0
+        )
+
+        previous_quarter_sales = (
+            previous_quarter_result[0][0]
+            if previous_quarter_result else 0.0
+        )
+
+        quarterly_change = self._percentage_change(
+            current_quarter_sales,
+            previous_quarter_sales
+        )
+
+        return {
+            'current_quarter_sales': current_quarter_sales,
+            'previous_quarter_sales': previous_quarter_sales,
+            'quarterly_change': quarterly_change,
+        }
+
+    def _get_comparison_period(self, date_from, date_to):
+        """Return previous comparison period.
+
+        Examples
+        --------
+        05 Jul                -> 01 Jun - 05 Jun
+        01 Jul - 02 Jul       -> 01 Jun - 02 Jun
+        10 Jul - 20 Jul       -> 10 Jun - 20 Jun
+        Jan-Jun (6 months)    -> Jul-Dec (previous year)
+        """
+
+        current_from = fields.Date.to_date(date_from)
+        current_to = fields.Date.to_date(date_to)
+
+        months = (
+            (current_to.year - current_from.year) * 12
+            + current_to.month
+            - current_from.month
+            + 1
+        )
+
+        # Whole-month selection
+        if (
+            current_from.day == 1
+            and current_to
+            == (
+                current_to.replace(day=1)
+                + relativedelta(months=1)
+                - timedelta(days=1)
+            )
+        ):
+            previous_from = current_from - relativedelta(months=months)
+            previous_to = current_to - relativedelta(months=months)
+
+        else:
+            # Custom range → previous month same dates
+            previous_from = current_from - relativedelta(months=1)
+            previous_to = current_to - relativedelta(months=1)
+
+        return previous_from, previous_to
+
     @api.model
     def get_dashboard_data(self, date_from=False, date_to=False):
 
         domain = []
-
+        today = fields.Date.context_today(self)
         if date_from:
             domain.append(
                 ('date_order', '>=', f"{date_from} 00:00:00")
@@ -454,18 +614,11 @@ class SaleOrder(models.Model):
         previous_avg_order_value = 0
         if date_from and date_to:
 
-            current_from = fields.Date.to_date(
-                date_from
+            previous_from, previous_to = self._get_comparison_period(
+                date_from,
+                date_to
             )
-
-            previous_to = (
-                current_from - timedelta(days=1)
-            )
-
-            previous_from = previous_to.replace(
-                day=1
-            )
-
+            
             prev_base = [
                 (
                     'date_order',
@@ -482,7 +635,7 @@ class SaleOrder(models.Model):
             previous_sale_domain = prev_base + [
                 ('state', 'in', ['sale'])
             ]
-
+            
             previous_quotation_domain = prev_base + [
                 ('state', 'in', ['draft', 'sent'])
             ]
@@ -502,6 +655,7 @@ class SaleOrder(models.Model):
                 ['amount_total:sum'],
                 []
             )
+           
 
             previous_sales = (
                 prev_sales_data[0].get(
@@ -510,7 +664,7 @@ class SaleOrder(models.Model):
                 )
                 if prev_sales_data else 0.0
             )
-
+           
             previous_sale_orders = self.search(
                 previous_sale_domain
             )
@@ -688,16 +842,26 @@ class SaleOrder(models.Model):
             + partial_amount
             + unpaid_amount
         )
+        last_year = today - timedelta(days=365)
+
+        yearly_domain = [
+            ('state', '=', 'sale'),
+            ('date_order', '>=', f'{last_year} 00:00:00'),
+            ('date_order', '<=', f'{today} 23:59:59'),
+        ]
+
+        yearly_sale_orders = self.search(yearly_domain)
+    
         product_sales = {}
 
-        for line in sale_orders.mapped('order_line'):
-            product = line.product_id.name
+        for line in yearly_sale_orders.mapped('order_line'):
+           
+            product = line.product_id.supplier_name or "Unknown"
 
             product_sales[product] = (
                 product_sales.get(product, 0)
                 + line.price_subtotal
             )
-
         top_products_chart = [
             {"product": k, "sales": v}
             for k, v in sorted(
@@ -708,7 +872,7 @@ class SaleOrder(models.Model):
         ]
         customer_sales = {}
 
-        for order in sale_orders:
+        for order in yearly_sale_orders:
             customer = order.partner_id.name
 
             customer_sales[customer] = (
@@ -754,7 +918,61 @@ class SaleOrder(models.Model):
 
         delivery_chart_data = self._get_delivery_chart_data(sale_orders)
         carrier_shipping_chart = self._get_carrier_shipping_chart(sale_orders)
-       
+        new_sales_data = self.get_custom_dashboard_data()
+        current_week_start = today - timedelta(days=today.weekday())
+
+        previous_week_start = current_week_start - timedelta(days=7)
+
+        previous_week_end = today - timedelta(days=7)
+
+
+        previous_week_sales = sum(
+            self.search([
+                ('state', '=', 'sale'),
+                ('date_order', '>=', f'{previous_week_start} 00:00:00'),
+                ('date_order', '<=', f'{previous_week_end} 23:59:59'),
+            ]).mapped('amount_total')
+        )
+
+        weekly_sales_change = self._percentage_change(
+            new_sales_data.get("weekly_sales", 0.0),
+            previous_week_sales
+        )
+        invoice_amount_data = self.env['account.move'].get_account_move_dashboard_data('out_invoice')
+
+        previous_week_invoice = sum(
+            self.env['account.move'].search([
+                ('move_type', '=', 'out_invoice'),
+                ('state', '=', 'posted'),
+                ('invoice_date', '>=', previous_week_start),
+                ('invoice_date', '<=', previous_week_end),
+            ]).mapped('amount_total')
+        )
+
+        invoice_weekly_change = self._percentage_change(
+            invoice_amount_data.get("weekly_amount", 0.0),
+            previous_week_invoice
+        )
+        current_month_amount = invoice_amount_data.get('monthly_amount', 0.0)
+        # today = fields.Date.today()
+
+        month_start = today.replace(day=1)
+
+        previous_month_end = month_start - timedelta(days=1)
+        previous_month_start = previous_month_end.replace(day=1)
+        previous_month_amount = sum(
+            self.env['account.move'].search([
+                ('move_type', '=', 'out_invoice'),
+                ('state', '=', 'posted'),
+                ('invoice_date', '>=', previous_month_start),
+                ('invoice_date', '<=', previous_month_end),
+            ]).mapped('amount_total')
+        )
+        invoice_monthly_change = self._percentage_change(
+               current_month_amount,
+               previous_month_amount
+           )
+        quarter_data = self._get_quarterly_sales_data()
         return {
             "currency": {
                 "symbol": company.currency_id.symbol,
@@ -767,30 +985,34 @@ class SaleOrder(models.Model):
             },
 
             "kpis": {
-
+                "sales_today": round(new_sales_data.get("today_sales", 0.0), 2),
+                "sales_current_week": round(new_sales_data.get("weekly_sales", 0.0), 2),
+                "sales_weekly_change": weekly_sales_change,
+                "sales_current_month": round(new_sales_data.get("monthly_sales", 0.0), 2),
+                'sales_current_quarter': quarter_data['current_quarter_sales'],
+                'quarterly_sales_change': quarter_data['quarterly_change'],
+                "invoice_today": invoice_amount_data.get("today_amount") ,
+                "invoice_current_week":invoice_amount_data.get("weekly_amount") ,
+                "invoice_weekly_change": invoice_weekly_change ,
+                "invoice_current_month" : invoice_amount_data.get("monthly_amount") ,
+                'invoice_monthly_change': invoice_monthly_change,
                 "total_sales":  round(total_sales, 2),
-
                 "total_sales_change": self._percentage_change(
                                         total_sales,
                                         previous_sales
                                     ),
-
                 "total_sale_orders": total_sale_orders,
-
                 "total_sale_orders_change":
                     self._percentage_change(
                         total_sale_orders,
                         previous_orders
                     ),
-
                 "total_quotations": total_quotations,
-
                 "total_quotations_change":
                     self._percentage_change(
                         total_quotations,
                         previous_quotations
                     ),
-
                 "avg_order_value": round(avg_order_value, 2),
                 "avg_order_value_change":
                     self._percentage_change(
@@ -798,7 +1020,6 @@ class SaleOrder(models.Model):
                         previous_avg_order_value
                     ),
                 "cancelled_orders": cancelled_orders,
-
                 "cancelled_orders_change":
                     self._percentage_change(
                         cancelled_orders,
@@ -902,4 +1123,57 @@ class SaleOrder(models.Model):
                 "top_suppliers": top_suppliers_chart,
                 "top_purchased_products": top_products_purchase_chart,
             }
+        }
+
+
+    def action_today_sales(self):
+        today = date.today()
+        today_start, today_end = self._get_user_period_utc(today,today)
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Today Sales',
+            'res_model': 'sale.order',
+            'view_mode': 'list,form',
+            'views': [[False, 'list'], [False, 'form']],
+            'domain': [
+                ('state', '=', 'sale'),
+                ('date_order', '>=', f'{today_start}'),
+                ('date_order', '<=', f'{today_end}'),
+            ],
+        }
+
+    def action_weekly_sales(self):
+        today = fields.Date.context_today(self)
+        week_start = today - relativedelta(days=today.weekday())
+        week_end = week_start + relativedelta(days=6)
+        week_start_utc, week_end_utc = self._get_user_period_utc(week_start,week_end)
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Weekly Sales',
+            'res_model': 'sale.order',
+            'view_mode': 'list,form',
+            'views': [[False, 'list'], [False, 'form']],
+            'domain': [
+                ('state', '=', 'sale'),
+                ('date_order', '>=', f'{week_start_utc}'),
+                ('date_order', '<=', f'{week_end_utc}'),
+            ],
+        }
+
+    def action_monthly_sales(self):
+        today = fields.Date.context_today(self)
+        month_start = today.replace(day=1)
+        month_end = (month_start + relativedelta(months=1)) - relativedelta(days=1)
+        month_start_utc, month_end_utc = self._get_user_period_utc(month_start,month_end)
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Monthly Sales',
+            'res_model': 'sale.order',
+            'view_mode': 'list,form',
+            'views': [[False, 'list'], [False, 'form']],
+            'domain': [
+                ('state', '=', 'sale'),
+                ('date_order', '>=', f'{month_start_utc}'),
+                ('date_order', '<=', f'{month_end_utc}'),
+            ],
         }

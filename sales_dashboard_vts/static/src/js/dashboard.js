@@ -10,7 +10,7 @@ class SalesDashboard extends Component {
         this.orm = useService("orm");
         this.action = useService("action");
 
-        this.topProductsPageSize = 5;
+        this.topProductsPageSize = 10;
         this.topProductsChartInstance = null;
 
         this.topCustomersPageSize = 5;
@@ -182,6 +182,26 @@ class SalesDashboard extends Component {
             domain: domain,
         });
     }
+
+    async openAction(methodName) {
+
+        const action = await this.orm.call(
+            "sale.order",
+            methodName,
+            [[]]
+        );
+
+        this.action.doAction(action);
+}
+async openInvoiceAction(methodName) {
+    const action = await this.orm.call(
+        "account.move",
+        methodName,
+        ['out_invoice']
+    );
+
+    this.action.doAction(action);
+}
     // Pages
     get topProductsTotalPages() {
         const data = this.state.dashboard_data.charts?.top_products || [];

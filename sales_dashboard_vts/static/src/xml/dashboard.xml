@@ -39,9 +39,297 @@
             </div>
             <!-- KPI Cards Row -->
             <div class="row g-2 mb-2">
-
-                <!-- Total Sales -->
+                <!-- today sales -->
                 <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                        t-on-click="() => this.openAction('action_today_sales')">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="sales-icon bg-success">
+                                <i class="fa fa-calendar text-white"/>
+                            </div>
+                            <div class="ms-3">
+                                <div class="text-muted small">Today Sales</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.currency.symbol"/>
+                                    <t t-esc="state.dashboard_data.kpis.sales_today || 0"/>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Weekly Sales -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openAction('action_weekly_sales')">
+
+                        <div class="card-body d-flex align-items-center">
+
+                           <div class="sales-icon bg-purple">
+                               <i class="fa fa-file-text-o text-white"/>
+                           </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Weekly Sales</div>
+
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.currency.symbol"/>
+                                    <t t-esc="state.dashboard_data.kpis.sales_current_week || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.sales_weekly_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.sales_weekly_change"/>%
+                                    vs Last Week
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.sales_weekly_change)"/>%
+                                    vs Last Week
+                                </small>
+                                
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+                <!-- Monthly Sales -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openAction('action_monthly_sales')">
+
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-success">
+                                <i class="fa fa-money text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Monthly Sales</div>
+
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.currency.symbol"/>
+                                    <t t-esc="state.dashboard_data.kpis.sales_current_month || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.total_sales_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.total_sales_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.total_sales_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+                <!-- Quarter Sales -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="sales-icon bg-primary">
+                                <i class="fa fa-calendar-check-o text-white"/>
+                            </div>
+                            <div class="ms-3">
+                                <div class="text-muted small">
+                                    Quarterly Sales
+                                </div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.currency.symbol"/>
+                                    <t t-esc="state.dashboard_data.kpis.sales_current_quarter || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.quarterly_sales_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.quarterly_sales_change"/>%
+                                    vs Last Quarter
+                                </small>
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.quarterly_sales_change)"/>%
+                                    vs Last Quarter
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Today Invoice -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                        t-on-click="() => this.openInvoiceAction('action_today_amount')">
+
+                        <div class="card-body d-flex align-items-center">
+                            <div class="sales-icon bg-secondary">
+                                <i class="fa fa-file-text text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Today Invoice</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.currency.symbol"/>
+                                    <t t-esc="state.dashboard_data.kpis.invoice_today || 0"/>
+                                </h5>
+                                
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- Weekly Invoice -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openInvoiceAction('action_weekly_amount')">
+
+                        <div class="card-body d-flex align-items-center">
+                            <div class="sales-icon bg-info">
+                                <i class="fa fa-line-chart text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Weekly Invoice</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.currency.symbol"/>
+                                    <t t-esc="state.dashboard_data.kpis.invoice_current_week || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.invoice_weekly_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.invoice_weekly_change"/>%
+                                    vs Last Week
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.invoice_weekly_change)"/>%
+                                    vs Last Week
+                                </small>
+                                
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- Monthly Invoice -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openInvoiceAction('action_monthly_amount')">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="sales-icon bg-primary">
+                                <i class="fa fa-bar-chart text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Monthly Invoice</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.currency.symbol"/>
+                                    <t t-esc="state.dashboard_data.kpis.invoice_current_month || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.invoice_monthly_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.invoice_monthly_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.invoice_monthly_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- Average Order Value -->
+                <!-- <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card">
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-info">
+                                <i class="fa fa-shopping-cart text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Avg Order Value</div>
+
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.currency.symbol"/>
+                                    <t t-esc="state.dashboard_data.kpis.avg_order_value || 0"/>
+                                </h5>
+
+                                <small t-if="state.dashboard_data.kpis.avg_order_value_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.avg_order_value_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.avg_order_value_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div> -->
+                <!-- Cancelled Orders -->
+                <!-- <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openRecords(
+                            'sale.order',
+                            'Cancelled Orders',
+                            [['state', '=', 'cancel']]
+                         )">
+
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-cancel">
+                                <i class="fa fa-times-circle text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Cancelled Orders</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.kpis.cancelled_orders || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.cancelled_orders_change >= 0"
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.cancelled_orders_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-success">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.cancelled_orders_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div> -->
+                <!-- Total Sales -->
+                <!-- <div class="col">
                     <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
                          t-on-click="() => this.openRecords(
                             'sale.order',
@@ -82,8 +370,10 @@
 
                         </div>
                     </div>
-                </div>
-
+                </div> -->
+                
+            </div>
+            <div class="row g-2 mb-2">
                 <!-- Total Orders -->
                 <div class="col">
                     <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
@@ -122,7 +412,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Quotations -->
                 <div class="col">
                     <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
@@ -161,119 +450,6 @@
                         </div>
                     </div>
                 </div>
-
-               
-                <!-- Average Order Value -->
-                <div class="col">
-                    <div class="card shadow-lg border-0 sales-kpi-card">
-                        <div class="card-body d-flex align-items-center">
-
-                            <div class="sales-icon bg-info">
-                                <i class="fa fa-shopping-cart text-white"/>
-                            </div>
-
-                            <div class="ms-3">
-                                <div class="text-muted small">Avg Order Value</div>
-
-                                <h5 class="mb-0 fw-bold">
-                                    <t t-esc="state.dashboard_data.currency.symbol"/>
-                                    <t t-esc="state.dashboard_data.kpis.avg_order_value || 0"/>
-                                </h5>
-
-                                <small t-if="state.dashboard_data.kpis.avg_order_value_change >= 0"
-                                       class="text-success">
-                                    <i class="fa fa-arrow-up"/>
-                                    <t t-esc="state.dashboard_data.kpis.avg_order_value_change"/>%
-                                    vs Last Month
-                                </small>
-
-                                <small t-else=""
-                                       class="text-danger">
-                                    <i class="fa fa-arrow-down"/>
-                                    <t t-esc="Math.abs(state.dashboard_data.kpis.avg_order_value_change)"/>%
-                                    vs Last Month
-                                </small>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cancelled Orders -->
-                <div class="col">
-                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
-                         t-on-click="() => this.openRecords(
-                            'sale.order',
-                            'Cancelled Orders',
-                            [['state', '=', 'cancel']]
-                         )">
-
-                        <div class="card-body d-flex align-items-center">
-
-                            <div class="sales-icon bg-cancel">
-                                <i class="fa fa-times-circle text-white"/>
-                            </div>
-
-                            <div class="ms-3">
-                                <div class="text-muted small">Cancelled Orders</div>
-                                <h5 class="mb-0 fw-bold">
-                                    <t t-esc="state.dashboard_data.kpis.cancelled_orders || 0"/>
-                                </h5>
-                                <small t-if="state.dashboard_data.kpis.cancelled_orders_change >= 0"
-                                       class="text-danger">
-                                    <i class="fa fa-arrow-up"/>
-                                    <t t-esc="state.dashboard_data.kpis.cancelled_orders_change"/>%
-                                    vs Last Month
-                                </small>
-
-                                <small t-else=""
-                                       class="text-success">
-                                    <i class="fa fa-arrow-down"/>
-                                    <t t-esc="Math.abs(state.dashboard_data.kpis.cancelled_orders_change)"/>%
-                                    vs Last Month
-                                </small>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-                <!-- Total Returns -->
-                <!-- Total Returns -->
-                <div class="col">
-                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
-                         t-on-click="() => this.openReturnRecords()">
-
-                        <div class="card-body d-flex align-items-center">
-
-                            <div class="sales-icon bg-warning">
-                                <i class="fa fa-undo text-white"/>
-                            </div>
-
-                            <div class="ms-3">
-                                <div class="text-muted small">Total Returns</div>
-                                <h5 class="mb-0 fw-bold">
-                                    <t t-esc="state.dashboard_data.kpis.total_returns || 0"/>
-                                </h5>
-                                <small t-if="state.dashboard_data.kpis.total_returns_change >= 0"
-                                       class="text-success">
-                                    <i class="fa fa-arrow-up"/>
-                                    <t t-esc="state.dashboard_data.kpis.total_returns_change"/>%
-                                    vs Last Month
-                                </small>
-
-                                <small t-else=""
-                                       class="text-danger">
-                                    <i class="fa fa-arrow-down"/>
-                                    <t t-esc="Math.abs(state.dashboard_data.kpis.total_returns_change)"/>%
-                                    vs Last Month
-                                </small>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row g-2 mb-2">
                 <div class="col">
                     <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
                          t-on-click="() => this.openInvoiceRecords(
@@ -342,7 +518,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col">
+                <!-- <div class="col">
                     <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
                          t-on-click="() => this.openDeliveryRecords(
                             state.dashboard_data.records.delivery_ids || [],
@@ -377,7 +553,7 @@
 
                         </div>
                     </div>
-                </div>
+                </div> -->
                 <div class="col">
                     <div class="card shadow-lg border-0 sales-kpi-card">
 
@@ -481,9 +657,43 @@
                         </div>
                     </div>
                 </div>
+                <!-- Total Returns -->
+                <div class="col">
+                    <div class="card shadow-lg border-0 sales-kpi-card dashboard-clickable"
+                         t-on-click="() => this.openReturnRecords()">
+
+                        <div class="card-body d-flex align-items-center">
+
+                            <div class="sales-icon bg-warning">
+                                <i class="fa fa-undo text-white"/>
+                            </div>
+
+                            <div class="ms-3">
+                                <div class="text-muted small">Total Returns</div>
+                                <h5 class="mb-0 fw-bold">
+                                    <t t-esc="state.dashboard_data.kpis.total_returns || 0"/>
+                                </h5>
+                                <small t-if="state.dashboard_data.kpis.total_returns_change >= 0"
+                                       class="text-success">
+                                    <i class="fa fa-arrow-up"/>
+                                    <t t-esc="state.dashboard_data.kpis.total_returns_change"/>%
+                                    vs Last Month
+                                </small>
+
+                                <small t-else=""
+                                       class="text-danger">
+                                    <i class="fa fa-arrow-down"/>
+                                    <t t-esc="Math.abs(state.dashboard_data.kpis.total_returns_change)"/>%
+                                    vs Last Month
+                                </small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="row g-2 mb-2">
-               <div class="col-3">
+               <div class="col-lg-3 col-md-6">
                    <div class="card dashboard-chart-card dashboard-chart-primary shadow-lg border-0 h-100">
                        <div class="card-header bg-white">
                            <h5 class="mb-0">
@@ -499,7 +709,7 @@
                        </div>
                    </div>
                </div>
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-6 col-md-6">
                     <div class="card dashboard-chart-card dashboard-chart-success shadow-lg border-0 h-100">
                         <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">
@@ -573,6 +783,9 @@
 
                     </div>
                 </div>
+                
+            </div>
+            <div class="row g-2 mb-2">
                 <div class="col-lg-3 col-md-6">
                     <div class="card dashboard-chart-card dashboard-chart-info shadow-lg border-0 h-100">
                         <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
@@ -610,8 +823,6 @@
 
                     </div>
                 </div>
-            </div>
-            <div class="row g-2 mb-2">
                 <div class="col-lg-3 col-md-6">
                     <div class="card dashboard-chart-card dashboard-chart-warning shadow-lg border-0 h-100">
                         <div class="card-header bg-white border-0">
@@ -681,7 +892,7 @@
 
                     </div>
                 </div> -->
-                <div class="col-lg-3 col-md-6">
+                <!-- <div class="col-lg-3 col-md-6">
                     <div class="card dashboard-chart-card dashboard-chart-teal shadow-lg border-0 h-100">
 
                         <div class="card-header bg-white border-0">
@@ -695,7 +906,7 @@
                         </div>
 
                     </div>
-                </div>
+                </div> -->
                 <div class="col-lg-3 col-md-6">
                     <div class="card shadow-lg border-0 h-100 alert-card">
 
@@ -751,7 +962,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row g-2 mb-2">
+            <!-- <div class="row g-2 mb-2">
                <div class="col-lg-6">
                    <div class="card dashboard-chart-card dashboard-chart-success shadow-lg border-0 h-100">
 
@@ -769,7 +980,7 @@
 
                    </div>
                </div> 
-            </div>
+            </div> -->
 
         </div>
     </t>
