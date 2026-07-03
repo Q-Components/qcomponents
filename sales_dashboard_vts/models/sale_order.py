@@ -455,56 +455,55 @@ class SaleOrder(models.Model):
         return utc_start, utc_end
 
     def _get_quarterly_sales_data(self):
-        today = date.today()
+        today = fields.Date.context_today(self)
 
-        # Current Quarter
+        # Current quarter
         current_quarter = ((today.month - 1) // 3) + 1
         quarter_start_month = (current_quarter - 1) * 3 + 1
-        quarter_start = date(today.year, quarter_start_month, 1)
-        quarter_end = (quarter_start + relativedelta(months=3) - relativedelta(days=1))
-        # Previous Quarter
-        previous_quarter_end = quarter_start - relativedelta(days=1)
-        previous_quarter_start_month = (((previous_quarter_end.month - 1) // 3) * 3) + 1
-        previous_quarter_start = date(
-            previous_quarter_end.year,
-            previous_quarter_start_month,
-            1
-        )
-        current_quarter_result = self._read_group(
+        current_start = date(today.year, quarter_start_month, 1)
+
+        # Days elapsed in current quarter
+        days_elapsed = (today - current_start).days
+
+        # Previous quarter
+        previous_end = current_start - relativedelta(days=1)
+        previous_quarter = ((previous_end.month - 1) // 3) + 1
+        previous_start_month = (previous_quarter - 1) * 3 + 1
+        previous_start = date(previous_end.year, previous_start_month, 1)
+
+        # Same elapsed period in previous quarter
+        previous_compare_end = previous_start + relativedelta(days=days_elapsed)
+
+        current_result = self._read_group(
             [
                 ('state', '=', 'sale'),
-                ('date_order', '>=', f'{quarter_start} 00:00:00'),
-                ('date_order', '<=', f'{quarter_end} 23:59:59'),
+                ('date_order', '>=', f'{current_start} 00:00:00'),
+                ('date_order', '<=', f'{today} 23:59:59'),
             ],
             aggregates=['amount_total:sum'],
-        )
-        previous_quarter_result = self._read_group(
-            [
-                ('state', '=', 'sale'),
-                ('date_order', '>=', f'{previous_quarter_start} 00:00:00'),
-                ('date_order', '<=', f'{previous_quarter_end} 23:59:59'),
-            ],
-            aggregates=['amount_total:sum'],
-        )
-        current_quarter_sales = (
-            current_quarter_result[0][0]
-            if current_quarter_result else 0.0
         )
 
-        previous_quarter_sales = (
-            previous_quarter_result[0][0]
-            if previous_quarter_result else 0.0
+        previous_result = self._read_group(
+            [
+                ('state', '=', 'sale'),
+                ('date_order', '>=', f'{previous_start} 00:00:00'),
+                ('date_order', '<=', f'{previous_compare_end} 23:59:59'),
+            ],
+            aggregates=['amount_total:sum'],
         )
+
+        current_sales = current_result[0][0] if current_result else 0.0
+        previous_sales = previous_result[0][0] if previous_result else 0.0
 
         quarterly_change = self._percentage_change(
-            current_quarter_sales,
-            previous_quarter_sales
+            current_sales,
+            previous_sales,
         )
 
         return {
-            'current_quarter_sales': current_quarter_sales,
-            'previous_quarter_sales': previous_quarter_sales,
-            'quarterly_change': quarterly_change,
+            "current_quarter_sales": current_sales,
+            "previous_quarter_sales": previous_sales,
+            "quarterly_change": quarterly_change,
         }
 
     def _get_comparison_period(self, date_from, date_to):
