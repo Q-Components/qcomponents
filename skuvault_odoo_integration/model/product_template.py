@@ -180,7 +180,7 @@ class SkuvaultPorductTemplate(models.Model):
                                 'default_code':product_data.get('Sku'),
                                 'name':product_data.get('PartNumber', '') or product_data.get('Sku'),
                                 'weight': product_data.get('WeightValue'),
-                                'type':'consu',
+                            #    'type':'consu',
                                 'supplier_name':product_data.get('Supplier'),
                                 'standard_price': product_data.get('Cost')}
                             for attribute_data in product_data.get('Attributes'):

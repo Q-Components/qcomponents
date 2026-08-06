@@ -336,6 +336,7 @@ class StockWarehouse(models.Model):
                             elif attribute_data.get('Name') == 'RoHS' and attribute_data.get('Value'):
                                 vals.update({'x_studio_rohs': attribute_data.get('Value')})
                         if product_id:
+                            vals.pop('type')
                             product_id.write(vals)
                             process_message = "Product Updated {0}".format(product_id.name)
                         else:
