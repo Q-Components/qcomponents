@@ -19,6 +19,7 @@
     'data': [
         'views/views.xml',
         'views/templates.xml',
+        'views/express_checkout.xml',
     ],
 
     'assets': {

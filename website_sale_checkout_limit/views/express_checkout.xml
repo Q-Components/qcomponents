@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="payment_express_checkout_min_amount" inherit_id="payment.express_checkout">
+        <xpath expr="//form[@name='o_payment_express_checkout_form']" position="attributes">
+            <attribute name="t-attf-class">container #{'d-none' if not website.check_cart_amount() else ''}</attribute>
+        </xpath>
+    </template>
+</odoo>
