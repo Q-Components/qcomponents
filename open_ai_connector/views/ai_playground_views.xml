@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_ai_playground_form" model="ir.ui.view">
+        <field name="name">ai.playground.form</field>
+        <field name="model">ai.playground</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="Target">
+                            <field name="mode" widget="radio" options="{'horizontal': true}"/>
+                            <field name="provider_id"/>
+                            <field name="credential_id"
+                                   domain="[('provider_id', '=', provider_id)]"/>
+                            <field name="model_ref_id" invisible="mode != 'chat'"
+                                   domain="[('provider_id', '=', provider_id)]"/>
+                            <field name="model"/>
+                        </group>
+                        <group string="Parameters" invisible="mode != 'chat'">
+                            <field name="temperature"/>
+                            <field name="max_tokens"/>
+                            <field name="stream"/>
+                            <field name="provider_supports_vision" invisible="1"/>
+                            <field name="image" filename="image_filename" widget="image"
+                                   class="oe_avatar" invisible="not provider_supports_vision"/>
+                            <field name="image_filename" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="system_prompt" placeholder="Optional system prompt"
+                               invisible="mode != 'chat'"/>
+                        <field name="user_prompt"
+                               placeholder="Describe the image/video to generate"/>
+                    </group>
+                    <separator string="Result"
+                               invisible="not response and not usage_text and not result_image and not result_video_url"/>
+                    <group invisible="not response and not usage_text">
+                        <field name="usage_text" readonly="1" invisible="not usage_text"/>
+                        <field name="tool_calls_text" readonly="1" invisible="not tool_calls_text"/>
+                    </group>
+                    <field name="response" readonly="1" nolabel="1"
+                           invisible="not response"/>
+                    <field name="result_image" widget="image" nolabel="1"
+                           filename="result_image_filename" invisible="not result_image"/>
+                    <field name="result_image_filename" invisible="1"/>
+                    <field name="result_video_url" widget="url" readonly="1"
+                           invisible="not result_video_url"/>
+                </sheet>
+                <footer>
+                    <button name="action_run" type="object" string="Run" class="oe_highlight"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ai_playground" model="ir.actions.act_window">
+        <field name="name">Playground</field>
+        <field name="res_model">ai.playground</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- OAuth setup wizard -->
+    <record id="view_ai_oauth_wizard_form" model="ir.ui.view">
+        <field name="name">ai.oauth.wizard.form</field>
+        <field name="model">ai.oauth.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <field name="connected" invisible="1"/>
+                    <field name="listening" invisible="1"/>
+                    <group>
+                        <field name="credential_id" readonly="1"/>
+                        <field name="auth_type" readonly="1"/>
+                    </group>
+                    <div class="alert alert-info" role="status"
+                         invisible="auth_url or user_code">
+                        Click <b>Start</b> below to begin authentication.
+                    </div>
+                    <group string="Device Code"
+                           invisible="auth_type != 'oauth_device_code' or not user_code">
+                        <field name="device_code" invisible="1"/>
+                        <field name="user_code" readonly="1"/>
+                        <field name="verification_uri" widget="url" readonly="1"/>
+                        <field name="device_status" readonly="1"/>
+                        <widget name="oauth_auto_poll"/>
+                    </group>
+                    <group string="Authorization"
+                           invisible="auth_type != 'oauth_external' or not auth_url">
+                        <field name="info" readonly="1"/>
+                        <field name="auth_url" widget="CopyClipboardURL" readonly="1"
+                               invisible="not auth_url"/>
+                        <widget name="oauth_auto_poll" invisible="not listening"/>
+                        <field name="callback_url" placeholder="Paste the redirected localhost URL here"
+                               invisible="not auth_url"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_start" type="object" string="Start" class="oe_highlight"
+                            invisible="auth_type == 'oauth_external' and auth_url"/>
+                    <button name="action_start" type="object" string="Restart"
+                            invisible="auth_type != 'oauth_external' or not auth_url"/>
+                    <button name="action_poll" type="object" string="Poll"
+                            invisible="not ((auth_type == 'oauth_device_code' and user_code) or (auth_type == 'oauth_external' and listening))"/>
+                    <button name="action_submit_callback" type="object" string="Submit"
+                            class="oe_highlight"
+                            invisible="auth_type != 'oauth_external' or not auth_url"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

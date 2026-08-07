@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_ai_root" name="AI Connector" sequence="95"
+              web_icon="open_ai_connector,static/description/icon.png"
+              groups="open_ai_connector.group_ai_user"/>
+
+    <!-- The first leaf menu is what opens when the app icon is clicked, so it
+         MUST be a normal view (not the target='new' Playground wizard, which
+         would otherwise pop an empty modal on app open). -->
+    <menuitem id="menu_ai_credentials" name="Credentials" parent="menu_ai_root"
+              action="action_ai_credential" sequence="10"/>
+
+    <menuitem id="menu_ai_providers" name="Providers" parent="menu_ai_root"
+              action="action_ai_provider" sequence="20"/>
+
+    <menuitem id="menu_ai_playground" name="Playground" parent="menu_ai_root"
+              action="action_ai_playground" sequence="30"
+              groups="open_ai_connector.group_ai_user"/>
+
+    <menuitem id="menu_ai_logs" name="Usage Logs" parent="menu_ai_root"
+              action="action_ai_completion_log" sequence="40"/>
+
+    <menuitem id="menu_ai_config" name="Configuration" parent="menu_ai_root" sequence="90"/>
+
+    <menuitem id="menu_ai_models" name="Models" parent="menu_ai_config"
+              action="action_ai_model" sequence="10"/>
+
+    <menuitem id="menu_ai_settings" name="Settings" parent="menu_ai_config"
+              action="action_ai_config_settings" sequence="20"
+              groups="open_ai_connector.group_ai_manager"/>
+
+</odoo>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Proactively refresh OAuth tokens before they expire, so the first
+             call after expiry doesn't pay a refresh round-trip and an unused
+             refresh_token doesn't lapse. Reactive per-call refresh is the
+             backstop. Interval (10 min) is kept below the default 15-min lead
+             so a ~1h token is always refreshed with minutes to spare. -->
+        <record id="ir_cron_refresh_oauth_tokens" model="ir.cron">
+            <field name="name">AI Connector: Refresh OAuth Tokens</field>
+            <field name="model_id" ref="model_ai_credential"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_refresh_oauth_tokens()</field>
+            <field name="interval_number">10</field>
+            <field name="interval_type">minutes</field>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+</odoo>

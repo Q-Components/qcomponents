@@ -1,0 +1,184 @@
+================================================================================
+ AI CONNECTOR (Multi-Provider) for Odoo 19  -  SETUP & USAGE GUIDE
+================================================================================
+
+Use your existing AI subscription (ChatGPT, Claude, Grok, Gemini, Qwen ...) or
+plain API keys to call 30+ AI / LLM providers from Odoo -- through one Python
+method, a built-in Playground, or an OpenAI-compatible HTTP gateway.
+
+This package contains:
+  - open_ai_connector ............. the main module (this folder)
+  - ai_connector_bridge.zip ....... FREE add-on, bundled (see section 6)
+  - setup_usage_guide.txt ......... this file
+
+
+--------------------------------------------------------------------------------
+1. REQUIREMENTS
+--------------------------------------------------------------------------------
+  - Odoo 19.0 (Community or Enterprise)
+  - Python: only the standard Odoo deps (requests etc.).
+      * boto3 is OPTIONAL -- needed ONLY if you use AWS Bedrock
+        (pip install boto3). A clear error is shown if it is missing.
+  - For the FREE Bridge (section 6): Odoo's built-in "ai" module
+    (it ships with Odoo 19).
+
+
+--------------------------------------------------------------------------------
+2. INSTALL THE CONNECTOR
+--------------------------------------------------------------------------------
+  1. Copy the "open_ai_connector" folder into your Odoo addons path
+     (e.g. .../odoo/addons/ or your custom addons directory).
+  2. Restart the Odoo service.
+  3. In Odoo: turn on Developer Mode (Settings -> Developer Tools), then
+     Apps -> "Update Apps List".
+  4. Search "AI Connector", click Install.
+
+  After install you get a new top menu: "AI Connector" with:
+     Credentials | Providers | Playground | Usage Logs | Configuration
+
+
+--------------------------------------------------------------------------------
+3. ADD A CREDENTIAL  (this is the only setup that matters)
+--------------------------------------------------------------------------------
+You bring your own account. Two ways:
+
+  A) USE YOUR SUBSCRIPTION  (OAuth -- no per-token API fees)
+     Supported subscription logins: OpenAI Codex (ChatGPT Plus/Pro/Team),
+     Claude (claude.ai Pro/Max), xAI Grok (SuperGrok / Premium+),
+     Google Gemini CLI, Qwen Portal, MiniMax.
+       1. AI Connector -> Credentials -> New.
+       2. Pick the Provider (e.g. "OpenAI Codex" or "Claude (claude.ai OAuth)").
+       3. Click "Start OAuth". Follow the link, sign in with your
+          subscription, and paste back the redirect URL / code when asked.
+       4. Click "Test Connection" -> the state should turn "Connected".
+       5. Click "Fetch Models" to load that account's model list.
+
+  B) API KEY  (classic pay-as-you-go, or AWS)
+       1. AI Connector -> Credentials -> New.
+       2. Pick the Provider (e.g. OpenRouter, DeepSeek, Anthropic, ...).
+       3. Paste your API key (for AWS Bedrock: the AWS keys + region).
+       4. "Test Connection", then "Fetch Models".
+
+  Tips:
+    - Mark one credential per provider as "Default".
+    - You can have MULTIPLE accounts per provider.
+    - Secrets are restricted to the "AI Manager" group and stay in your DB.
+
+
+--------------------------------------------------------------------------------
+4. TRY IT  (Playground -- no code)
+--------------------------------------------------------------------------------
+  AI Connector -> Playground:
+     1. Mode: Chat (also Image / Video if the provider supports it).
+     2. Pick Provider -> Account -> Model.
+     3. Type a System prompt (optional) + a User message.
+     4. Click "Run".
+  You see the response and the exact token usage. Every run is logged under
+  AI Connector -> Usage Logs (provider, model, tokens, duration, status).
+
+
+--------------------------------------------------------------------------------
+5. CALL IT FROM YOUR OWN CODE  (one method, every provider)
+--------------------------------------------------------------------------------
+  res = env['ai.connector'].chat(
+      'openai-codex',                 # provider code (or an ai.provider record)
+      'gpt-5.5',                      # model id
+      messages=[{'role': 'user', 'content': 'Summarise this lead in one line.'}],
+      tools=None, temperature=0.4, max_tokens=512, stream=False,
+  )
+  # -> {'content': ..., 'tool_calls': [...], 'finish_reason': ..., 'usage': {...}}
+
+  Convenience (returns just the text):
+  text = env['ai.connector'].chat_text('openrouter', 'openai/gpt-5',
+                                        [{'role': 'user', 'content': 'hi'}])
+
+  Vision: pass OpenAI multimodal content (text + image_url) in a message.
+  Tools:  pass OpenAI tools=[{'type':'function','function':{...}}]; calls come
+          back in res['tool_calls'].
+  Streaming: stream=True returns a generator of delta chunks.
+
+
+--------------------------------------------------------------------------------
+6. FREE ADD-ON: AI CONNECTOR BRIDGE  (ai_connector_bridge.zip)
+--------------------------------------------------------------------------------
+What it does:
+  Odoo 19 has its own built-in AI (AI Agents, AI fields, AI server actions),
+  but it is hard-wired to OpenAI / Google. The Bridge re-routes Odoo's native
+  AI through THIS connector -- so Odoo's built-in AI runs on whatever provider
+  and account you configured here (Claude, Grok, Codex, your subscription...).
+  Pair it with an OAuth subscription => practically unlimited, worry-free AI
+  inside Odoo with no per-token meter.
+
+Install:
+  1. Unzip ai_connector_bridge.zip -> you get an "ai_connector_bridge" folder.
+  2. Copy that folder into the SAME addons path as open_ai_connector.
+  3. Restart Odoo, "Update Apps List", install "AI Connector Bridge".
+     (It depends on Odoo's "ai" module + open_ai_connector.)
+
+Enable:
+  Settings -> AI Connector -> "Odoo Native AI":
+     - tick "Route Odoo AI through Connector"
+     - choose Odoo AI Provider, Account, and Model.
+  Turn it OFF anytime and Odoo's built-in AI behaves exactly as before.
+
+
+--------------------------------------------------------------------------------
+7. CONNECT OTHER APPS  (OpenAI-compatible HTTP gateway)
+--------------------------------------------------------------------------------
+  Settings -> AI Connector -> HTTP Gateway: tick "Enable HTTP Gateway",
+  set a Default Provider + Default Model.
+
+  Endpoints (under <your-odoo>/ai/v1):
+     POST /ai/v1/chat/completions
+     GET  /ai/v1/models
+
+  Auth: an Odoo user API key (top-right avatar -> Preferences ->
+        Account Security -> New API Key). Use it as the Bearer token.
+        The user must be in the "AI User" group.
+
+  Model = "provider/model" (e.g. xai-oauth/grok-4, openai-codex/gpt-5.5).
+  Omit the provider to use the Default Provider/Model.
+
+  Example:
+     curl "http://localhost:8169/ai/v1/chat/completions?db=YOUR_DB" \
+       -H "Authorization: Bearer <YOUR_ODOO_API_KEY>" \
+       -H "Content-Type: application/json" \
+       -d '{"model":"xai-oauth/grok-4",
+            "messages":[{"role":"user","content":"hi"}]}'
+
+  NOTE: if your server hosts several databases, append ?db=<database> to the URL.
+  Point any OpenAI SDK / LangChain / n8n at this base URL.
+
+
+--------------------------------------------------------------------------------
+8. SECURITY & NOTES
+--------------------------------------------------------------------------------
+  - Groups: "AI User" (use connector + playground) and "AI Manager"
+    (manage providers/credentials/secrets).
+  - API keys / tokens are group-restricted but NOT encrypted at rest
+    (same practice as similar Odoo connectors) -- protect DB access accordingly.
+  - Multi-company: credentials and logs are scoped per company.
+  - Outbound SSRF guard: Settings -> "Outbound Security" lets you block
+    private/loopback IPs and set a host allowlist.
+  - Streaming via the gateway needs a worker that does not buffer the whole
+    response (threaded / gevent worker).
+
+  Companion app (sold separately): "AI Image Studio" -- generate / replace /
+  remix images on products, contacts and any image field, using the same
+  providers and accounts you set up here.
+
+
+--------------------------------------------------------------------------------
+9. TROUBLESHOOTING
+--------------------------------------------------------------------------------
+  - "Not connected" / 401: re-run "Test Connection". For OAuth, tokens may have
+    expired -- "Start OAuth" again. The connector auto-refreshes OAuth tokens.
+  - Gateway returns 404: you probably forgot ?db=<database> on a multi-DB host.
+  - Gateway returns 401: bad/missing Odoo API key, or the user is not in the
+    "AI User" group.
+  - "boto3 not installed": only AWS Bedrock needs it -- pip install boto3.
+  - Model not listed: open the Credential and click "Fetch Models".
+
+================================================================================
+ Roshan  -  https://github.com/roshank8s/
+================================================================================

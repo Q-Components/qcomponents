@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="open_ai_connector.OAuthAutoPoll">
+        <div t-if="state.active" class="text-muted d-flex align-items-center mt-2">
+            <i class="fa fa-circle-o-notch fa-spin me-2"/>
+            <span>Listening for sign-in… this dialog closes automatically once you approve.</span>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- `sequence` drives list order (model _order = 'sequence, name'): lower = higher.
+         Curated so the most popular providers float to the top; the long tail shares
+         sequence 500 and sorts alphabetically. These values live in the noupdate=1
+         records below, so existing installs get them from migrations/19.0.1.8.0
+         (keep that migration's SEQUENCE_BY_CODE in sync with the values here). -->
+    <data noupdate="1">
+
+        <!-- ============ chat_completions / api_key ============ -->
+
+        <record id="provider_alibaba" model="ai.provider">
+            <field name="sequence">80</field>
+            <field name="name">Alibaba Cloud (DashScope)</field>
+            <field name="code">alibaba</field>
+            <field name="aliases">dashscope,alibaba-cloud,qwen-dashscope</field>
+            <field name="env_vars">DASHSCOPE_API_KEY</field>
+            <field name="base_url">https://dashscope-intl.aliyuncs.com/compatible-mode/v1</field>
+        </record>
+
+        <record id="provider_alibaba_coding_plan" model="ai.provider">
+            <field name="sequence">500</field>
+            <field name="name">Alibaba Cloud (Coding Plan)</field>
+            <field name="code">alibaba-coding-plan</field>
+            <field name="aliases">alibaba_coding,alibaba-coding,dashscope-coding</field>
+            <field name="env_vars">ALIBABA_CODING_PLAN_API_KEY,DASHSCOPE_API_KEY,ALIBABA_CODING_PLAN_BASE_URL</field>
+            <field name="base_url">https://coding-intl.dashscope.aliyuncs.com/v1</field>
+            <field name="signup_url">https://help.aliyun.com/zh/model-studio/</field>
+        </record>
+
+        <record id="provider_arcee" model="ai.provider">
+            <field name="sequence">500</field>
+            <field name="name">Arcee AI</field>
+            <field name="code">arcee</field>
+            <field name="aliases">arcee-ai,arceeai</field>
+            <field name="env_vars">ARCEEAI_API_KEY</field>
+            <field name="base_url">https://api.arcee.ai/api/v1</field>
+        </record>
+
+        <record id="provider_azure_foundry" model="ai.provider">
+            <field name="sequence">500</field>
+            <field name="name">Azure Foundry</field>
+            <field name="code">azure-foundry</field>
+            <field name="aliases">azure,azure-ai-foundry,azure-ai</field>
+            <field name="env_vars">AZURE_FOUNDRY_API_KEY,AZURE_FOUNDRY_BASE_URL</field>
+            <field name="base_url"></field>
+            <field name="signup_url">https://ai.azure.com/</field>
+        </record>
+
+        <record id="provider_custom" model="ai.provider">
+            <field name="sequence">150</field>
+            <field name="name">Custom / Ollama (local)</field>
+            <field name="code">custom</field>
+            <field name="aliases">ollama,local,vllm,llamacpp,llama.cpp,llama-cpp</field>
+            <field name="base_url"></field>
+            <field name="default_max_tokens">65536</field>
+        </record>
+
+        <record id="provider_deepseek" model="ai.provider">
+            <field name="sequence">50</field>
+            <field name="name">DeepSeek</field>
+            <field name="code">deepseek</field>
+            <field name="aliases">deepseek-chat</field>
+            <field name="env_vars">DEEPSEEK_API_KEY</field>
+            <field name="base_url">https://api.deepseek.com/v1</field>
+            <field name="signup_url">https://platform.deepseek.com/</field>
+            <field name="default_aux_model">deepseek-chat</field>
+            <field name="fallback_models">deepseek-chat
+deepseek-reasoner</field>
+        </record>
+
+        <record id="provider_gemini" model="ai.provider">
+            <field name="sequence">30</field>
+            <field name="name">Google Gemini</field>
+            <field name="code">gemini</field>
+            <field name="aliases">google,google-gemini,google-ai-studio</field>
+            <field name="env_vars">GOOGLE_API_KEY,GEMINI_API_KEY</field>
+            <field name="base_url">https://generativelanguage.googleapis.com/v1beta</field>
+            <field name="default_aux_model">gemini-3.5-flash</field>
+            <field name="supports_vision">1</field>
+        </record>
+
+        <record id="provider_gmi" model="ai.provider">
+            <field name="sequence">500</field>
+            <field name="name">GMI Cloud</field>
+            <field name="code">gmi</field>
+            <field name="aliases">gmi-cloud,gmicloud</field>
+            <field name="env_vars">GMI_API_KEY,GMI_BASE_URL</field>
+            <field name="base_url">https://api.gmi-serving.com/v1</field>
+            <field name="signup_url">https://www.gmicloud.ai/</field>
+            <field name="default_headers">{"User-Agent": "OdooAIConnector/19.0"}</field>
+            <field name="default_aux_model">google/gemini-3.1-flash-lite-preview</field>
+            <field name="fallback_models">zai-org/GLM-5.1-FP8
+deepseek-ai/DeepSeek-V3.2
+moonshotai/Kimi-K2.5
+google/gemini-3.1-flash-lite-preview
+anthropic/claude-sonnet-4.6
+openai/gpt-5.4</field>
+        </record>
+
+        <record id="provider_huggingface" model="ai.provider">
+            <field name="sequence">130</field>
+            <field name="name">HuggingFace</field>
+            <field name="code">huggingface</field>
+            <field name="aliases">hf,hugging-face,huggingface-hub</field>
+            <field name="env_vars">HF_TOKEN</field>
+            <field name="base_url">https://router.huggingface.co/v1</field>
+            <field name="signup_url">https://huggingface.co/settings/tokens</field>
+            <field name="fallback_models">Qwen/Qwen3.5-72B-Instruct
+deepseek-ai/DeepSeek-V3.2</field>
+        </record>
+
+        <record id="provider_kilocode" model="ai.provider">
+            <field name="sequence">500</field>
+            <field name="name">Kilo Code</field>
+            <field name="code">kilocode</field>
+            <field name="aliases">kilo-code,kilo,kilo-gateway</field>
+            <field name="env_vars">KILOCODE_API_KEY</field>
+            <field name="base_url">https://api.kilo.ai/api/gateway</field>
+            <field name="default_aux_model">google/gemini-3-flash-preview</field>
+        </record>
+
+        <record id="provider_kimi_coding" model="ai.provider">
+            <field name="sequence">100</field>
+            <field name="name">Kimi / Moonshot</field>
+            <field name="code">kimi-coding</field>
+            <field name="aliases">kimi,moonshot,kimi-for-coding</field>
+            <field name="env_vars">KIMI_API_KEY,KIMI_CODING_API_KEY</field>
+            <field name="base_url">https://api.moonshot.ai/v1</field>
+            <field name="omit_temperature">1</field>
+            <field name="default_max_tokens">32000</field>
+            <field name="default_headers">{"User-Agent": "OdooAIConnector/19.0"}</field>
+            <field name="default_aux_model">kimi-k2-turbo-preview</field>
+        </record>
+
+        <record id="provider_kimi_coding_cn" model="ai.provider">
+            <field name="sequence">500</field>
+            <field name="name">Kimi / Moonshot (CN)</field>
+            <field name="code">kimi-coding-cn</field>
+            <field name="aliases">kimi-cn,moonshot-cn</field>
+            <field name="env_vars">KIMI_CN_API_KEY</field>
+            <field name="base_url">https://api.moonshot.cn/v1</field>
+            <field name="omit_temperature">1</field>
+            <field name="default_max_tokens">32000</field>
+            <field name="default_headers">{"User-Agent": "OdooAIConnector/19.0"}</field>
+            <field name="default_aux_model">kimi-k2-turbo-preview</field>
+        </record>
+
+        <record id="provider_novita" model="ai.provider">
+            <field name="sequence">200</field>
+            <field name="name">NovitaAI</field>
+            <field name="code">novita</field>
+            <field name="aliases">novita-ai,novitaai</field>
+            <field name="env_vars">NOVITA_API_KEY,NOVITA_BASE_URL</field>
+            <field name="base_url">https://api.novita.ai/openai/v1</field>
+            <field name="signup_url">https://novita.ai/settings/key-management</field>
+            <field name="default_aux_model">deepseek/deepseek-v3-0324</field>
+            <field name="fallback_models">moonshotai/kimi-k2.5
+minimax/minimax-m2.7
+zai-org/glm-5
+deepseek/deepseek-v3-0324
+deepseek/deepseek-r1-0528
+qwen/qwen3-235b-a22b-fp8</field>
+        </record>
+
+        <record id="provider_nvidia" model="ai.provider">
+            <field name="sequence">120</field>
+            <field name="name">NVIDIA NIM</field>
+            <field name="code">nvidia</field>
+            <field name="aliases">nvidia-nim</field>
+            <field name="env_vars">NVIDIA_API_KEY</field>
+            <field name="base_url">https://integrate.api.nvidia.com/v1</field>
+            <field name="signup_url">https://build.nvidia.com/</field>
+            <field name="default_max_tokens">16384</field>
+            <field name="fallback_models">nvidia/llama-3.1-nemotron-70b-instruct
+nvidia/llama-3.3-70b-instruct</field>
+        </record>
+
+        <record id="provider_ollama_cloud" model="ai.provider">
+            <field name="sequence">160</field>
+            <field name="name">Ollama Cloud</field>
+            <field name="code">ollama-cloud</field>
+            <field name="aliases">ollama_cloud</field>
+            <field name="env_vars">OLLAMA_API_KEY</field>
+            <field name="base_url">https://ollama.com/v1</field>
+            <field name="default_aux_model">nemotron-3-nano:30b</field>
+        </record>
+
+        <record id="provider_opencode_zen" model="ai.provider">
+            <field name="sequence">500</field>
+            <field name="name">OpenCode Zen</field>
+            <field name="code">opencode-zen</field>
+            <field name="aliases">opencode,opencode_zen,zen</field>
+            <field name="env_vars">OPENCODE_ZEN_API_KEY</field>
+            <field name="base_url">https://opencode.ai/zen/v1</field>
+            <field name="default_aux_model">gemini-3-flash</field>
+        </record>
+
+        <record id="provider_opencode_go" model="ai.provider">
+            <field name="sequence">500</field>
+            <field name="name">OpenCode Go</field>
+            <field name="code">opencode-go</field>
+            <field name="aliases">opencode_go,go,opencode-go-sub</field>
+            <field name="env_vars">OPENCODE_GO_API_KEY</field>
+            <field name="base_url">https://opencode.ai/zen/go/v1</field>
+            <field name="default_aux_model">glm-5</field>
+        </record>
+
+        <record id="provider_openrouter" model="ai.provider">
+            <field name="sequence">60</field>
+            <field name="name">OpenRouter</field>
+            <field name="code">openrouter</field>
+            <field name="aliases">or</field>
+            <field name="env_vars">OPENROUTER_API_KEY</field>
+            <field name="base_url">https://openrouter.ai/api/v1</field>
+            <field name="models_url">https://openrouter.ai/api/v1/models</field>
+            <field name="signup_url">https://openrouter.ai/keys</field>
+            <field name="fallback_models">anthropic/claude-sonnet-4.6
+openai/gpt-5.4
+deepseek/deepseek-chat
+google/gemini-3-flash-preview
+qwen/qwen3-plus</field>
+        </record>
+
+        <record id="provider_stepfun" model="ai.provider">
+            <field name="sequence">500</field>
+            <field name="name">StepFun</field>
+            <field name="code">stepfun</field>
+            <field name="aliases">step,stepfun-coding-plan</field>
+            <field name="env_vars">STEPFUN_API_KEY</field>
+            <field name="base_url">https://api.stepfun.ai/step_plan/v1</field>
+            <field name="default_aux_model">step-3.5-flash</field>
+        </record>
+
+        <record id="provider_xiaomi" model="ai.provider">
+            <field name="sequence">500</field>
+            <field name="name">Xiaomi MiMo</field>
+            <field name="code">xiaomi</field>
+            <field name="aliases">mimo,xiaomi-mimo</field>
+            <field name="env_vars">XIAOMI_API_KEY</field>
+            <field name="base_url">https://api.xiaomimimo.com/v1</field>
+            <field name="supports_health_check">0</field>
+            <field name="supports_vision">1</field>
+            <field name="supports_vision_tool_messages">0</field>
+        </record>
+
+        <record id="provider_zai" model="ai.provider">
+            <field name="sequence">90</field>
+            <field name="name">Z.AI (GLM)</field>
+            <field name="code">zai</field>
+            <field name="aliases">glm,z-ai,z.ai,zhipu</field>
+            <field name="env_vars">GLM_API_KEY,ZAI_API_KEY,Z_AI_API_KEY</field>
+            <field name="base_url">https://api.z.ai/api/paas/v4</field>
+            <field name="signup_url">https://z.ai/</field>
+            <field name="default_aux_model">glm-4.5-flash</field>
+            <field name="fallback_models">glm-5
+glm-4-9b</field>
+        </record>
+
+        <!-- ============ anthropic_messages ============ -->
+
+        <record id="provider_anthropic" model="ai.provider">
+            <field name="sequence">20</field>
+            <field name="name">Anthropic (Claude)</field>
+            <field name="code">anthropic</field>
+            <field name="aliases">claude</field>
+            <field name="api_mode">anthropic_messages</field>
+            <field name="env_vars">ANTHROPIC_API_KEY,ANTHROPIC_TOKEN,CLAUDE_CODE_OAUTH_TOKEN</field>
+            <field name="base_url">https://api.anthropic.com</field>
+            <field name="signup_url">https://console.anthropic.com/settings/keys</field>
+            <field name="default_aux_model">claude-haiku-4-5-20251001</field>
+            <field name="supports_vision">1</field>
+        </record>
+
+        <!-- claude.ai Pro/Max login via OAuth (PKCE). Same Messages API as the
+             api-key provider above, but tokens auth via Bearer + anthropic-beta
+             (see tools/auth.py) and the token endpoint speaks JSON. OAuth client
+             + endpoints are seeded in data/ai_provider_oauth_data.xml. -->
+        <record id="provider_claude_oauth" model="ai.provider">
+            <field name="sequence">25</field>
+            <field name="name">Claude (claude.ai OAuth)</field>
+            <field name="code">claude-oauth</field>
+            <field name="aliases">claude-code,claude-pro,claude-max</field>
+            <field name="api_mode">anthropic_messages</field>
+            <field name="auth_type">oauth_external</field>
+            <field name="base_url">https://api.anthropic.com</field>
+            <field name="signup_url">https://claude.ai</field>
+            <field name="default_aux_model">claude-haiku-4-5-20251001</field>
+            <field name="supports_vision">1</field>
+            <!-- No seeded fallback_models: the live /v1/models fetch (OAuth Bearer
+                 + uTLS) is the source of truth, so the catalog never shows stale
+                 hardcoded model ids. -->
+        </record>
+
+        <record id="provider_minimax" model="ai.provider">
+            <field name="sequence">110</field>
+            <field name="name">MiniMax</field>
+            <field name="code">minimax</field>
+            <field name="aliases">mini-max</field>
+            <field name="api_mode">anthropic_messages</field>
+            <field name="env_vars">MINIMAX_API_KEY</field>
+            <field name="base_url">https://api.minimax.io/anthropic</field>
+            <field name="default_aux_model">MiniMax-M3</field>
+        </record>
+
+        <record id="provider_minimax_cn" model="ai.provider">
+            <field name="sequence">500</field>
+            <field name="name">MiniMax (CN)</field>
+            <field name="code">minimax-cn</field>
+            <field name="aliases">minimax-china,minimax_cn</field>
+            <field name="api_mode">anthropic_messages</field>
+            <field name="env_vars">MINIMAX_CN_API_KEY</field>
+            <field name="base_url">https://api.minimaxi.com/anthropic</field>
+            <field name="default_aux_model">MiniMax-M3</field>
+        </record>
+
+        <record id="provider_minimax_oauth" model="ai.provider">
+            <field name="sequence">500</field>
+            <field name="name">MiniMax (OAuth)</field>
+            <field name="code">minimax-oauth</field>
+            <field name="aliases">minimax_oauth,minimax-oauth-io</field>
+            <field name="api_mode">anthropic_messages</field>
+            <field name="auth_type">oauth_external</field>
+            <field name="base_url">https://api.minimax.io/anthropic</field>
+            <field name="signup_url">https://api.minimax.io/</field>
+            <field name="default_aux_model">MiniMax-M2.7</field>
+        </record>
+
+        <!-- ============ codex_responses ============ -->
+
+        <record id="provider_openai_codex" model="ai.provider">
+            <field name="sequence">10</field>
+            <field name="name">OpenAI Codex</field>
+            <field name="code">openai-codex</field>
+            <field name="aliases">codex,openai_codex</field>
+            <field name="api_mode">codex_responses</field>
+            <field name="auth_type">oauth_external</field>
+            <field name="base_url">https://chatgpt.com/backend-api/codex</field>
+            <!-- Image gen via the /responses image_generation tool. PLAN-GATED:
+                 works on Team/Pro/paid ChatGPT plans, stripped on Free/Plus
+                 (the call then 400s with a clear message). Use a paid Codex
+                 credential. -->
+            <field name="supports_image_gen">1</field>
+            <field name="supports_image_edit">1</field>
+            <field name="default_image_model">gpt-image-2-medium</field>
+        </record>
+
+        <record id="provider_xai" model="ai.provider">
+            <field name="sequence">40</field>
+            <field name="name">xAI (Grok)</field>
+            <field name="code">xai</field>
+            <field name="aliases">grok,x-ai,x.ai</field>
+            <field name="api_mode">codex_responses</field>
+            <field name="env_vars">XAI_API_KEY</field>
+            <field name="base_url">https://api.x.ai/v1</field>
+            <field name="signup_url">https://console.x.ai/</field>
+            <field name="supports_image_gen">1</field>
+            <field name="supports_video_gen">1</field>
+            <field name="default_image_model">grok-imagine-image</field>
+            <field name="default_video_model">grok-imagine-video</field>
+        </record>
+
+        <!-- ============ aws_sdk ============ -->
+
+        <record id="provider_bedrock" model="ai.provider">
+            <field name="sequence">140</field>
+            <field name="name">AWS Bedrock</field>
+            <field name="code">bedrock</field>
+            <field name="aliases">aws,aws-bedrock,amazon-bedrock,amazon</field>
+            <field name="api_mode">bedrock_converse</field>
+            <field name="auth_type">aws_sdk</field>
+            <field name="base_url">https://bedrock-runtime.us-east-1.amazonaws.com</field>
+            <field name="supports_health_check">0</field>
+        </record>
+
+        <!-- ============ oauth (device code / external) ============ -->
+
+        <record id="provider_xai_oauth" model="ai.provider">
+            <field name="sequence">190</field>
+            <field name="name">xAI Grok (OAuth · SuperGrok / Premium+)</field>
+            <field name="code">xai-oauth</field>
+            <field name="aliases">xai-grok-oauth,grok-oauth</field>
+            <field name="api_mode">codex_responses</field>
+            <field name="auth_type">oauth_external</field>
+            <field name="base_url">https://api.x.ai/v1</field>
+            <field name="signup_url">https://x.ai/</field>
+            <field name="supports_image_gen">1</field>
+            <field name="supports_video_gen">1</field>
+            <field name="default_image_model">grok-imagine-image</field>
+            <field name="default_video_model">grok-imagine-video</field>
+        </record>
+
+        <record id="provider_qwen_oauth" model="ai.provider">
+            <field name="sequence">70</field>
+            <field name="name">Qwen Portal (OAuth)</field>
+            <field name="code">qwen-oauth</field>
+            <field name="aliases">qwen,qwen-portal,qwen-cli</field>
+            <field name="auth_type">oauth_external</field>
+            <field name="env_vars">QWEN_API_KEY</field>
+            <field name="base_url">https://portal.qwen.ai/v1</field>
+            <field name="default_max_tokens">65536</field>
+        </record>
+
+        <record id="provider_google_gemini_cli" model="ai.provider">
+            <field name="sequence">180</field>
+            <field name="name">Google Gemini CLI (OAuth)</field>
+            <field name="code">google-gemini-cli</field>
+            <field name="aliases">gemini-cli,gemini-oauth</field>
+            <field name="auth_type">oauth_external</field>
+            <!-- Chat goes through Google's Cloud Code Assist API (v1internal),
+                 a Gemini-native protocol — not OpenAI chat-completions. The
+                 base_url is just a marker selecting the gemini_cloudcode
+                 transport; there is no public /models endpoint, so model
+                 discovery uses the curated fallback list below. -->
+            <field name="api_mode">gemini_cloudcode</field>
+            <field name="base_url">cloudcode-pa://google</field>
+            <field name="default_aux_model">gemini-3-flash-preview</field>
+            <field name="fallback_models">gemini-3.1-pro-preview
+gemini-3-pro-preview
+gemini-3-flash-preview
+gemini-3.5-flash</field>
+        </record>
+
+        <!-- ============ copilot ============ -->
+
+        <record id="provider_copilot" model="ai.provider">
+            <field name="sequence">170</field>
+            <field name="name">GitHub Copilot</field>
+            <field name="code">copilot</field>
+            <field name="aliases">github-copilot,github-models,github-model,github</field>
+            <field name="auth_type">copilot</field>
+            <field name="env_vars">COPILOT_GITHUB_TOKEN,GH_TOKEN,GITHUB_TOKEN</field>
+            <field name="base_url">https://api.githubcopilot.com</field>
+        </record>
+
+        <!-- ============ external_process (seeded, not wired) ============ -->
+
+        <record id="provider_copilot_acp" model="ai.provider">
+            <field name="sequence">900</field>
+            <field name="name">GitHub Copilot (ACP)</field>
+            <field name="code">copilot-acp</field>
+            <field name="aliases">github-copilot-acp,copilot-acp-agent</field>
+            <field name="auth_type">external_process</field>
+            <field name="base_url">acp://copilot</field>
+            <field name="supports_health_check">0</field>
+        </record>
+
+    </data>
+</odoo>

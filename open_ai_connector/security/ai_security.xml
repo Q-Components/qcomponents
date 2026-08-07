@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <record id="module_category_ai_connector" model="ir.module.category">
+            <field name="name">AI Connector</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- v19: groups are grouped under a res.groups.privilege, not category_id -->
+        <record id="privilege_ai_connector" model="res.groups.privilege">
+            <field name="name">AI Connector</field>
+            <field name="category_id" ref="module_category_ai_connector"/>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="group_ai_user" model="res.groups">
+            <field name="name">AI User</field>
+            <field name="privilege_id" ref="privilege_ai_connector"/>
+            <field name="comment">Can call the AI connector and use the playground.</field>
+        </record>
+
+        <record id="group_ai_manager" model="res.groups">
+            <field name="name">AI Manager</field>
+            <field name="privilege_id" ref="privilege_ai_connector"/>
+            <field name="implied_ids" eval="[(4, ref('group_ai_user'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_admin'))]"/>
+            <field name="comment">Can manage providers, credentials and secrets.</field>
+        </record>
+
+        <!-- Multi-company isolation -->
+        <!-- No groups => global record rule -->
+        <record id="rule_ai_credential_company" model="ir.rule">
+            <field name="name">AI Credential: multi-company</field>
+            <field name="model_id" ref="model_ai_credential"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="rule_ai_completion_log_company" model="ir.rule">
+            <field name="name">AI Completion Log: multi-company</field>
+            <field name="model_id" ref="model_ai_completion_log"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- Per-user log isolation: a plain AI User only sees their OWN calls;
+             AI Managers (a separate group rule, OR-ed) see all. Both are
+             group-scoped (non-global) and AND with the multi-company rule. -->
+        <record id="rule_ai_completion_log_own" model="ir.rule">
+            <field name="name">AI Completion Log: own only</field>
+            <field name="model_id" ref="model_ai_completion_log"/>
+            <field name="groups" eval="[(4, ref('group_ai_user'))]"/>
+            <field name="domain_force">[('user_id', '=', user.id)]</field>
+        </record>
+
+        <record id="rule_ai_completion_log_manager_all" model="ir.rule">
+            <field name="name">AI Completion Log: manager sees all</field>
+            <field name="model_id" ref="model_ai_completion_log"/>
+            <field name="groups" eval="[(4, ref('group_ai_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+    </data>
+</odoo>

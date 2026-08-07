@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_ai_completion_log_list" model="ir.ui.view">
+        <field name="name">ai.completion.log.list</field>
+        <field name="model">ai.completion.log</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="status == 'error'" create="false">
+                <field name="create_date"/>
+                <field name="provider_id"/>
+                <field name="model"/>
+                <field name="user_id"/>
+                <field name="prompt_tokens" string="Prompt" sum="Prompt"/>
+                <field name="completion_tokens" string="Completion" sum="Completion"/>
+                <field name="total_tokens" string="Total" sum="Total"/>
+                <field name="duration_ms" string="ms"/>
+                <field name="status" widget="badge" decoration-success="status == 'ok'"
+                       decoration-danger="status == 'error'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ai_completion_log_form" model="ir.ui.view">
+        <field name="name">ai.completion.log.form</field>
+        <field name="model">ai.completion.log</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="provider_id"/>
+                            <field name="credential_id"/>
+                            <field name="model"/>
+                            <field name="user_id"/>
+                            <field name="create_date"/>
+                        </group>
+                        <group>
+                            <field name="status"/>
+                            <field name="finish_reason"/>
+                            <field name="prompt_tokens"/>
+                            <field name="completion_tokens"/>
+                            <field name="total_tokens"/>
+                            <field name="duration_ms"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Request"><field name="request_json"/></page>
+                        <page string="Response"><field name="response_text"/></page>
+                        <page string="Error" invisible="status != 'error'"><field name="error"/></page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_ai_completion_log_search" model="ir.ui.view">
+        <field name="name">ai.completion.log.search</field>
+        <field name="model">ai.completion.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="model"/>
+                <field name="provider_id"/>
+                <field name="user_id"/>
+                <filter name="errors" string="Errors" domain="[('status', '=', 'error')]"/>
+                <filter name="mine" string="My Calls" domain="[('user_id', '=', uid)]"/>
+                <group>
+                    <filter name="group_provider" string="Provider" context="{'group_by': 'provider_id'}"/>
+                    <filter name="group_model" string="Model" context="{'group_by': 'model'}"/>
+                    <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_ai_completion_log" model="ir.actions.act_window">
+        <field name="name">Usage Logs</field>
+        <field name="res_model">ai.completion.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_ai_completion_log_search"/>
+    </record>
+
+</odoo>

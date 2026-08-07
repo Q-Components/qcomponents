@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_ai_config_settings_form" model="ir.ui.view">
+        <field name="name">res.config.settings.ai.connector</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="AI Connector" string="AI Connector" name="open_ai_connector"
+                     groups="open_ai_connector.group_ai_manager">
+                    <block title="HTTP Gateway" name="ai_gateway">
+                        <setting string="Enable HTTP Gateway"
+                                 help="Expose the OpenAI-compatible /ai/v1/chat/completions endpoint.">
+                            <field name="ai_gateway_enabled"/>
+                        </setting>
+                        <setting string="Default Provider"
+                                 help="Used by the gateway when a model has no provider prefix. Only providers with a connected credential are listed.">
+                            <field name="ai_default_provider_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                        </setting>
+                        <setting string="Default Model"
+                                 help="Model the gateway uses when the request omits one — pick from the selected provider's fetched models.">
+                            <field name="ai_default_model_id"
+                                   domain="[('provider_id', '=', ai_default_provider_id)]"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   placeholder="Select a provider first"
+                                   readonly="not ai_default_provider_id"/>
+                        </setting>
+                        <setting string="Rate Limit (calls/min/user)"
+                                 help="Throttle gateway calls per user per minute. 0 disables the limit.">
+                            <field name="ai_gateway_rate_limit"/>
+                        </setting>
+                        <setting string="Max Output Tokens"
+                                 help="Ceiling clamped onto max_tokens for gateway requests. 0 = no clamp.">
+                            <field name="ai_gateway_max_tokens"/>
+                        </setting>
+                    </block>
+                    <block title="Connect Other Apps (Gateway)" name="ai_gateway_connect"
+                           invisible="not ai_gateway_enabled">
+                        <setting string="Gateway Base URL"
+                                 help="OpenAI-compatible base URL. Point any OpenAI SDK / app (LangChain, n8n, etc.) at this 'base_url'.">
+                            <field name="ai_gateway_base_url" widget="CopyClipboardChar"/>
+                        </setting>
+                        <setting string="How to connect"
+                                 help="1) Create an Odoo API key: top-right avatar → Preferences → Account Security → New API Key. Use it as the Bearer token / 'api_key'.&#10;2) Endpoints: POST /chat/completions and GET /models (under the base URL above).&#10;3) Model = 'provider/model' (e.g. xai-oauth/grok-4, openai-codex/gpt-5.5). Omit the provider to use the Default Provider/Model above.&#10;4) This server hosts several DBs — append ?db=&lt;database&gt; to the URL (shown in the example) unless the host maps to one DB.">
+                            <field name="ai_gateway_curl" readonly="1" nolabel="1"/>
+                        </setting>
+                    </block>
+                    <block title="Outbound Security (SSRF)" name="ai_outbound">
+                        <setting string="Block Private/Loopback Endpoints"
+                                 help="Refuse calls to loopback/private IPs. Turn OFF if you use a local provider (Ollama/vLLM). Cloud metadata + link-local are always blocked.">
+                            <field name="ai_block_private_endpoints"/>
+                        </setting>
+                        <setting string="Outbound Host Allowlist"
+                                 help="Only these hosts/domains may be called (comma/space separated). Include API, OAuth and model-fetch hosts. Empty = allow any except blocked ranges.">
+                            <field name="ai_outbound_allowlist"
+                                   placeholder="api.openai.com, openrouter.ai, auth.openai.com"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_ai_config_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'open_ai_connector'}</field>
+    </record>
+
+</odoo>

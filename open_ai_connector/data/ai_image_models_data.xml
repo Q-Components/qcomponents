@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Image-generation models (NOT in the chat catalog / live /models fetch).
+             Flagged is_image_model so AI Image Studio's picker can list them.
+             Model ids match each provider's image-generation models. -->
+
+        <!-- OpenAI Codex (gpt-image-2 tiers via the /responses image_generation tool) -->
+        <record id="imgmodel_codex_gpt_image_2_low" model="ai.model">
+            <field name="provider_id" ref="provider_openai_codex"/>
+            <field name="model_id">gpt-image-2-low</field>
+            <field name="is_image_model">1</field>
+            <field name="supports_tools">0</field>
+        </record>
+        <record id="imgmodel_codex_gpt_image_2_medium" model="ai.model">
+            <field name="provider_id" ref="provider_openai_codex"/>
+            <field name="model_id">gpt-image-2-medium</field>
+            <field name="is_image_model">1</field>
+            <field name="supports_tools">0</field>
+        </record>
+        <record id="imgmodel_codex_gpt_image_2_high" model="ai.model">
+            <field name="provider_id" ref="provider_openai_codex"/>
+            <field name="model_id">gpt-image-2-high</field>
+            <field name="is_image_model">1</field>
+            <field name="supports_tools">0</field>
+        </record>
+
+        <!-- xAI Grok Imagine (api-key) -->
+        <record id="imgmodel_xai_grok_imagine_image" model="ai.model">
+            <field name="provider_id" ref="provider_xai"/>
+            <field name="model_id">grok-imagine-image</field>
+            <field name="is_image_model">1</field>
+            <field name="supports_tools">0</field>
+        </record>
+        <record id="imgmodel_xai_grok_imagine_image_quality" model="ai.model">
+            <field name="provider_id" ref="provider_xai"/>
+            <field name="model_id">grok-imagine-image-quality</field>
+            <field name="is_image_model">1</field>
+            <field name="supports_tools">0</field>
+        </record>
+
+        <!-- xAI Grok Imagine (SuperGrok OAuth) -->
+        <record id="imgmodel_xai_oauth_grok_imagine_image" model="ai.model">
+            <field name="provider_id" ref="provider_xai_oauth"/>
+            <field name="model_id">grok-imagine-image</field>
+            <field name="is_image_model">1</field>
+            <field name="supports_tools">0</field>
+        </record>
+        <record id="imgmodel_xai_oauth_grok_imagine_image_quality" model="ai.model">
+            <field name="provider_id" ref="provider_xai_oauth"/>
+            <field name="model_id">grok-imagine-image-quality</field>
+            <field name="is_image_model">1</field>
+            <field name="supports_tools">0</field>
+        </record>
+    </data>
+</odoo>

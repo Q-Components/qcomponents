@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ai_provider_user,ai.provider.user,model_ai_provider,group_ai_user,1,0,0,0
+access_ai_provider_manager,ai.provider.manager,model_ai_provider,group_ai_manager,1,1,1,1
+access_ai_model_user,ai.model.user,model_ai_model,group_ai_user,1,0,0,0
+access_ai_model_manager,ai.model.manager,model_ai_model,group_ai_manager,1,1,1,1
+access_ai_credential_user,ai.credential.user,model_ai_credential,group_ai_user,1,0,0,0
+access_ai_credential_manager,ai.credential.manager,model_ai_credential,group_ai_manager,1,1,1,1
+access_ai_completion_log_user,ai.completion.log.user,model_ai_completion_log,group_ai_user,1,0,0,0
+access_ai_completion_log_manager,ai.completion.log.manager,model_ai_completion_log,group_ai_manager,1,1,1,1
+access_ai_playground_user,ai.playground.user,model_ai_playground,group_ai_user,1,1,1,1
+access_ai_oauth_wizard_manager,ai.oauth.wizard.manager,model_ai_oauth_wizard,group_ai_manager,1,1,1,1

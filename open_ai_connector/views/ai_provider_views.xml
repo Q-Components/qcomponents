@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_ai_provider_list" model="ir.ui.view">
+        <field name="name">ai.provider.list</field>
+        <field name="model">ai.provider</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not is_wired">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="api_mode"/>
+                <field name="auth_type"/>
+                <field name="base_url" optional="show"/>
+                <field name="credential_count" string="Creds"/>
+                <field name="model_count" string="Models"/>
+                <field name="is_wired" widget="boolean_toggle" readonly="1"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ai_provider_form" model="ir.ui.view">
+        <field name="name">ai.provider.form</field>
+        <field name="model">ai.provider</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_fetch_models" type="object" string="Fetch Models"
+                            class="oe_highlight" groups="open_ai_connector.group_ai_manager"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Not Wired" bg_color="text-bg-warning"
+                            invisible="is_wired"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_credentials" type="object"
+                                class="oe_stat_button" icon="fa-key">
+                            <field name="credential_count" widget="statinfo" string="Credentials"/>
+                        </button>
+                        <button name="action_view_models" type="object"
+                                class="oe_stat_button" icon="fa-cubes">
+                            <field name="model_count" widget="statinfo" string="Models"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Provider name"/></h1>
+                        <h3><field name="code" placeholder="code"/></h3>
+                    </div>
+                    <group>
+                        <group string="Protocol &amp; Auth">
+                            <field name="api_mode"/>
+                            <field name="auth_type"/>
+                            <field name="is_wired"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Endpoints">
+                            <field name="base_url"/>
+                            <field name="models_url"/>
+                            <field name="signup_url" widget="url"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Defaults">
+                            <field name="default_aux_model"/>
+                            <field name="default_max_tokens"/>
+                            <field name="omit_temperature"/>
+                            <field name="fixed_temperature"/>
+                        </group>
+                        <group string="Capabilities">
+                            <field name="supports_vision"/>
+                            <field name="supports_vision_tool_messages"/>
+                            <field name="supports_health_check"/>
+                            <field name="aliases"/>
+                            <field name="env_vars"/>
+                        </group>
+                    </group>
+                    <group string="OAuth Defaults"
+                           invisible="auth_type not in ('oauth_external', 'oauth_device_code')">
+                        <field name="oauth_flavor"/>
+                        <field name="oauth_client_id"/>
+                        <field name="oauth_client_secret"/>
+                        <field name="oauth_auth_url"/>
+                        <field name="oauth_token_url"/>
+                        <field name="oauth_device_authorization_url"/>
+                        <field name="oauth_scopes"/>
+                        <field name="oauth_redirect_uri"/>
+                        <field name="oauth_extra_authorize_params"
+                               placeholder='{"prompt": "login"}'/>
+                    </group>
+                    <notebook>
+                        <page string="Fallback Models" name="fallback">
+                            <field name="fallback_models" placeholder="One model id per line"/>
+                        </page>
+                        <page string="Default Headers" name="headers">
+                            <field name="default_headers" placeholder='{"User-Agent": "..."}'/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_ai_provider_search" model="ir.ui.view">
+        <field name="name">ai.provider.search</field>
+        <field name="model">ai.provider</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" filter_domain="['|', ('name', 'ilike', self), ('code', 'ilike', self), ('aliases', 'ilike', self)]"/>
+                <field name="api_mode"/>
+                <field name="auth_type"/>
+                <filter name="wired" string="Wired" domain="[('is_wired', '=', True)]"/>
+                <filter name="has_creds" string="Configured" domain="[('credential_ids', '!=', False)]"/>
+                <separator/>
+                <filter name="inactive" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_api_mode" string="API Mode" context="{'group_by': 'api_mode'}"/>
+                    <filter name="group_auth_type" string="Auth Type" context="{'group_by': 'auth_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_ai_provider" model="ir.actions.act_window">
+        <field name="name">Providers</field>
+        <field name="res_model">ai.provider</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_ai_provider_search"/>
+        <field name="context">{'search_default_wired': 1}</field>
+    </record>
+
+</odoo>

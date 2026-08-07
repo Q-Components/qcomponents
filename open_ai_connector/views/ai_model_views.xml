@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_ai_model_list" model="ir.ui.view">
+        <field name="name">ai.model.list</field>
+        <field name="model">ai.model</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="provider_id"/>
+                <field name="model_id"/>
+                <field name="is_image_model" optional="show"/>
+                <field name="context_window" optional="hide"/>
+                <field name="supports_tools" optional="show"/>
+                <field name="supports_vision" optional="show"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ai_model_search" model="ir.ui.view">
+        <field name="name">ai.model.search</field>
+        <field name="model">ai.model</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="model_id"/>
+                <field name="provider_id"/>
+                <filter name="chat_models" string="Chat Models" domain="[('is_image_model', '=', False)]"/>
+                <filter name="image_models" string="Image Models" domain="[('is_image_model', '=', True)]"/>
+                <group>
+                    <filter name="group_provider" string="Provider" context="{'group_by': 'provider_id'}"/>
+                    <filter name="group_image" string="Type (Image / Chat)" context="{'group_by': 'is_image_model'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_ai_model" model="ir.actions.act_window">
+        <field name="name">Models</field>
+        <field name="res_model">ai.model</field>
+        <field name="view_mode">list</field>
+        <field name="search_view_id" ref="view_ai_model_search"/>
+        <field name="context">{'search_default_group_provider': 1}</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate=0: refreshed on every module upgrade so OAuth endpoints stay current.
+         These client ids / endpoints are each provider's own public CLI OAuth clients. -->
+    <data noupdate="0">
+
+        <!-- OpenAI Codex — Authorization Code + PKCE (the codex-rs CLI's flow),
+             loopback redirect http://localhost:1455/auth/callback captured by the
+             local listener (paste-back fallback). The custom JSON device-code
+             flow remains available in tools/oauth.py if needed. -->
+        <record id="provider_openai_codex" model="ai.provider">
+            <field name="auth_type">oauth_external</field>
+            <field name="oauth_flavor">standard</field>
+            <field name="oauth_client_id">app_EMoamEEZ73f0CkXaXp7hrann</field>
+            <field name="oauth_auth_url">https://auth.openai.com/oauth/authorize</field>
+            <field name="oauth_device_authorization_url">https://auth.openai.com/api/accounts/deviceauth/usercode</field>
+            <field name="oauth_token_url">https://auth.openai.com/oauth/token</field>
+            <field name="oauth_scopes">openid email profile offline_access</field>
+            <field name="oauth_redirect_uri">http://localhost:1455/auth/callback</field>
+            <field name="oauth_extra_authorize_params">{"id_token_add_organizations": "true", "codex_cli_simplified_flow": "true"}</field>
+            <!-- Codex backend models endpoint returns {"models":[{"slug":..}]} -->
+            <field name="models_url">https://chatgpt.com/backend-api/codex/models?client_version=1.0.0</field>
+            <field name="fallback_models">gpt-5.5
+gpt-5.4-mini
+gpt-5.4
+gpt-5.3-codex
+gpt-5.3-codex-spark</field>
+        </record>
+
+        <!-- Qwen Portal — token/refresh endpoint (authorization handled by Qwen) -->
+        <!-- Qwen — OAuth 2.0 Device Authorization Grant + PKCE (qwen-code's flow).
+             Device code → user approves → poll token; the token response's
+             resource_url pins the per-account inference base. -->
+        <record id="provider_qwen_oauth" model="ai.provider">
+            <field name="auth_type">oauth_device_code</field>
+            <field name="oauth_flavor">qwen</field>
+            <field name="oauth_client_id">f0304373b74a44d2b584a3fb70ca9e56</field>
+            <field name="oauth_device_authorization_url">https://chat.qwen.ai/api/v1/oauth2/device/code</field>
+            <field name="oauth_token_url">https://chat.qwen.ai/api/v1/oauth2/token</field>
+            <field name="oauth_scopes">openid profile email model.completion</field>
+        </record>
+
+        <!-- Google Gemini CLI — Authorization Code + PKCE (Google public client) -->
+        <record id="provider_google_gemini_cli" model="ai.provider">
+            <!--<field name="oauth_client_id">681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com</field> 
+            <field name="oauth_client_secret">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</field> -->
+            <field name="oauth_auth_url">https://accounts.google.com/o/oauth2/v2/auth</field>
+            <field name="oauth_token_url">https://oauth2.googleapis.com/token</field>
+            <field name="oauth_scopes">https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile</field>
+            <field name="oauth_redirect_uri">http://127.0.0.1:8085/oauth2callback</field>
+            <field name="oauth_extra_authorize_params">{"access_type": "offline", "prompt": "consent"}</field>
+        </record>
+
+        <!-- xAI Grok — Authorization Code + PKCE (OIDC on auth.x.ai). Endpoints are
+             resolved from the OIDC discovery doc at login (auth/token can rotate);
+             the hardcoded auth/token URLs below are a fallback if discovery fails.
+             Loopback redirect + auto-capture; plan=generic permits loopback. -->
+        <record id="provider_xai_oauth" model="ai.provider">
+            <field name="oauth_client_id">b1a00492-073a-47ea-816f-4c329264a828</field>
+            <field name="oauth_discovery_url">https://auth.x.ai/.well-known/openid-configuration</field>
+            <field name="oauth_auth_url">https://auth.x.ai/oauth2/authorize</field>
+            <field name="oauth_token_url">https://auth.x.ai/oauth2/token</field>
+            <field name="oauth_scopes">openid profile email offline_access grok-cli:access api:access</field>
+            <field name="oauth_redirect_uri">http://127.0.0.1:56121/callback</field>
+            <field name="oauth_extra_authorize_params">{"plan": "generic"}</field>
+        </record>
+
+        <!-- Claude (claude.ai Pro/Max OAuth) — Authorization Code + PKCE. Token
+             endpoint speaks JSON (oauth_flavor=anthropic) and the tokens auth
+             inference via Bearer + anthropic-beta (handled in tools/auth.py),
+             NOT x-api-key. Loopback redirect http://localhost:54545/callback. -->
+        <record id="provider_claude_oauth" model="ai.provider">
+            <field name="oauth_flavor">anthropic</field>
+            <field name="oauth_client_id">9d1c250a-e61b-44d9-88ed-5944d1962f5e</field>
+            <field name="oauth_auth_url">https://claude.ai/oauth/authorize</field>
+            <field name="oauth_token_url">https://api.anthropic.com/v1/oauth/token</field>
+            <field name="oauth_scopes">user:profile user:inference user:sessions:claude_code user:mcp_servers user:file_upload</field>
+            <field name="oauth_redirect_uri">http://localhost:54545/callback</field>
+            <field name="oauth_extra_authorize_params">{"code": "true"}</field>
+        </record>
+
+        <!-- MiniMax — user-code / PKCE flow -->
+        <!-- MiniMax — custom PKCE "user code" flow: request a user code at the
+             authorize URL, user approves, poll the token URL until success. -->
+        <record id="provider_minimax_oauth" model="ai.provider">
+            <field name="auth_type">oauth_device_code</field>
+            <field name="oauth_flavor">minimax</field>
+            <field name="oauth_client_id">78257093-7e40-4613-99e0-527b14b39113</field>
+            <field name="oauth_auth_url">https://api.minimax.io/oauth/code</field>
+            <field name="oauth_token_url">https://api.minimax.io/oauth/token</field>
+            <field name="oauth_scopes">group_id profile model.completion</field>
+        </record>
+
+    </data>
+</odoo>
