@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_bridge_config_settings" model="ir.ui.view">
+        <field name="name">res.config.settings.ai.connector.bridge</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="open_ai_connector.view_ai_config_settings_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='ai_outbound']" position="before">
+                <block title="Odoo Native AI" name="ai_native_bridge">
+                    <setting string="Route Odoo AI through Connector"
+                             help="Make Odoo's native AI (Agents, AI fields, AI server actions) use the AI Connector. Pick the provider, account and model below. When off, Odoo's built-in AI is unchanged.">
+                        <field name="ai_connector_bridge_enabled"/>
+                        <div class="content-group mt-2" invisible="not ai_connector_bridge_enabled">
+                            <div class="row mt8">
+                                <label for="ai_bridge_provider_id" class="col-lg-4 o_light_label"/>
+                                <field name="ai_bridge_provider_id"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="ai_bridge_credential_id" class="col-lg-4 o_light_label"/>
+                                <field name="ai_bridge_credential_id"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       placeholder="Provider default"
+                                       readonly="not ai_bridge_provider_id"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="ai_bridge_model_id" class="col-lg-4 o_light_label"/>
+                                <field name="ai_bridge_model_id"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       placeholder="Select a provider first"
+                                       readonly="not ai_bridge_provider_id"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
