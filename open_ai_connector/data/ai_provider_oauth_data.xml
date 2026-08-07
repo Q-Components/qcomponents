@@ -42,8 +42,8 @@ gpt-5.3-codex-spark</field>
 
         <!-- Google Gemini CLI — Authorization Code + PKCE (Google public client) -->
         <record id="provider_google_gemini_cli" model="ai.provider">
-            <!--<field name="oauth_client_id">681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com</field> 
-            <field name="oauth_client_secret">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</field> -->
+            <field name="oauth_client_id"></field> 
+            <field name="oauth_client_secret"></field>
             <field name="oauth_auth_url">https://accounts.google.com/o/oauth2/v2/auth</field>
             <field name="oauth_token_url">https://oauth2.googleapis.com/token</field>
             <field name="oauth_scopes">https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile</field>

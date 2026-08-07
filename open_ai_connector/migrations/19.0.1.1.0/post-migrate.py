@@ -20,8 +20,6 @@ PROVIDER_OAUTH = {
         'oauth_token_url': 'https://chat.qwen.ai/api/v1/oauth2/token',
     },
     'google-gemini-cli': {
-        #'oauth_client_id': '681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com',
-        #'oauth_client_secret': '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',
         'oauth_auth_url': 'https://accounts.google.com/o/oauth2/v2/auth',
         'oauth_token_url': 'https://oauth2.googleapis.com/token',
         'oauth_scopes': ('https://www.googleapis.com/auth/cloud-platform '
