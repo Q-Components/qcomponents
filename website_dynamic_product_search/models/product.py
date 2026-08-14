@@ -9,7 +9,7 @@ class ProductTemplate(models.Model):
     def _search_get_detail(self, website, order, options):
         res = super()._search_get_detail(website, order, options)
 
-        for field in website.product_search_field_ids:
+        for field in website.product_search_field_ids.sudo():
             field_name = field.name
 
             if field.model == 'product.product':
