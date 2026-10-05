@@ -166,6 +166,12 @@ class StockWarehouse(models.Model):
             if len(items_list) == 0:
                 raise ValidationError("Product Not Found in the Response")
             _logger.info(">>>> Product data {}".format(items_list))
+            done_deliveries = self.env['stock.picking'].search([
+                ('picking_type_code', '=', 'outgoing'),
+                ('state', '=', 'done'),
+                ('picking_type_id.warehouse_id', '=', self.id),
+            ])
+            delivered_product_ids = done_deliveries.move_ids.product_id.ids
             for items_data in items_list:
                 product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
                 if not product_id:
@@ -237,12 +243,12 @@ class StockWarehouse(models.Model):
                 # create inventory line
                 stock_quant_obj = self.env['stock.quant']
                 location = self.lot_stock_id
-                if product_id and location:
+                if product_id.id in delivered_product_ids and location:
                     new_quantity = float(items_data.get('AvailableQuantity'))
                     stock_quant = stock_quant_obj.search([('product_id', '=', product_id.id),
                                                           ('location_id', '=', location.id)], limit=1)
                     if stock_quant:
-                        new_quantity = stock_quant.quantity + new_quantity
+                        # new_quantity = stock_quant.quantity + new_quantity
                         stock_quant.update({'inventory_quantity': new_quantity})
                         stock_quant.action_apply_inventory()
                         # stock_quant._update_available_quantity(product, location, float(qty_adjust), lot_id=None,
@@ -268,7 +274,7 @@ class StockWarehouse(models.Model):
         for current_record_id in self.search([]):
             if current_record_id.skuvault_UserToken and current_record_id.skuvault_tenantToken:
                 before_date = datetime.now() + relativedelta(hours=10)
-                after_date = before_date - relativedelta(days=1)
+                after_date = before_date - relativedelta(days=2)
                 current_record_id.get_item_quantities(afterdate=after_date, beforedate=before_date)
             else:
                 _logger.info(">>>> Authentication token not found")
