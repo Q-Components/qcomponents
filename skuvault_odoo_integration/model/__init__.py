@@ -5,3 +5,4 @@ from . import product_product
 from . import sale_order
 from . import skuvault_operation
 from . import stock_picking
+from . import skuvault_inventory_batch

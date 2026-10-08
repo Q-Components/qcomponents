@@ -9,9 +9,11 @@
     'depends': ['delivery','stock'],
     'data': [
         'security/ir.model.access.csv',
+        'data/skuvault_inventory_batch_data.xml',
         'view/sale_order.xml',
         'view/stock_warehouse.xml',
         'view/skuvault_operation_details.xml',
+        'view/skuvault_inventory_batch.xml',
         'view/product_template.xml',
         'view/stock_picking.xml',
         'data/skuvault_inventory_crone.xml',

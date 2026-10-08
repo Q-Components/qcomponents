@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data noupdate="1">
+        <record id="seq_skuvault_inventory_batch" model="ir.sequence">
+            <field name="name">Skuvault Inventory Batch</field>
+            <field name="code">skuvault.inventory.batch</field>
+            <field name="prefix">SKBATCH-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Cron 1: create batches (100 products each) from the SkuVault response -->
+        <record id="ir_cron_skuvault_create_batches" model="ir.cron">
+            <field name="name">Skuvault: Create Inventory Batches</field>
+            <field name="model_id" ref="stock.model_stock_warehouse"/>
+            <field name="state">code</field>
+            <field name="code">model.skuvault_cron_create_batches()</field>
+            <field name="interval_number">10</field>
+            <field name="interval_type">minutes</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Cron 2: update Odoo inventory batch wise -->
+        <record id="ir_cron_skuvault_process_batches" model="ir.cron">
+            <field name="name">Skuvault: Process Inventory Batches</field>
+            <field name="model_id" ref="model_skuvault_inventory_batch"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_process_batches()</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+</odoo>

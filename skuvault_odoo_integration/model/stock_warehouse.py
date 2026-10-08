@@ -1,7 +1,7 @@
 from dateutil.relativedelta import relativedelta
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
 from datetime import datetime
-from odoo import fields, models, _
+from odoo import api, fields, models, _
 import requests
 import logging
 import json
@@ -26,6 +26,11 @@ class StockWarehouse(models.Model):
     use_skuvault_warehouse_management = fields.Boolean(copy=False, string="Are You Using Skuvault?",
                                                        help="If use SKUVAULT warehouse management than value set TRUE.",
                                                        default=False)
+
+    skuvault_batch_size = fields.Integer(string="Batch Size", default=100)
+    skuvault_inventory_page_size = fields.Integer(string="API Page Size", default=1000,
+                                                  help="Products fetched from SkuVault per API call.")
+    skuvault_inventory_page = fields.Integer(string="Next API Page", default=0, copy=False)
 
     def create_skuvault_operation_detail(self, skuvault_operation, operation_type, req_data, response_data,
                                          operation_id,
@@ -137,13 +142,19 @@ class StockWarehouse(models.Model):
             _logger.info(error)
             self.create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, True, error)
 
-    def get_item_quantities(self, afterdate=False, beforedate=False):
+    def get_item_quantities(self, afterdate=False, beforedate=False,):
+        """
+        :param batch_qty_by_sku: optional dict {sku: available_qty}. When given (batch processing), the
+            SkuVault API is NOT called again and only these SKUs are searched/updated in Odoo.
+        """
         if not self.skuvault_tenantToken and self.skuvault_UserToken:
             raise ValidationError(_("Please generate authentication code"))
         api_url = "%s/api/inventory/getItemQuantities" % (self.skuvault_api_url)
         operation_id = self.env['skuvault.operation'].create(
             {'skuvault_operation': 'product', 'skuvault_operation_type': 'import', 'warehouse_id': self.id,
              'company_id': self.env.user.company_id.id, 'skuvault_message': 'Processing...'})
+        # {sku: False} when Odoo inventory was updated, {sku: 'reason'} when it was not
+        update_result = {}
         if afterdate and beforedate:
             data = {
                 "ModifiedAfterDateTimeUtc": "{}".format(afterdate),
@@ -166,15 +177,17 @@ class StockWarehouse(models.Model):
             if len(items_list) == 0:
                 raise ValidationError("Product Not Found in the Response")
             _logger.info(">>>> Product data {}".format(items_list))
-            done_deliveries = self.env['stock.picking'].search([
+            pending_deliveries = self.env['stock.picking'].search([
                 ('picking_type_code', '=', 'outgoing'),
-                ('state', '=', 'done'),
+                ('state', '=', 'assigned'),
                 ('picking_type_id.warehouse_id', '=', self.id),
             ])
-            delivered_product_ids = done_deliveries.move_ids.product_id.ids
+            delivery_pending_product_ids = pending_deliveries.move_ids.product_id.ids
             for items_data in items_list:
                 product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
                 if not product_id:
+                    update_result[items_data.get('Sku')] = "Product not found in Odoo."
+                    # continue
                     _logger.info("Product Not Found : {0}".format(items_data.get('Sku')))
                     product_api_url = "%s/api/products/getProduct" % (self.skuvault_api_url)
                     try:
@@ -242,8 +255,10 @@ class StockWarehouse(models.Model):
                                                               process_message)
                 # create inventory line
                 stock_quant_obj = self.env['stock.quant']
+                new_quantity = 0
                 location = self.lot_stock_id
-                if product_id.id in delivered_product_ids and location:
+                if product_id.id not in delivery_pending_product_ids and location:
+                # if product_id and location:
                     new_quantity = float(items_data.get('AvailableQuantity'))
                     stock_quant = stock_quant_obj.search([('product_id', '=', product_id.id),
                                                           ('location_id', '=', location.id)], limit=1)
@@ -259,6 +274,10 @@ class StockWarehouse(models.Model):
                             'product_id': product_id.id,
                             'inventory_quantity': new_quantity
                         }).action_apply_inventory()
+                    update_result[items_data.get('Sku')] = False
+                else:
+                    update_result[items_data.get('Sku')] = \
+                        "Inventory not updated: no done outgoing delivery found for this product in the warehouse."
 
                 process_message = ">>> Inventory Line Created Product Name : {0} and Quantity: {1} ".format(
                     product_id.name, new_quantity)
@@ -269,6 +288,7 @@ class StockWarehouse(models.Model):
         except Exception as error:
             _logger.info(error)
             self.create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, True, error)
+        return update_result
 
     def skuvault_inventory_crone(self):
         for current_record_id in self.search([]):
@@ -366,3 +386,93 @@ class StockWarehouse(models.Model):
             process_message = "{}".format(error)
             self.create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, False,
                                                   process_message)
+
+    def _skuvault_fetch_page(self):
+        """Fetch one page of SkuVault quantities. Returns {sku: available_qty}."""
+        self.ensure_one()
+        api_url = "%s/api/inventory/getItemQuantities" % self.skuvault_api_url
+
+        data = {
+            # "ModifiedAfterDateTimeUtc":"{}".format(self.skuvault_modify_after_date) ,
+            # "ModifiedBeforeDateTimeUtc":"{}".format(self.skuvault_modify_before_date) ,
+            "TenantToken": "{}".format(self.skuvault_tenantToken),
+            "UserToken": "{}".format(self.skuvault_UserToken),
+            "PageNumber": self.skuvault_inventory_page,
+            "pagesize": 10000,
+        }
+        response = self.skuvault_api_calling(api_url, data)
+        items = response.get('Items') or []
+        return {item['Sku']: float(item.get('AvailableQuantity') or 0.0) for item in items if item.get('Sku')}
+
+    def skuvault_create_batches(self):
+        """One API page -> batches of `skuvault_batch_size` products (500 products = 5 batches of 100).
+        SKUs which already have a batch line are skipped, so a product is never queued twice."""
+        self.ensure_one()
+        if not (self.skuvault_tenantToken and self.skuvault_UserToken):
+            raise UserError(_("Please generate the authentication token first."))
+        qty_by_sku = self._skuvault_fetch_page()
+        if not qty_by_sku:
+            return self.env['skuvault.inventory.batch']
+
+        queued = set(self.env['skuvault.inventory.batch.line'].search(
+            [('warehouse_id', '=', self.id), ('sku', 'in', list(qty_by_sku))]).mapped('sku'))
+        new_skus = [sku for sku in qty_by_sku if sku not in queued]
+        product_by_sku = {}
+        for product in self.env['product.product'].search([('default_code', 'in', new_skus)]):
+            product_by_sku.setdefault(product.default_code, product)
+        size = self.skuvault_batch_size or 100
+        batches = self.env['skuvault.inventory.batch']
+        for i in range(0, len(new_skus), size):
+            batches |= batches.create({
+                'warehouse_id': self.id,
+                'line_ids': [(0, 0, {
+                    'warehouse_id': self.id,
+                    'sku': sku,
+                    'available_qty': qty_by_sku[sku],
+                    'product_id': product_by_sku[sku].id if sku in product_by_sku else False,
+                }) for sku in new_skus[i:i + size]],
+            })
+        self.skuvault_inventory_page += 1
+        return batches
+
+    def action_create_inventory_batch(self):
+        self.ensure_one()
+        batches = self.skuvault_create_batches()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _("Skuvault Inventory Batch"),
+                'message': _("%s batch(es) created.", len(batches)),
+                'type': 'success',
+                'sticky': False,
+                'next': {'type': 'ir.actions.client', 'tag': 'reload'},
+            },
+        }
+
+    def action_view_inventory_batches(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Inventory Batches"),
+            'res_model': 'skuvault.inventory.batch',
+            'view_mode': 'list,form',
+            'domain': [('warehouse_id', '=', self.id)],
+        }
+
+    @api.model
+    def skuvault_cron_create_batches(self, max_pages=55):
+        """CRON 1: create batches from the SkuVault response."""
+        for warehouse in self.search([('use_skuvault_warehouse_management', '=', True)]):
+            if not (warehouse.skuvault_tenantToken and warehouse.skuvault_UserToken):
+                continue
+            for _page in range(max_pages):
+                try:
+                    batches = warehouse.skuvault_create_batches()
+                    self.env.cr.commit()
+                except Exception as error:
+                    self.env.cr.rollback()
+                    _logger.error("Skuvault batch creation failed for %s: %s", warehouse.name, error)
+                    break
+                if not batches:
+                    break
