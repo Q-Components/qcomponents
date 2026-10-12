@@ -185,74 +185,74 @@ class StockWarehouse(models.Model):
             delivery_pending_product_ids = pending_deliveries.move_ids.product_id.ids
             for items_data in items_list:
                 product_id = self.env['product.product'].search([('default_code', '=', items_data.get('Sku'))], limit=1)
-                if not product_id:
-                    update_result[items_data.get('Sku')] = "Product not found in Odoo."
-                    # continue
-                    _logger.info("Product Not Found : {0}".format(items_data.get('Sku')))
-                    product_api_url = "%s/api/products/getProduct" % (self.skuvault_api_url)
-                    try:
-                        headers = {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        }
-                        before_date = datetime.now() + relativedelta(hours=4) if not self.skuvault_modify_before_date else self.skuvault_modify_before_date
-                        after_date = before_date - relativedelta(days=4) if not self.skuvault_modify_after_date else self.skuvault_modify_after_date
-                        product_request_data = {
-                            "ProductCode":items_data.get('Code'),
-                            "TenantToken": "{}".format(self.skuvault_tenantToken),
-                            "UserToken": "{}".format(self.skuvault_UserToken)
-                        }
-                        _logger.info("{0}{1}".format(product_api_url,product_request_data))
-                        response_data = requests.post(url=product_api_url, data=json.dumps(product_request_data), headers=headers)
-                        if response_data.status_code in [200, 201]:
-                            product_response_data = response_data.json()
-                            _logger.info(">>> get successfully response from {}".format(product_response_data))
-                            if product_response_data.get('Product'):
-                                product_data = product_response_data.get('Product')
-                                product_tmpl_id = self.env['product.template'].sudo().search([('default_code', '=',product_data.get('Sku'))])
-                                vals = {
-                                    'description': product_data.get('Description'),
-                                    'default_code':product_data.get('Sku'),
-                                    'name':product_data.get('PartNumber','') or product_data.get('Sku'),
-                                    #'lst_price': product_data.get('SalePrice'),
-                                    'weight': product_data.get('WeightValue'),
-                                    'type':'consu',
-                                    'supplier_name':product_data.get('Supplier'),
-                                    'standard_price': product_data.get('Cost')}
-                                for attribute_data in product_data.get('Attributes'):
-                                    if attribute_data.get('Name') == 'Category' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_category': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'Alt Manufacturer' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_manufacturer': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'Alt Number' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_alternate_number': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'Date Code' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_date_code_1': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'Origin' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_origin_code': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'Condition' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_condition_1': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'Package' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_package': attribute_data.get('Value')})
-                                    elif attribute_data.get('Name') == 'RoHS' and attribute_data.get('Value'):
-                                        vals.update({'x_studio_rohs': attribute_data.get('Value')})
-                                if not product_tmpl_id:
-                                    product_tmpl_id = self.env['product.template'].create(vals)
-                                    product_id = product_tmpl_id.product_variant_id
-                                    process_message = "Product Created:{0} Name : {1}".format(product_id.default_code,product_id.name)
-                                self.sudo().create_skuvault_operation_detail('product', 'import', product_request_data, product_data,
-                                                                      operation_id, self, False, process_message)
-                                self._cr.commit()
-                        else:
-                            process_message = ">>>>> get some error from{}".format(response_data.text)
-                            _logger.info(process_message)
-                            self.sudo().create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, False,
-                                                                  process_message)
-                    except Exception as error:
-                        _logger.info(error)
-                        process_message = "{}".format(error)
-                        self.sudo().create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, False,
-                                                              process_message)
+                # if not product_id:
+                #     update_result[items_data.get('Sku')] = "Product not found in Odoo."
+                #     # continue
+                #     _logger.info("Product Not Found : {0}".format(items_data.get('Sku')))
+                #     product_api_url = "%s/api/products/getProduct" % (self.skuvault_api_url)
+                #     try:
+                #         headers = {
+                #             'Content-Type': 'application/json',
+                #             'Accept': 'application/json'
+                #         }
+                #         before_date = datetime.now() + relativedelta(hours=4) if not self.skuvault_modify_before_date else self.skuvault_modify_before_date
+                #         after_date = before_date - relativedelta(days=4) if not self.skuvault_modify_after_date else self.skuvault_modify_after_date
+                #         product_request_data = {
+                #             "ProductCode":items_data.get('Code'),
+                #             "TenantToken": "{}".format(self.skuvault_tenantToken),
+                #             "UserToken": "{}".format(self.skuvault_UserToken)
+                #         }
+                #         _logger.info("{0}{1}".format(product_api_url,product_request_data))
+                #         response_data = requests.post(url=product_api_url, data=json.dumps(product_request_data), headers=headers)
+                #         if response_data.status_code in [200, 201]:
+                #             product_response_data = response_data.json()
+                #             _logger.info(">>> get successfully response from {}".format(product_response_data))
+                #             if product_response_data.get('Product'):
+                #                 product_data = product_response_data.get('Product')
+                #                 product_tmpl_id = self.env['product.template'].sudo().search([('default_code', '=',product_data.get('Sku'))])
+                #                 vals = {
+                #                     'description': product_data.get('Description'),
+                #                     'default_code':product_data.get('Sku'),
+                #                     'name':product_data.get('PartNumber','') or product_data.get('Sku'),
+                #                     #'lst_price': product_data.get('SalePrice'),
+                #                     'weight': product_data.get('WeightValue'),
+                #                     'type':'consu',
+                #                     'supplier_name':product_data.get('Supplier'),
+                #                     'standard_price': product_data.get('Cost')}
+                #                 for attribute_data in product_data.get('Attributes'):
+                #                     if attribute_data.get('Name') == 'Category' and attribute_data.get('Value'):
+                #                         vals.update({'x_studio_category': attribute_data.get('Value')})
+                #                     elif attribute_data.get('Name') == 'Alt Manufacturer' and attribute_data.get('Value'):
+                #                         vals.update({'x_studio_manufacturer': attribute_data.get('Value')})
+                #                     elif attribute_data.get('Name') == 'Alt Number' and attribute_data.get('Value'):
+                #                         vals.update({'x_studio_alternate_number': attribute_data.get('Value')})
+                #                     elif attribute_data.get('Name') == 'Date Code' and attribute_data.get('Value'):
+                #                         vals.update({'x_studio_date_code_1': attribute_data.get('Value')})
+                #                     elif attribute_data.get('Name') == 'Origin' and attribute_data.get('Value'):
+                #                         vals.update({'x_studio_origin_code': attribute_data.get('Value')})
+                #                     elif attribute_data.get('Name') == 'Condition' and attribute_data.get('Value'):
+                #                         vals.update({'x_studio_condition_1': attribute_data.get('Value')})
+                #                     elif attribute_data.get('Name') == 'Package' and attribute_data.get('Value'):
+                #                         vals.update({'x_studio_package': attribute_data.get('Value')})
+                #                     elif attribute_data.get('Name') == 'RoHS' and attribute_data.get('Value'):
+                #                         vals.update({'x_studio_rohs': attribute_data.get('Value')})
+                #                 if not product_tmpl_id:
+                #                     product_tmpl_id = self.env['product.template'].create(vals)
+                #                     product_id = product_tmpl_id.product_variant_id
+                #                     process_message = "Product Created:{0} Name : {1}".format(product_id.default_code,product_id.name)
+                #                 self.sudo().create_skuvault_operation_detail('product', 'import', product_request_data, product_data,
+                #                                                       operation_id, self, False, process_message)
+                #                 self._cr.commit()
+                #         else:
+                #             process_message = ">>>>> get some error from{}".format(response_data.text)
+                #             _logger.info(process_message)
+                #             self.sudo().create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, False,
+                #                                                   process_message)
+                #     except Exception as error:
+                #         _logger.info(error)
+                #         process_message = "{}".format(error)
+                #         self.sudo().create_skuvault_operation_detail('product', 'import', False, False, operation_id, self, False,
+                #                                               process_message)
                 # create inventory line
                 stock_quant_obj = self.env['stock.quant']
                 new_quantity = 0
@@ -295,6 +295,7 @@ class StockWarehouse(models.Model):
             if current_record_id.skuvault_UserToken and current_record_id.skuvault_tenantToken:
                 before_date = datetime.now() + relativedelta(hours=10)
                 after_date = before_date - relativedelta(days=2)
+                _logger.info("Before Data and After Date {} {}".format(before_date,after_date))
                 current_record_id.get_item_quantities(afterdate=after_date, beforedate=before_date)
             else:
                 _logger.info(">>>> Authentication token not found")
