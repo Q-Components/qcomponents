@@ -48,7 +48,7 @@ class SkuvaultInventoryBatch(models.Model):
 
         for line in self.line_ids.filtered(lambda l: l.state == 'pending'):
             product = self.env['product.product'].search([('default_code', '=', line.sku)], limit=1)
-            if not product:
+            if not product or product.type != 'consu':
                 line.write({'state': 'failed', 'error_message': _("Product not found in Odoo.")})
                 continue
 
