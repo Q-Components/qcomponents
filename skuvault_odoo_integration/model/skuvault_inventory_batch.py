@@ -74,6 +74,7 @@ class SkuvaultInventoryBatch(models.Model):
             else:
                 line.write({'state': 'failed', 'product_id': product.id,
                             'error_message': _("Inventory not updated: product is in an assigned delivery.")})
+            self.env.cr.commit()
 
         self.write({
             'state': 'failed' if self.line_ids.filtered(lambda l: l.state == 'failed') else 'done',
