@@ -52,9 +52,11 @@ class SkuvaultInventoryBatch(models.Model):
             if not product:
                 line.write({'state': 'failed', 'error_message': _("Product not found in Odoo.")})
                 continue
-            if product and product.type != 'consu':
-                line.write({'state': 'failed', 'error_message': _("Service or Consumable Type Product.")})
-                continue
+            # if product and product.type != 'consu':
+            #     line.write({'state': 'failed', 'error_message': _("Service or Consumable Type Product.")})
+            #     continue
+            if product and not product.is_storable:
+                product.is_storable = True
 
             if product.id not in delivery_pending_product_ids and location:
                 new_quantity = float(line.available_qty or 0.0)
@@ -75,7 +77,7 @@ class SkuvaultInventoryBatch(models.Model):
             else:
                 line.write({'state': 'failed', 'product_id': product.id,
                             'error_message': _("Inventory not updated: product is in an assigned delivery.")})
-            self.env.cr.commit()
+            #self.env.cr.commit()
 
         self.write({
             'state': 'failed' if self.line_ids.filtered(lambda l: l.state == 'failed') else 'done',
