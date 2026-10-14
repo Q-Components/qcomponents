@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ups_address_validation_form_view_delivery_carrier" model="ir.ui.view">
+        <field name="name">delivery.carrier.ups.address.validation.view</field>
+        <field name="model">delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.view_delivery_carrier_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='destination']" position="before">
+                <page string="Address Validation" name="ups_address_validation"
+                      invisible="delivery_type != 'ups_provider'">
+                    <group>
+                        <field name="ups_validate_address"/>
+                        <field name="ups_auto_correct_address"
+                               invisible="not ups_validate_address"/>
+                        <field name="ups_av_max_candidates"
+                               invisible="not ups_validate_address"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

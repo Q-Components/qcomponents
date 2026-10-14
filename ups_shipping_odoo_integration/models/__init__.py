@@ -7,3 +7,5 @@ from . import ups_thirdparty_account
 from . import ups_location
 from . import stock_package
 from . import stock_move
+from . import delivery_carrier_address_validation
+from . import stock_picking_address_validation

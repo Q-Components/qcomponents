@@ -4,3 +4,5 @@ from . import delivery_carrier
 from . import stock_package_type
 from . import sale_order
 
+from . import delivery_carrier_address_validation
+from . import stock_picking_address_validation

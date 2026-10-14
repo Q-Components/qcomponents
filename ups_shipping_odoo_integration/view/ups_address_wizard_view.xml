@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ups_address_wizard_form_view" model="ir.ui.view">
+        <field name="name">ups.address.wizard.form</field>
+        <field name="model">ups.address.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Check Delivery Address">
+                <field name="has_suggestion" invisible="1"/>
+                <field name="is_error" invisible="1"/>
+
+                <div class="alert alert-info mb-3" role="alert" invisible="not has_suggestion">
+                    <strong>UPS found a corrected version of this address.</strong>
+                    Compare the addresses below and choose the one to ship to.
+                </div>
+                <div class="alert alert-warning mb-3" role="alert"
+                     invisible="has_suggestion or is_error">
+                    <strong>UPS could not verify this address.</strong>
+                    You can continue with the current address, or cancel and fix it first.
+                </div>
+                <div class="alert alert-danger mb-3" role="alert" invisible="not is_error">
+                    <strong>UPS address validation could not be completed.</strong>
+                    You can still continue with the current address to create the shipment.
+                </div>
+                <div class="mb-3 text-muted" invisible="not messages">
+                    <field name="messages" nolabel="1"/>
+                </div>
+
+                <group>
+                    <group>
+                        <field name="picking_id" options="{'no_open': True}"/>
+                    </group>
+                    <group>
+                        <field name="partner_id" options="{'no_open': True}"/>
+                    </group>
+                </group>
+
+                <field name="comparison_html" nolabel="1"/>
+
+                <separator string="Which address should be used?"/>
+                <field name="selected_line_id" widget="radio" nolabel="1" required="1"
+                       domain="[('wizard_id', '=', id)]"/>
+                <div class="text-muted small mt-2" invisible="not has_suggestion">
+                    Choosing a UPS address updates the customer's address.
+                    The delivery is then validated and the shipment is created.
+                </div>
+
+                <footer>
+                    <button string="Confirm &amp; Validate" name="action_confirm"
+                            type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"
+                            data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

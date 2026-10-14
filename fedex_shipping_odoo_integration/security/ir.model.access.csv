@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_fedex_address_wizard,fedex.address.wizard,model_fedex_address_wizard,base.group_user,1,1,1,1
+access_fedex_address_wizard_line,fedex.address.wizard.line,model_fedex_address_wizard_line,base.group_user,1,1,1,1

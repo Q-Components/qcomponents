@@ -13,12 +13,15 @@
 
    # Views
       'data': [
+            'security/ir.model.access.csv',
             'data/ir_cron.xml',
             'data/delivery_fedex.xml',
             'views/res_company.xml',
             'views/delivery_carrier_view.xml',
             'views/sale_view.xml',
-            'views/stock_picking_vts.xml'
+            'views/stock_picking_vts.xml',
+            'views/delivery_carrier_address_validation_view.xml',
+            'views/fedex_address_wizard_view.xml',
             ],
 
     # Author
@@ -41,3 +44,4 @@
 #18.0.1.2 manage commerecial label response
 #18.0.1.3 change accoun number view from company level to shipping method level
 #19.0.1.4 manage third party payment order based on sale order configuration
+#19.0.1.5 FedEx address validation on delivery order validate (wizard)

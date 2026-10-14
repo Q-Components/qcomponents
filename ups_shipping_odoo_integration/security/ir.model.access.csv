@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_third_party_account,third_party_account,model_ups_thirdparty_account,,1,1,1,1
 access_ups_location,ups_location,model_ups_location,,1,1,1,1
+access_ups_address_wizard,ups.address.wizard,model_ups_address_wizard,base.group_user,1,1,1,1
+access_ups_address_wizard_line,ups.address.wizard.line,model_ups_address_wizard_line,base.group_user,1,1,1,1
