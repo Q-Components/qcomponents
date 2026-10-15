@@ -4,6 +4,8 @@ from odoo import models, fields, api, _
 class FedExPackageDetails(models.Model):
     _inherit = "stock.picking"
 
+    fedex_insurance_amount = fields.Float(string="FedEx Insurance Amount",copy=False)
+
     def create_return_order(self):
         for picking in self:
             with_context = self._context.copy()

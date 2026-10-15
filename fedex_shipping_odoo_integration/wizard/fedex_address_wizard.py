@@ -72,7 +72,6 @@ def _build_comparison_html(partner, candidates):
 class FedexAddressWizard(models.TransientModel):
     _name = 'fedex.address.wizard'
     _description = 'FedEx Address Validation'
-    # This transient wizard must have an ORM-managed PostgreSQL table.
     _auto = True
 
     picking_id = fields.Many2one('stock.picking', string="Delivery Order",
@@ -116,7 +115,7 @@ class FedexAddressWizard(models.TransientModel):
             'partner_id': partner.id,
             'status': _("FedEx suggests a corrected address.") if candidates
                       else _("FedEx could not verify this address."),
-            'messages': "\n".join(str(m) for m in (res.get('messages') or []) if m),
+            'messages': "\n".join(m for m in res['messages'] if m),
             'has_suggestion': bool(candidates),
             'comparison_html': _build_comparison_html(partner, candidates),
             'line_ids': line_cmds,
@@ -160,8 +159,8 @@ class FedexAddressWizard(models.TransientModel):
 class FedexAddressWizardLine(models.TransientModel):
     _name = 'fedex.address.wizard.line'
     _description = 'FedEx Address Option'
-    _auto = True
     _rec_name = 'label'
+    _auto = True
 
     wizard_id = fields.Many2one('fedex.address.wizard', ondelete='cascade')
     label = fields.Char(readonly=True)

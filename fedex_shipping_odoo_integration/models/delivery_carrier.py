@@ -8,6 +8,7 @@ from odoo import models, fields, api, _
 
 _logger = logging.getLogger(__name__)
 
+
 class DeliveryCarrier(models.Model):
     _inherit = "delivery.carrier"
 
@@ -291,7 +292,6 @@ class DeliveryCarrier(models.Model):
                                       ('PRESORTED_BOUND_PRINTED_MATTER', 'PRESORTED_BOUND_PRINTED_MATTER'),
                                       ('PRESORTED_STANDARD', 'PRESORTED_STANDARD')], string="Fedex Indicia")
 
-
     def fedex_selected_service_type(self):
         region_field_map = {
             'US': 'fedex_service_us',
@@ -309,7 +309,7 @@ class DeliveryCarrier(models.Model):
             'GROUND_HOME_DELIVERY',
             'SMART_POST',
         ]
-        fedex_selected_service_type =self.fedex_selected_service_type()
+        fedex_selected_service_type = self.fedex_selected_service_type()
         is_residential = "true" if fedex_selected_service_type in residential_services else "false"
 
         return {
@@ -424,8 +424,8 @@ class DeliveryCarrier(models.Model):
         address_dict.update({"contact": {"personName": address_id.name,
                                          "emailAddress": address_id.email or "",
                                          "phoneNumber": "%s" % (address_id.phone or ""),
-                                         "companyName":address_id.parent_id.name if address_id.parent_id else ""}})
-        address_dict.get("address").update({"streetLines": [address_id.street or "",address_id.street2 or ""]})
+                                         "companyName": address_id.parent_id.name if address_id.parent_id else ""}})
+        address_dict.get("address").update({"streetLines": [address_id.street or "", address_id.street2 or ""]})
         return address_dict
 
     def manage_fedex_packages(self, package_count=False, shipping_weight=False, packaging_length=False, width=False,
@@ -516,21 +516,18 @@ class DeliveryCarrier(models.Model):
                     "requestedPackageLineItems": package_list
                 }}
             # Insurance And Declared Value
-            if self.insured_request:
-                request_data.get("requestedShipment").update({"customsClearanceDetail": {
-                    "commodities": [
-                        {
-                            "totalCustomsValue": {
-                                "amount": order.amount_total,
-                                "currency": pickings.sale_id and pickings.sale_id.company_id.currency_id.name or "USD"
-                            }
+            is_international = shipper_address_id.country_id.code != receiver_id.country_id.code
+            if self.insured_request and order:
+                insured_currency = order.currency_id.name or self.company_id.currency_id.name or "USD"
+                insured_amount =pickings.fedex_insurance_amount # use price_total if you want tax included
+                if insured_amount:
+                    request_data["requestedShipment"]["totalDeclaredValue"] = {
+                        "amount": insured_amount, "currency": insured_currency}
+                    if is_international:
+                        request_data["requestedShipment"]["customsClearanceDetail"] = {
+                            "totalCustomsValue": {"amount": insured_amount, "currency": insured_currency},
+                            "insuranceCharge": {"amount": insured_amount, "currency": insured_currency},
                         }
-                    ],
-                    "insuranceCharge": {
-                        "amount": order.amount_total,
-                        "currency": pickings.sale_id and pickings.sale_id.company_id.currency_id.name or "USD"
-                    }
-                }, })
             if fedex_selected_service_type == 'SMART_POST':
                 request_data.get("requestedShipment").update({"smartPostInfoDetail": {
                     "hubId": self.fedex_hub_id,
@@ -585,19 +582,23 @@ class DeliveryCarrier(models.Model):
                         if move_line.product_id and not move_line.result_package_id:
                             product_id = move_line.product_id
                             # move_line_id = self.env['stock.move.line'].search([('product_id', '=', product_id.id)])
-                            find_sale_line_id = pickings.sale_id.order_line.filtered(
-                                lambda x: x.product_template_id.product_variant_id == product_id)
+                            find_sale_line_id = move_line.move_id.sale_line_id or pickings.sale_id.order_line.filtered(
+                                lambda x: x.product_id == product_id)[:1]
+                            if find_sale_line_id and find_sale_line_id.product_qty:
+                                unit_price = find_sale_line_id.price_subtotal / find_sale_line_id.product_qty
+                            else:
+                                unit_price = product_id.lst_price
                             comodities_packages.append({
                                 "description": "%s" % (pickings.name),
                                 "countryOfManufacture": self.company_id and self.company_id.country_id.code,
                                 "quantity": move_line.qty_done,
                                 "quantityUnits": "PCS",
                                 "unitPrice": {
-                                    "amount": find_sale_line_id.price_subtotal / find_sale_line_id.product_qty,
+                                    "amount": unit_price,
                                     "currency": self.company_id and self.company_id.currency_id.name
                                 },
                                 "customsValue": {
-                                    "amount": find_sale_line_id.price_subtotal / find_sale_line_id.product_qty,
+                                    "amount": unit_price,
                                     "currency": self.company_id and self.company_id.currency_id.name
                                 },
                                 "weight": {
@@ -606,25 +607,16 @@ class DeliveryCarrier(models.Model):
 
                                 }
                             })
-                request_data.get("requestedShipment").update({"customsClearanceDetail": {
-                    "dutiesPayment": {
-                        "paymentType": "SENDER"
-                    },
-                    "isDocumentOnly": True,
-                    "commodities": comodities_packages
-                },
-                    "shippingDocumentSpecification": {
-                        "shippingDocumentTypes": [
-                            "COMMERCIAL_INVOICE"
-                        ],
-                        "commercialInvoiceDetail": {
-                            "documentFormat": {
-                                "docType": "PDF",
-                                "stockType": "PAPER_LETTER"
-                            }
-                        }
-                    }
+                customs_detail = request_data["requestedShipment"].setdefault("customsClearanceDetail", {})
+                customs_detail.update({
+                    "dutiesPayment": {"paymentType": "SENDER"},
+                    "isDocumentOnly": False,  # you're shipping goods; True is wrong here
+                    "commodities": comodities_packages,
                 })
+                request_data["requestedShipment"].update({"shippingDocumentSpecification": {
+                    "shippingDocumentTypes": ["COMMERCIAL_INVOICE"],
+                    "commercialInvoiceDetail": {"documentFormat": {"docType": "PDF", "stockType": "PAPER_LETTER"}},
+                }})
             api_url = "{0}/ship/v1/shipments".format(company_id.fedex_api_url)
             headers = {
                 'Content-Type': 'application/json',
