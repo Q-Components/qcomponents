@@ -197,3 +197,69 @@ class IrAttachment(models.Model):
 
         return res
 
+    def action_upload_to_onedrive(self):
+        """Upload the selected attachments to OneDrive using their folder mapping rule."""
+        Rule = self.env["onedrive.folder.rule"].sudo()
+        History = self.env["onedrive.sync.history"]
+        done = skipped = failed = 0
+
+        for attachment in self.sudo():
+            # already uploaded, no content, or not linked to a record -> skip
+            if (attachment.onedrive_synced or not attachment.datas
+                    or not attachment.res_model or not attachment.res_id):
+                skipped += 1
+                continue
+
+            rule = Rule.search([
+                ("active", "=", True),
+                ("model_name", "=", attachment.res_model),
+            ], limit=1)
+            if not rule:
+                skipped += 1
+                continue
+
+            try:
+                with self.env.cr.savepoint():
+                    result = rule.process_attachment(attachment)
+                    if result:
+                        attachment.write({"onedrive_synced": True})
+                if result:
+                    done += 1
+                    History.create_log(
+                        operation="upload", status="success",
+                        message=f"'{attachment.name}' uploaded to OneDrive manually via rule '{rule.name}'.",
+                        config_id=rule.onedrive_config_id.id,
+                        file_name=attachment.name, onedrive_item_id=result,
+                        res_model=attachment.res_model, res_id=attachment.res_id,
+                    )
+                else:
+                    failed += 1
+                    History.create_log(
+                        operation="upload", status="failed",
+                        message=f"'{attachment.name}' was not uploaded",
+                        config_id=rule.onedrive_config_id.id,
+                        file_name=attachment.name,
+                        res_model=attachment.res_model, res_id=attachment.res_id,
+                    )
+            except Exception as e:
+                failed += 1
+                _logger.exception("[OneDrive] Manual upload failed for attachment %s", attachment.id)
+                History.create_log(
+                    operation="upload", status="failed",
+                    message=f"Failed to upload '{attachment.name}': {e}",
+                    config_id=rule.onedrive_config_id.id,
+                    file_name=attachment.name,
+                    res_model=attachment.res_model, res_id=attachment.res_id,
+                )
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": "Upload to OneDrive",
+                "message": f"Uploaded: {done}, skipped (already synced / no rule / no file): {skipped}, failed: {failed}.",
+                "type": "success" if not failed else "warning",
+                "sticky": bool(failed),
+            },
+        }
+

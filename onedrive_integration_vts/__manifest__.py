@@ -31,6 +31,7 @@
         "views/onedrive_configuration.xml",
         "views/onedrive_sync_history_views.xml",
         "views/onedrive_dashboard_views.xml",
+        "views/ir_attachment.xml",
         "wizard/import_wizard.xml",
         "wizard/onedrive_folder_picker_views.xml",
     ],

@@ -535,24 +535,24 @@ class OneDriveFolderRule(models.Model):
         children_url = f"{GRAPH_DRIVE_URL}/items/{parent_folder_id}/children"
 
         # ── Step 1: look for an existing folder with this name ─────────────
+        url = children_url
         try:
-            resp = requests.get(children_url, headers=headers, timeout=30)
-            if resp.status_code == 200:
-                for child in resp.json().get("value", []):
+            while url:
+                resp = requests.get(url, headers=headers, timeout=30)
+                if resp.status_code != 200:
+                    return None
+                data = resp.json()
+                for child in data.get("value", []):
                     if (
-                        child.get("folder") is not None
-                        and child.get("name", "").lower() == subfolder_name.lower()
+                            child.get("folder") is not None
+                            and child.get("name", "").lower() == subfolder_name.lower()
                     ):
-                        _logger.debug(
-                            "[OneDrive Rule '%s'] Reusing existing subfolder '%s' (id=%s).",
-                            self.name, subfolder_name, child["id"],
-                        )
                         return child["id"]
+                url = data.get("@odata.nextLink")
         except requests.exceptions.RequestException as exc:
-            _logger.warning(
-                "[OneDrive Rule '%s'] Could not list children of '%s': %s",
-                self.name, parent_folder_id, exc,
-            )
+            _logger.warning("[OneDrive Rule '%s'] Could not list children of '%s': %s",
+                            self.name, parent_folder_id, exc)
+            return None
 
         # ── Step 2: create the folder ───────────────────────────────────────
         payload = {
