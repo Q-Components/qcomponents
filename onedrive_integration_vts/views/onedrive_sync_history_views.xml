@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  OneDrive Sync History — List View                                  -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_onedrive_sync_history_tree" model="ir.ui.view">
+        <field name="name">onedrive.sync.history.list</field>
+        <field name="model">onedrive.sync.history</field>
+        <field name="arch" type="xml">
+            <list string="Sync History"
+                  create="false"
+                  edit="false"
+                  decoration-success="status == 'success'"
+                  decoration-danger="status == 'failed'"
+                  decoration-warning="status == 'skipped'">
+
+                <field name="create_date"   string="Date &amp; Time"  optional="show"/>
+                <field name="config_id"     string="Config"           optional="show"/>
+                <field name="operation"     widget="badge"
+                       decoration-info="operation in ('download','webhook')"
+                       decoration-success="operation == 'upload'"
+                       decoration-warning="operation in ('folder','delete')"/>
+                <field name="status"        widget="badge"
+                       decoration-success="status == 'success'"
+                       decoration-danger="status == 'failed'"
+                       decoration-warning="status == 'skipped'"/>
+                <field name="file_name"     string="File / Folder"    optional="show"/>
+                <field name="folder_path"   string="OneDrive Path"    optional="show"/>
+                <field name="res_model"     string="Model"            optional="show"/>
+                <field name="res_id"        string="Record ID"        optional="show"/>
+                <field name="record_display" string="Record"          optional="hide"/>
+                <field name="onedrive_item_id" string="OneDrive ID"   optional="hide"/>
+                <field name="message"       string="Message"          optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  OneDrive Sync History — Form View                                  -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_onedrive_sync_history_form" model="ir.ui.view">
+        <field name="name">onedrive.sync.history.form</field>
+        <field name="model">onedrive.sync.history</field>
+        <field name="arch" type="xml">
+            <form string="Sync History Detail" create="false" edit="false">
+                <sheet>
+                    <!-- Coloured ribbon for quick status at a glance -->
+                    <widget name="web_ribbon" title="Success"  bg_color="bg-success" invisible="status != 'success'"/>
+                    <widget name="web_ribbon" title="Failed"   bg_color="bg-danger"  invisible="status != 'failed'"/>
+                    <widget name="web_ribbon" title="Skipped"  bg_color="bg-warning" invisible="status != 'skipped'"/>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="operation" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <!-- Left column: what happened -->
+                        <group string="Operation Details">
+                            <field name="status" widget="badge"
+                                   decoration-success="status == 'success'"
+                                   decoration-danger="status == 'failed'"
+                                   decoration-warning="status == 'skipped'"
+                                   readonly="1"/>
+                            <field name="config_id"   readonly="1"/>
+                            <field name="create_date" readonly="1" string="Timestamp"/>
+                            <field name="message" readonly="1" widget="text"/>
+                        </group>
+
+                        <!-- Right column: file / record context -->
+                        <group string="File &amp; Record">
+                            <field name="file_name"        readonly="1"/>
+                            <field name="folder_path"      readonly="1" invisible="not folder_path"/>
+                            <field name="onedrive_item_id" readonly="1" invisible="not onedrive_item_id" string="OneDrive Item ID"/>
+                            <field name="res_model"        readonly="1"/>
+                            <field name="res_id"           readonly="1"/>
+                            <field name="record_display"   readonly="1" invisible="not record_display" string="Record"/>
+                        </group>
+                    </group>
+
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  OneDrive Sync History — Search View                                -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_onedrive_sync_history_search" model="ir.ui.view">
+        <field name="name">onedrive.sync.history.search</field>
+        <field name="model">onedrive.sync.history</field>
+        <field name="arch" type="xml">
+            <search string="Search Sync History">
+                <field name="file_name"/>
+                <field name="res_model" string="Odoo Model"/>
+                <field name="config_id" string="Config"/>
+                <field name="message"   string="Log Message"/>
+
+                <filter name="filter_failed"   string="Failed"   domain="[('status', '=', 'failed')]"/>
+                <filter name="filter_success"  string="Success"  domain="[('status', '=', 'success')]"/>
+                <filter name="filter_skipped"  string="Skipped"  domain="[('status', '=', 'skipped')]"/>
+                <separator/>
+                <filter name="filter_upload"   string="Uploads"  domain="[('operation', '=', 'upload')]"/>
+                <filter name="filter_download" string="Imports"  domain="[('operation', '=', 'download')]"/>
+                <filter name="filter_delete"   string="Deletes"  domain="[('operation', '=', 'delete')]"/>
+                <filter name="filter_webhook"  string="Webhook"  domain="[('operation', '=', 'webhook')]"/>
+                <filter name="filter_folder"   string="Folders"  domain="[('operation', '=', 'folder')]"/>
+
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  Window Action                                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="action_onedrive_sync_history" model="ir.actions.act_window">
+        <field name="name">Sync History</field>
+        <field name="res_model">onedrive.sync.history</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_failed': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No sync history yet!
+            </p>
+            <p>
+                Upload a file to an Odoo record that matches your Folder Mapping Rules,
+                and the sync log will appear here.
+            </p>
+        </field>
+    </record>
+
+</odoo>

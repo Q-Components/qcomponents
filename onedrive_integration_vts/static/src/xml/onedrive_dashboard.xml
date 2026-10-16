@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+<!-- =========================================================================
+     OneDrive Dashboard — QWeb Template
+     Beautiful, premium, dark-accented dashboard with:
+       • KPI stat cards (connections, docs, sync rate, storage)
+       • Operation breakdown table
+       • Per-config storage bars
+       • Live activity feed
+     ========================================================================= -->
+
+<t t-name="onedrive_integration_vts.DashboardTemplate">
+    <div class="o_onedrive_dashboard">
+
+        <!-- ═══ LOADING STATE ════════════════════════════════════════════════ -->
+        <t t-if="state.loading">
+            <div class="ovd_loading">
+                <div class="ovd_spinner">
+                    <i class="fa fa-cloud ovd_cloud_icon"/>
+                    <div class="ovd_dots">
+                        <span/><span/><span/>
+                    </div>
+                </div>
+                <p>Loading OneDrive Dashboard…</p>
+            </div>
+        </t>
+
+        <!-- ═══ ERROR STATE ══════════════════════════════════════════════════ -->
+        <t t-elif="state.error">
+            <div class="ovd_error_state">
+                <i class="fa fa-exclamation-triangle"/>
+                <h3>Failed to load dashboard</h3>
+                <p t-esc="state.error"/>
+            </div>
+        </t>
+
+        <!-- ═══ MAIN DASHBOARD ═══════════════════════════════════════════════ -->
+        <t t-else="">
+            <t t-set="d" t-value="state.data"/>
+
+            <!-- ── Hero Header ──────────────────────────────────────────────── -->
+            <div class="ovd_hero">
+                <div class="ovd_hero_left">
+                    <div class="ovd_hero_icon">
+                        <i class="fa fa-cloud"/>
+                    </div>
+                    <div class="ovd_hero_text">
+                        <h1>OneDrive <span>Integration</span></h1>
+                        <p>Real-time sync dashboard — all your connections and activity at a glance.</p>
+                    </div>
+                </div>
+                <div class="ovd_hero_actions">
+                    <button class="ovd_btn ovd_btn_primary" t-on-click="openDocuments">
+                        <i class="fa fa-folder-open"/> Documents
+                    </button>
+                    <button class="ovd_btn ovd_btn_outline" t-on-click="openConfig">
+                        <i class="fa fa-cog"/> Configurations
+                    </button>
+                    <button class="ovd_btn ovd_btn_outline" t-on-click="openHistory">
+                        <i class="fa fa-list"/> Sync History
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── Top KPI Cards ────────────────────────────────────────────── -->
+            <div class="ovd_kpi_row">
+
+                <!-- Connections -->
+                <div class="ovd_kpi_card ovd_kpi_blue" t-on-click="openConfig">
+                    <div class="ovd_kpi_icon"><i class="fa fa-plug"/></div>
+                    <div class="ovd_kpi_body">
+                        <div class="ovd_kpi_value" t-esc="d.connected_configs"/>
+                        <div class="ovd_kpi_label">Connected</div>
+                        <div class="ovd_kpi_sub">
+                            <t t-esc="d.total_configs"/> total ·
+                            <t t-esc="d.webhook_active"/> real-time
+                        </div>
+                    </div>
+                    <div class="ovd_kpi_glow"/>
+                </div>
+
+                <!-- Synced Documents -->
+                <div class="ovd_kpi_card ovd_kpi_green" t-on-click="openDocuments">
+                    <div class="ovd_kpi_icon"><i class="fa fa-files-o"/></div>
+                    <div class="ovd_kpi_body">
+                        <div class="ovd_kpi_value" t-esc="d.onedrive_docs"/>
+                        <div class="ovd_kpi_label">Synced Docs</div>
+                        <div class="ovd_kpi_sub">
+                            <t t-esc="d.active_docs"/> active ·
+                            <t t-esc="d.archived_docs"/> archived
+                        </div>
+                    </div>
+                    <div class="ovd_kpi_glow"/>
+                </div>
+
+
+                <!-- Storage Used -->
+                <div class="ovd_kpi_card ovd_kpi_orange">
+                    <div class="ovd_kpi_icon"><i class="fa fa-database"/></div>
+                    <div class="ovd_kpi_body">
+                        <div class="ovd_kpi_value" t-esc="d.total_used_bytes"/>
+                        <div class="ovd_kpi_label">Storage Used</div>
+                        <div class="ovd_kpi_sub">
+                            of <t t-esc="d.total_storage_bytes"/> total ·
+                            <t t-esc="d.storage_pct"/>%
+                        </div>
+                    </div>
+                    <div class="ovd_kpi_glow"/>
+                </div>
+
+                <!-- Today's Activity -->
+                <div class="ovd_kpi_card ovd_kpi_teal" t-on-click="openHistoryToday">
+                    <div class="ovd_kpi_icon"><i class="fa fa-clock-o"/></div>
+                    <div class="ovd_kpi_body">
+                        <div class="ovd_kpi_value" t-esc="d.today_success + d.today_failed"/>
+                        <div class="ovd_kpi_label">Today's Operations</div>
+                        <div class="ovd_kpi_sub">
+                            <span class="ovd_dot_green"/> <t t-esc="d.today_success"/> ok ·
+                            <span class="ovd_dot_red"/> <t t-esc="d.today_failed"/> fail
+                        </div>
+                    </div>
+                    <div class="ovd_kpi_glow"/>
+                </div>
+
+
+            </div><!-- /ovd_kpi_row -->
+
+
+            <!-- ── Middle Row: Status Ring + Operations Table ───────────────── -->
+            <div class="ovd_mid_row">
+
+                <!-- Status Donut (pure CSS) -->
+                <div class="ovd_panel ovd_panel_donut">
+                    <div class="ovd_panel_header">
+                        <i class="fa fa-pie-chart"/> Sync Status Summary
+                    </div>
+                    <div class="ovd_donut_wrap">
+                        <svg class="ovd_donut_svg" viewBox="0 0 120 120">
+                            <!-- Background ring -->
+                            <circle cx="60" cy="60" r="50"
+                                    fill="none" stroke="#1E293B" stroke-width="18"/>
+                            <!-- Success arc -->
+                            <circle cx="60" cy="60" r="50"
+                                    fill="none"
+                                    stroke="#22C55E"
+                                    stroke-width="18"
+                                    stroke-dasharray="314"
+                                    t-attf-stroke-dashoffset="#{314 - (d.total_logs > 0 ? (d.success_logs / d.total_logs * 314) : 0)}"
+                                    stroke-linecap="round"
+                                    transform="rotate(-90 60 60)"
+                                    class="ovd_arc_success"/>
+                            <!-- Failed arc -->
+                            <circle cx="60" cy="60" r="50"
+                                    fill="none"
+                                    stroke="#EF4444"
+                                    stroke-width="18"
+                                    t-attf-stroke-dasharray="#{d.total_logs > 0 ? (d.failed_logs / d.total_logs * 314) : 0} 314"
+                                    t-attf-stroke-dashoffset="#{-(d.total_logs > 0 ? (d.success_logs / d.total_logs * 314) : 0)}"
+                                    transform="rotate(-90 60 60)"
+                                    class="ovd_arc_failed"/>
+                            <!-- Centre text -->
+                            <text x="60" y="55" text-anchor="middle" class="ovd_donut_pct">
+                                <t t-esc="d.success_rate"/>%
+                            </text>
+                            <text x="60" y="70" text-anchor="middle" class="ovd_donut_sub">Success</text>
+                        </svg>
+                    </div>
+                    <div class="ovd_donut_legend">
+                        <div class="ovd_legend_item" t-on-click="() => this.openHistoryFiltered('success')">
+                            <span class="ovd_badge" style="background:#22C55E"/>
+                            Success <strong t-esc="d.success_logs"/>
+                        </div>
+                        <div class="ovd_legend_item" t-on-click="() => this.openHistoryFiltered('failed')">
+                            <span class="ovd_badge" style="background:#EF4444"/>
+                            Failed <strong t-esc="d.failed_logs"/>
+                        </div>
+                        <div class="ovd_legend_item" t-on-click="() => this.openHistoryFiltered('skipped')">
+                            <span class="ovd_badge" style="background:#F59E0B"/>
+                            Skipped <strong t-esc="d.skipped_logs"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operations Breakdown Table -->
+                <div class="ovd_panel ovd_panel_ops">
+                    <div class="ovd_panel_header">
+                        <i class="fa fa-exchange"/> Operations Breakdown
+                    </div>
+                    <table class="ovd_table">
+                        <thead>
+                            <tr>
+                                <th>Operation</th>
+                                <th>Total</th>
+                                <th>Success</th>
+                                <th>Failed</th>
+                                <th>Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="Object.entries(d.ops)" t-as="entry" t-key="entry[0]">
+                                <t t-set="op_key"  t-value="entry[0]"/>
+                                <t t-set="op_data" t-value="entry[1]"/>
+                                <tr t-att-class="op_data.total === 0 ? 'ovd_row_muted' : ''">
+                                    <td>
+                                        <span class="ovd_op_badge"
+                                              t-attf-style="background:#{opColor[op_key]}22; color:#{opColor[op_key]}; border:1px solid #{opColor[op_key]}55">
+                                            <i t-attf-class="fa #{opIcon[op_key]}"/>
+                                            <t t-esc="op_data.label"/>
+                                        </span>
+                                    </td>
+                                    <td class="ovd_td_num" t-esc="op_data.total"/>
+                                    <td class="ovd_td_success" t-esc="op_data.success"/>
+                                    <td class="ovd_td_fail" t-esc="op_data.failed"/>
+                                    <td>
+                                        <t t-if="op_data.total > 0">
+                                            <div class="ovd_mini_bar_wrap">
+                                                <div class="ovd_mini_bar"
+                                                     t-attf-style="width:#{Math.round(op_data.success / op_data.total * 100)}%; background:#{opColor[op_key]}"/>
+                                            </div>
+                                            <span class="ovd_mini_pct">
+                                                <t t-esc="Math.round(op_data.success / op_data.total * 100)"/>%
+                                            </span>
+                                        </t>
+                                        <t t-else=""><span class="ovd_na">—</span></t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div><!-- /ovd_mid_row -->
+
+
+            <!-- ── Bottom Row: Connections + Activity Feed ──────────────────── -->
+            <div class="ovd_bot_row">
+
+                <!-- Recent Activity Feed -->
+                <div class="ovd_panel ovd_panel_feed">
+                    <div class="ovd_panel_header">
+                        <i class="fa fa-rss"/> Recent Activity
+                        <button class="ovd_header_btn" t-on-click="openHistory">View All</button>
+                    </div>
+
+                    <t t-if="d.recent.length === 0">
+                        <div class="ovd_empty">
+                            <i class="fa fa-inbox" style="font-size:2rem; color:#334155;"/>
+                            <p>No activity yet.</p>
+                        </div>
+                    </t>
+
+                    <t t-foreach="d.recent" t-as="log" t-key="log.id">
+                        <div class="ovd_feed_item">
+                            <div class="ovd_feed_icon"
+                                 t-attf-style="background:#{opColor[log.operation]}22; color:#{opColor[log.operation]}">
+                                <i t-attf-class="fa #{opIcon[log.operation]}"/>
+                            </div>
+                            <div class="ovd_feed_body">
+                                <div class="ovd_feed_top">
+                                    <span class="ovd_feed_file" t-esc="log.file_name"/>
+                                    <span class="ovd_feed_status"
+                                          t-attf-style="color:#{statusColor[log.status]}">
+                                        <i t-attf-class="fa #{log.status === 'success' ? 'fa-check' : log.status === 'failed' ? 'fa-times' : 'fa-minus'}"/>
+                                        <t t-esc="log.status"/>
+                                    </span>
+                                </div>
+                                <div class="ovd_feed_msg" t-esc="log.message"/>
+                                <div class="ovd_feed_footer">
+                                    <span class="ovd_feed_op"
+                                          t-attf-style="color:#{opColor[log.operation]}"
+                                          t-esc="log.operation"/>
+                                    <span t-esc="log.config"/>
+                                    <span t-esc="log.date"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+            </div><!-- /ovd_bot_row -->
+
+        </t><!-- /t-else (main dashboard) -->
+    </div><!-- /o_onedrive_dashboard -->
+</t>
+
+</templates>

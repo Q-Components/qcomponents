@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_onedrive_import_wizard_form" model="ir.ui.view">
+        <field name="name">onedrive.import.wizard.form</field>
+        <field name="model">onedrive.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Files from OneDrive">
+                <group>
+                    <field name="onedrive_config_id" required="1"/>
+                    <field name="import_scope" required="1"/>
+                </group>
+
+                <footer>
+                    <button name="action_import_files"
+                            type="object"
+                            string="Import"
+                            class="btn btn-primary"/>
+
+                    <button string="Cancel"
+                            special="cancel"
+                            class="btn btn-secondary"/>
+                </footer>
+                <div class="alert alert-warning" role="alert">
+                    Files larger than
+                    <field name="max_upload_size_mb"
+                           readonly="1"
+                           class="oe_inline"/>
+                    MB will be skipped during import because they exceed the Odoo maximum upload size limit.
+                    You can check Sync History for skipped files.
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_onedrive_import_wizard" model="ir.actions.act_window">
+    <field name="name">Import Files</field>
+    <field name="res_model">onedrive.import.wizard</field>
+    <field name="view_mode">form</field>
+    <field name="target">new</field>
+</record>
+</odoo>

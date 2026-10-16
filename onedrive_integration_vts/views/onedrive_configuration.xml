@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  OneDrive Configuration — Form View (with Storage Quota section)   -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="onedrive_configuration_form_view" model="ir.ui.view">
+        <field name="name">onedrive.configuration.form</field>
+        <field name="model">onedrive.configuration</field>
+        <field name="arch" type="xml">
+            <form string="OneDrive Configuration">
+                <header>
+                    <button name="action_connect_onedrive"
+                            string="Connect"
+                            type="object"
+                            class="btn-success" invisible="state != 'connecting'"/>
+                    <button name="refresh_onedrive_access_token"
+                            string="Refresh Token"
+                            type="object"
+                            class="oe_highlight" invisible="state != 'connected'"/>
+                    <button name="reconnect_with_onedrive"
+                            string="Disconnect"
+                            type="object"
+                            class="btn-danger" invisible="state not in ['connected','failed']"/>
+
+                    <!-- Webhook Buttons (only visible when connected) -->
+                    <button name="action_subscribe_webhook"
+                            string="▶ Enable Real-Time Sync"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'connected' or webhook_enabled"/>
+                    <button name="action_unsubscribe_webhook"
+                            string="⏹ Disable Real-Time Sync"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'connected' or not webhook_enabled"/>
+
+                    <field name="state" widget="statusbar"/>
+                </header>
+
+                <sheet>
+                    <widget name="web_ribbon" title="Connected" bg_color="bg-success" invisible="state != 'connected'"/>
+                    <widget name="web_ribbon" title="Real-Time Sync ON" bg_color="bg-info" invisible="not webhook_enabled"/>
+
+                    <!-- ── Stat Buttons ─────────────────────────────────── -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_folder_rules"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-folder-open"
+                                invisible="state != 'connected'">
+                            <field name="folder_rule_count" widget="statinfo" string="Folder Rules"/>
+                        </button>
+                    </div>
+
+                    <!-- ── Hidden fields needed by compute/widget logic ────── -->
+                    <field name="quota_total_bytes"     invisible="1"/>
+                    <field name="quota_used_bytes"      invisible="1"/>
+                    <field name="quota_remaining_bytes" invisible="1"/>
+                    <field name="quota_deleted_bytes"   invisible="1"/>
+                    <field name="quota_used_percent"    invisible="1"/>
+                    <field name="quota_used_gb"         invisible="1"/>
+                    <field name="quota_total_gb"        invisible="1"/>
+                    <field name="quota_remaining_gb"    invisible="1"/>
+                    <field name="quota_deleted_gb"      invisible="1"/>
+                    <field name="quota_state"           invisible="1"/>
+
+                    <!-- ── Credentials & Settings ──────────────────────────── -->
+                    <group>
+                        <field name="name" required="1"/>
+                        <group string="Credentials">
+                            <field name="ms_client_id" required="1"/>
+                            <field name="ms_secret" required="1"/>
+                            <field name="ms_redirect_url" required="1"/>
+                        </group>
+                        <group string="Other">
+                            <field name="root_folder_name" required="1"/>
+                            <field name="auto_delete" widget="boolean_toggle"/>
+                            <field name="reason" readonly="1"/>
+                        </group>
+                        <group string="Tokens">
+                            <field name="ms_access_token" readonly="1" class="text-truncate w-50" style="max-width: 50vw;"/>
+                            <field name="ms_refresh_token" readonly="1" class="text-truncate w-50" style="max-width: 50vw;"/>
+                        </group>
+                    </group>
+
+                    <!-- ── Real-Time Sync Status Section ───────────────────── -->
+                    <group string="Real-Time Sync (Webhook)" invisible="state != 'connected'">
+                        <field name="webhook_enabled" readonly="1"
+                               decoration-success="webhook_enabled"
+                               decoration-muted="not webhook_enabled"/>
+                        <field name="subscription_count" readonly="1" string="Active Subscriptions"/>
+                    </group>
+
+                    <!-- ════════════════════════════════════════════════════ -->
+                    <!--  STORAGE QUOTA SECTION                               -->
+                    <!-- ════════════════════════════════════════════════════ -->
+                    <group string="OneDrive Storage" invisible="state != 'connected'" name="storage_quota_group">
+
+                        <!-- Refresh button row -->
+                        <group col="2" colspan="2">
+                            <div class="d-flex align-items-center gap-3 mb-2" colspan="2">
+                                <button name="action_refresh_storage_quota"
+                                        string="🔄  Refresh Storage Info"
+                                        type="object"
+                                        class="btn btn-sm btn-primary"/>
+                                <field name="quota_last_checked"
+                                       string="Last checked"
+                                       readonly="1"
+                                       widget="datetime"
+                                       optional="show"
+                                       nolabel="1"
+                                       style="font-size:0.82rem; color:#6B7280;"/>
+                            </div>
+                        </group>
+
+                        <!-- Visual storage bar (Html compute field) -->
+                        <group colspan="2" col="1">
+                            <div class="o_field_widget" style="padding:0 8px;" colspan="1">
+
+                                <!-- Rendered when quota data exists -->
+                                <field name="quota_storage_bar_html"
+                                       widget="html"
+                                       readonly="1"
+                                       nolabel="1"
+                                       invisible="quota_total_bytes == 0"/>
+
+                                <!-- Placeholder before first fetch -->
+                                <div invisible="quota_total_bytes != 0"
+                                     style="
+                                        background:#F9FAFB;
+                                        border:1px dashed #D1D5DB;
+                                        border-radius:10px;
+                                        padding:20px 18px;
+                                        text-align:center;
+                                        color:#9CA3AF;
+                                        font-size:0.85rem;
+                                     ">
+                                    <div style="font-size:2rem; margin-bottom:6px;">☁️</div>
+                                    <div>No storage data yet.</div>
+                                    <div style="margin-top:4px;">
+                                        Click <strong>🔄 Refresh Storage Info</strong> to fetch live data from Microsoft.
+                                    </div>
+                                </div>
+                            </div>
+                        </group>
+
+                        <!-- Numeric breakdown grid (visible only after fetch) -->
+                        <group string="Breakdown" colspan="2" invisible="quota_total_bytes == 0">
+                            <group>
+                                <field name="quota_used_gb"      string="Used (GB)"        readonly="1"/>
+                                <field name="quota_total_gb"     string="Total (GB)"       readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="quota_remaining_gb" string="Remaining (GB)"   readonly="1"/>
+                                <field name="quota_deleted_gb"   string="Recycle Bin (GB)" readonly="1"/>
+                            </group>
+                        </group>
+
+                    </group>
+                    <!-- ════ END STORAGE QUOTA SECTION ════ -->
+
+                    <!-- Webhook subscription details tab -->
+                    <notebook invisible="not webhook_enabled">
+                        <page string="Webhook Details" name="webhook_details">
+                            <field name="subscription_ids" readonly="1">
+                                <list>
+                                    <field name="subscription_id" string="Microsoft Subscription ID"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'active'"
+                                           decoration-danger="state == 'failed'"
+                                           decoration-warning="state == 'expired'"/>
+                                    <field name="expiration_datetime" string="Expires On"/>
+                                    <field name="last_sync" string="Last Delta Sync"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- List view (unchanged) -->
+    <record id="onedrive_configuration_list_view" model="ir.ui.view">
+        <field name="name">onedrive.configuration.list</field>
+        <field name="model">onedrive.configuration</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="ms_client_id"/>
+                <field name="ms_secret"/>
+                <field name="root_folder_name"/>
+                <field name="ms_redirect_url"/>
+                <field name="webhook_enabled" widget="boolean_toggle" string="Real-Time Sync"/>
+                <field name="quota_used_gb"   string="Used (GB)"  optional="show"/>
+                <field name="quota_total_gb"  string="Total (GB)" optional="show"/>
+                <field name="quota_state"     widget="badge"
+                       decoration-success="quota_state == 'normal'"
+                       decoration-warning="quota_state == 'nearing'"
+                       decoration-danger="quota_state in ['critical','exceeded']"
+                       optional="show"
+                       string="Storage State"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_onedrive_connect" model="ir.actions.act_window">
+        <field name="name">OneDrive Configuration</field>
+        <field name="res_model">onedrive.configuration</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+
+</odoo>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  CRON 1: Auto-Renew Webhook Subscriptions (every 7 days)           -->
+    <!--  Purpose: Webhooks expire after ~29 days. This cron renews them    -->
+    <!--           before they expire so real-time sync never stops.        -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="cron_renew_onedrive_webhook" model="ir.cron">
+        <field name="name">OneDrive: Auto-Renew Webhook Subscriptions</field>
+        <field name="model_id" ref="model_onedrive_configuration"/>
+        <field name="state">code</field>
+        <field name="code">model._renew_webhook_subscriptions()</field>
+        <field name="interval_number">7</field>
+        <field name="interval_type">days</field>
+        <field name="active">True</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  CRON 2: Delta Fallback Sync (every 15 minutes)                    -->
+    <!--  Purpose: Safety net. If a webhook notification was missed         -->
+    <!--           (e.g., server was down briefly), this cron catches up    -->
+    <!--           by running the delta sync periodically.                  -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="cron_onedrive_delta_fallback" model="ir.cron">
+        <field name="name">OneDrive: Delta Fallback Sync (Safety Net)</field>
+        <field name="model_id" ref="model_onedrive_configuration"/>
+        <field name="state">code</field>
+        <field name="code">
+# Run delta sync for all connected configs that have an active webhook
+configs = model.search([('state', '=', 'connected'), ('webhook_enabled', '=', True)])
+for config in configs:
+    env['documents.document']._sync_delta_changes(config)
+        </field>
+        <field name="interval_number">15</field>
+        <field name="interval_type">minutes</field>
+        <field name="active">True</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  CRON 3: Refresh OneDrive Access Token (every 1 hour)              -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <data noupdate="1">
+        <record id="refresh_onedrive_access_token" model="ir.cron">
+            <field name="name">OneDrive: Refresh access token</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">hours</field>
+            <field name="model_id" ref="model_onedrive_configuration"/>
+            <field name="code">model.refresh_onedrive_access_token()</field>
+            <field name="active" eval="True"/>
+            <field name="state">code</field>
+        </record>
+    </data>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  CRON 4 (NEW): Auto-Refresh Storage Quota (every 6 hours)          -->
+    <!--  Purpose: Keep the OneDrive storage bar current without requiring  -->
+    <!--           the user to manually click "Refresh Storage Info".       -->
+    <!--  Interval: 6 hours — a good balance between freshness and API      -->
+    <!--            rate limit courtesy. Adjust freely.                     -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="cron_onedrive_refresh_storage_quota" model="ir.cron">
+        <field name="name">OneDrive: Auto-Refresh Storage Quota</field>
+        <field name="model_id" ref="model_onedrive_configuration"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_refresh_all_storage_quotas()</field>
+        <field name="interval_number">6</field>
+        <field name="interval_type">hours</field>
+        <field name="active">True</field>
+    </record>
+
+
+    <record id="cron_onedrive_folder_mapping_existing_attachments" model="ir.cron">
+        <field name="name">OneDrive: Folder Mapping Upload Existing Attachments</field>
+        <field name="model_id" ref="model_onedrive_folder_rule"/>
+        <field name="state">code</field>
+        <field name="code">model.upload_existing_attachments()</field>
+        <field name="interval_number">30</field>
+        <field name="interval_type">minutes</field>
+        <field name="active">True</field>
+    </record>
+
+</odoo>

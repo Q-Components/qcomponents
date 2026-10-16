@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         OneDrive Dashboard — Client Action
+         Registers the OWL component as a client action that Odoo's action
+         manager can load via tag="onedrive_dashboard_action".
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="action_onedrive_dashboard" model="ir.actions.client">
+        <field name="name">OneDrive Dashboard</field>
+        <field name="tag">onedrive_dashboard_action</field>
+    </record>
+
+    <!-- ── Top-level menu: "OneDrive" in the main app switcher ─────────────── -->
+    <!-- Placed as an independent app icon so users launch it like any other
+         Odoo app — makes the module stand out on the home screen.           -->
+    <menuitem
+        id="menu_onedrive_root"
+        name="OneDrive"
+        web_icon="onedrive_integration_vts,static/src/img/onedrive_icon.png"
+        sequence="85"
+        groups="base.group_system"
+    />
+
+    <!-- Dashboard (default landing page) -->
+    <menuitem
+        id="menu_onedrive_dashboard"
+        name="Dashboard"
+        parent="menu_onedrive_root"
+        action="action_onedrive_dashboard"
+        groups="base.group_system"
+        sequence="1"
+    />
+
+    <!-- Re-expose existing views under the new app menu ───────────────────── -->
+    <menuitem
+        id="menu_onedrive_configs_sub"
+        name="Configurations"
+        parent="menu_onedrive_root"
+        action="action_onedrive_connect"
+        groups="base.group_system"
+        sequence="10"
+    />
+
+    <menuitem
+        id="menu_onedrive_folder_rules_sub"
+        name="Folder Mapping Rules"
+        parent="menu_onedrive_root"
+        action="action_onedrive_folder_rule"
+        groups="base.group_system"
+        sequence="15"
+    />
+
+    <menuitem
+        id="menu_onedrive_history_sub"
+        name="Sync History"
+        parent="menu_onedrive_root"
+        action="action_onedrive_sync_history"
+        groups="base.group_system"
+        sequence="20"
+    />
+
+</odoo>

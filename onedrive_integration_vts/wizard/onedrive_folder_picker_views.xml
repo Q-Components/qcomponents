@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  OneDrive Folder Picker — Form View                                 -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="onedrive_folder_picker_form_view" model="ir.ui.view">
+        <field name="name">onedrive.folder.picker.form</field>
+        <field name="model">onedrive.folder.picker</field>
+        <field name="arch" type="xml">
+            <form string="Browse OneDrive">
+                <header>
+                    <button name="action_go_back"
+                            string="Go Back"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-arrow-left"
+                            invisible="current_folder_id == 'root'"/>
+                            
+                    <!-- Only show 'Select Current Folder' if we are not at root -->
+                    <button name="action_select_current"
+                            string="Select Current Folder"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-check"
+                            invisible="current_folder_id == 'root'"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_title mb-4">
+                        <label for="current_folder_name" string="You are currently viewing:"/>
+                        <h1>
+                            <i class="fa fa-folder-open text-warning me-2" title="Folder Icon" aria-label="Folder Icon"/>
+                            <field name="current_folder_name" readonly="1" class="text-primary"/>
+                        </h1>
+                        <field name="current_folder_id" invisible="1"/>
+                        <field name="parent_folder_id" invisible="1"/>
+                        <field name="rule_id" invisible="1"/>
+                        <field name="config_id" invisible="1"/>
+                    </div>
+
+                    <field name="item_ids" readonly="1">
+                        <list create="0" delete="0" edit="0" default_order="name asc">
+                            <field name="name" string="Folder Name" icon="fa-folder"/>
+                            <field name="onedrive_id" column_invisible="True"/>
+                            <button name="action_open_folder"
+                                    type="object"
+                                    string="Open"
+                                    icon="fa-folder-open-o"
+                                    class="btn-link"/>
+                            <button name="action_select_folder"
+                                    type="object"
+                                    string="Select This Folder"
+                                    icon="fa-check"
+                                    class="btn-success btn-sm ms-2"/>
+                        </list>
+                    </field>
+                </sheet>
+                <footer>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

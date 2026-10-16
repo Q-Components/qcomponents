@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_onedrive_configuration,onedrive.configuration,model_onedrive_configuration,base.group_user,1,1,1,1
+access_onedrive_import_wizard,onedrive.import.wizard,model_onedrive_import_wizard,base.group_user,1,1,1,1
+access_onedrive_subscription,onedrive.subscription,model_onedrive_subscription,base.group_user,1,1,1,1
+access_onedrive_folder_rule,onedrive.folder.rule,model_onedrive_folder_rule,base.group_user,1,1,1,1
+access_onedrive_folder_picker,onedrive.folder.picker,model_onedrive_folder_picker,base.group_user,1,1,1,1
+access_onedrive_folder_picker_item,onedrive.folder.picker.item,model_onedrive_folder_picker_item,base.group_user,1,1,1,1
+access_onedrive_sync_history,onedrive.sync.history,model_onedrive_sync_history,base.group_user,1,1,1,1

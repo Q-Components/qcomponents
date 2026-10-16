@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  OneDrive Folder Rule — Form View                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="onedrive_folder_rule_form_view" model="ir.ui.view">
+        <field name="name">onedrive.folder.rule.form</field>
+        <field name="model">onedrive.folder.rule</field>
+        <field name="arch" type="xml">
+            <form string="OneDrive Folder Rule">
+                <header>
+                    <!-- Verify that the OneDrive folder ID resolves to a real folder -->
+                    <button name="action_verify_folder"
+                            string="Verify Folder"
+                            type="object"
+                            class="btn-outline-success"
+                            icon="fa-cloud"
+                            help="Confirm the OneDrive Folder ID is valid and fetch its display name."/>
+                </header>
+                <sheet>
+                    <!-- Active toggle -->
+                    <widget name="web_ribbon"
+                            title="Archived"
+                            bg_color="bg-danger"
+                            invisible="active"/>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Sale Orders → OneDrive Quotes"/></h1>
+                    </div>
+                     <div class="alert alert-info" role="alert">
+                        <strong>Subfolder pattern hints:</strong>
+                        <ul class="mb-0">
+                            <li><code>{name}</code> — record display name (recommended)</li>
+                            <li><code>{id}-{name}</code> — e.g. <em>42-MySaleOrder</em></li>
+                            <li><code>SO-{name}</code> — prefix with a fixed string</li>
+                        </ul>
+                        Any field available on the selected model can be used as a placeholder.
+                        <hr class="my-1"/>
+                        <strong>Date-based folders</strong> are created from the record's <em>Create Date</em>.
+                        Enable <em>Year Folder</em> to group by year, and <em>Month Folder</em> to further group by month (e.g. <code>May</code>).
+                    </div>
+
+                    <group>
+                        <!-- Left: Core settings -->
+                        <group string="OneDrive Settings">
+                            <field name="onedrive_config_id" required="1"/>
+                            <field name="sync_existing_attachments" widget="boolean_toggle" />
+                                 <label for="onedrive_folder_name"/>
+                                <div class="o_row">
+                                    <field name="onedrive_folder_name"
+                                           readonly="1"
+                                           invisible="not onedrive_folder_name"/>
+                                    <button name="action_open_folder_picker"
+                                            type="object"
+                                            string="Browse OneDrive"
+                                            class="btn-dark"
+                                            icon="fa-folder-open-o"/>
+                                </div>
+                        </group>
+
+                        <!-- Right: Odoo model settings -->
+                        <group string="Odoo Model Settings">
+                            <field name="model_id" required="1"/>
+                            <field name="model_name" invisible="1"/>
+
+                            <field name="sequence"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Date-based folder hierarchy settings -->
+                    <group string="Date-Based Folder Hierarchy (from Record's Create Date)">
+                        <group>
+                            <field name="create_year_folder" widget="boolean_toggle"/>
+                            <field name="create_month_folder" widget="boolean_toggle"/>
+                            <field name="subfolder_pattern"
+                                   required="1"
+                                   placeholder="{name}"/>
+                        </group>
+                    </group>
+
+                    <!-- Stats -->
+                    <group string="Statistics" invisible="not id">
+                        <field name="upload_count" readonly="1" string="Documents Uploaded"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  OneDrive Folder Rule — List View                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="onedrive_folder_rule_list_view" model="ir.ui.view">
+        <field name="name">onedrive.folder.rule.list</field>
+        <field name="model">onedrive.folder.rule</field>
+        <field name="arch" type="xml">
+            <list string="OneDrive Folder Rules">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="onedrive_config_id"/>
+                <field name="model_id" string="Odoo Model"/>
+                <field name="onedrive_folder_name" string="OneDrive Folder"/>
+                <field name="subfolder_pattern"/>
+                <field name="upload_count" string="Files Uploaded" readonly="1"/>
+                <field name="active" widget="boolean_toggle" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+        <record id="view_onedrive_archive_search" model="ir.ui.view">
+    <field name="name">onedrive.folder.rule.search</field>
+    <field name="model">onedrive.folder.rule</field>
+    <field name="arch" type="xml">
+        <search>
+            <filter string="Archived"
+                    name="archived"
+                    domain="[('active','=',False)]"/>
+        </search>
+    </field>
+</record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!--  Window Action                                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <record id="action_onedrive_folder_rule" model="ir.actions.act_window">
+        <field name="name">OneDrive Folder Rules</field>
+        <field name="res_model">onedrive.folder.rule</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first OneDrive Folder Rule!
+            </p>
+            <p>
+                Folder rules automatically upload files attached to Odoo records
+                (like Sale Orders or Invoices) into a matching subfolder in OneDrive.
+            </p>
+        </field>
+    </record>
+
+
+</odoo>

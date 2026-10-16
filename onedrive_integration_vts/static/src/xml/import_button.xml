@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-inherit="documents.DocumentsViews.ControlPanel"
+       t-inherit-mode="extension">
+
+        <xpath expr="//Dropdown" position="after">
+
+            <button type="button"
+                    class="btn btn-secondary ms-2"
+                    t-on-click="onClickImport">
+                Import
+            </button>
+
+        </xpath>
+
+    </t>
+
+</templates>
