@@ -188,7 +188,7 @@ class OneDriveFolderRule(models.Model):
                 ("res_model", "=", rule.model_name),
                 ("res_id", ">", 0),
                 ("onedrive_synced", "=", False),
-            ], order="id")
+            ], order="id",limit=100)
 
             processed = 0
             for attachment in attachments:
@@ -248,6 +248,7 @@ class OneDriveFolderRule(models.Model):
                 processed += 1
                 if processed % 30 == 0:
                     self.env.cr.commit()
+                    self.env.invalidate_all()
 
 
 
