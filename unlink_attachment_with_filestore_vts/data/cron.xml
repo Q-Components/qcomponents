@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data noupdate="1">
+        <record id="unlink_attachment_with_filestore" model="ir.cron">
+            <field name="name">Unlink Attachment (With filestore)</field>
+            <field name="model_id" ref="model_unlink_filestore"/>
+            <field name="type">ir.actions.server</field>
+            <field name="state">code</field>
+            <field name="active" eval="False"/>
+            <field name="code">model.unlink_attachment_with_filestore()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+    </data>
+</odoo>

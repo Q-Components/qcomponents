@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="view_unlink_filestore_tree" model="ir.ui.view">
+        <field name="name">unlink.filestore.tree</field>
+        <field name="model">unlink.filestore</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="model_id"/>
+                <field name="mime_type"/>
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'confirm'"
+                       decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_unlink_filestore_form" model="ir.ui.view">
+        <field name="name">unlink.filestore.form</field>
+        <field name="model">unlink.filestore</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="confirm" string="Confirm" type="object" invisible="state not in ['draft', 'in_progress']"
+                            class="oe_highlight"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="model_id" required="1" readonly="state == 'done'"/>
+                            <field name="mime_type" required="1" placeholder="Ex: text/html, application/pdf, e.t.c"
+                                   readonly="state == 'done'"/>
+                            <field name="get_date_wise_data" string="Date Filter" required="1"
+                                   readonly="state == 'done'"/>
+                            <field name="before_date"
+                                   required="get_date_wise_data == 'before'" invisible="get_date_wise_data != 'before'" readonly="state == 'done'"/>
+                            <field name="after_date"
+                                   required="get_date_wise_data == 'after'" invisible="get_date_wise_data != 'after'" readonly="state == 'done'"/>
+                            <field name="only_today_date" string="Today's Date"
+                                   invisible="get_date_wise_data != 'today'" readonly="1"/>
+                            <field name="from_date"
+                                   required="get_date_wise_data == 'between'" invisible="get_date_wise_data != 'between'" readonly="state == 'done'"/>
+                            <field name="to_date"
+                                   required="get_date_wise_data == 'between'" invisible="get_date_wise_data != 'between'" readonly="state == 'done'"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="unlink_filestore_action" model="ir.actions.act_window">
+        <field name="name">Unlink Attachment-Filestore</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">unlink.filestore</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_unlink_filestore__settings_menu"
+              name="Unlink Attachment-Filestore"
+              parent="base.menu_administration"
+              action="unlink_filestore_action"
+              sequence="200"/>
+
+    <record model="ir.actions.server" id="action_confirm_unlink_bulk_attachment_with_filestore">
+        <field name="name">Confirm Unlink</field>
+        <field name="model_id" ref="unlink_attachment_with_filestore_vts.model_unlink_filestore"/>
+        <field name="binding_model_id" ref="unlink_attachment_with_filestore_vts.model_unlink_filestore"/>
+        <field name="state">code</field>
+        <field name="binding_view_types">list</field>
+        <field name="code">
+            if records:
+            records.action_bulk_confirm_records()
+        </field>
+    </record>
+
+</odoo>
