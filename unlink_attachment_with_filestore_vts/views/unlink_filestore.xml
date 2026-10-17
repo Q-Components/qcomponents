@@ -8,6 +8,8 @@
             <list>
                 <field name="model_id"/>
                 <field name="mime_type"/>
+                <field name="record_limit"/>
+                <field name="matching_attachment_count"/>
                 <field name="state" widget="badge"
                        decoration-muted="state == 'draft'"
                        decoration-info="state == 'confirm'"
@@ -22,6 +24,7 @@
         <field name="arch" type="xml">
             <form>
                 <header>
+                    <button name="action_preview_attachments" string="Preview Affected Attachments" type="object" class="btn-secondary" invisible="state == 'done'"/>
                     <button name="confirm" string="Confirm" type="object" invisible="state not in ['draft', 'in_progress']"
                             class="oe_highlight"/>
                     <field name="state" widget="statusbar"/>
@@ -30,6 +33,11 @@
                     <group>
                         <group>
                             <field name="model_id" required="1" readonly="state == 'done'"/>
+                            <field name="model_name" invisible="1"/>
+                            <field name="filter_domain" widget="domain"
+                                   options="{'model': 'model_name', 'in_dialog': True}"
+                                   readonly="state != 'draft'"/>
+                            <field name="record_limit" required="1" readonly="state == 'done'"/>
                             <field name="mime_type" required="1" placeholder="Ex: text/html, application/pdf, e.t.c"
                                    readonly="state == 'done'"/>
                             <field name="get_date_wise_data" string="Date Filter" required="1"
@@ -44,6 +52,13 @@
                                    required="get_date_wise_data == 'between'" invisible="get_date_wise_data != 'between'" readonly="state == 'done'"/>
                             <field name="to_date"
                                    required="get_date_wise_data == 'between'" invisible="get_date_wise_data != 'between'" readonly="state == 'done'"/>
+                        </group>
+                        <group string="Last Preview / Cleanup Summary">
+                            <field name="matching_record_count" readonly="1"/>
+                            <field name="matching_attachment_count" readonly="1"/>
+                            <field name="preview_attachment_count" readonly="1"/>
+                            <field name="preview_date" readonly="1"/>
+                            <div colspan="2" class="text-muted">Preview counts are a snapshot. Preview again after changing filters; scheduled cleanup re-evaluates matches.</div>
                         </group>
                     </group>
                 </sheet>
