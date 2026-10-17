@@ -188,7 +188,7 @@ class OneDriveFolderRule(models.Model):
                 ("res_model", "=", rule.model_name),
                 ("res_id", ">", 0),
                 ("onedrive_synced", "=", False),
-            ], order="id",limit=100)
+            ], order="id",limit=120)
 
             processed = 0
             for attachment in attachments:
