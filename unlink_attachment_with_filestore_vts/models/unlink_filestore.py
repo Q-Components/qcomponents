@@ -33,8 +33,7 @@ class UnlinkFilestore(models.Model):
             if rec.record_limit < 1:
                 raise ValidationError('Attachment Limit must be at least 1.')
 
-    def _get_matching_attachments(self, limit=None):
-        """Return matching attachments using exactly the cleanup filters."""
+    def _get_filter_domain(self):
         self.ensure_one()
         if not self.model_id or not self.model_name:
             raise ValidationError('Please select a model.')
@@ -44,29 +43,75 @@ class UnlinkFilestore(models.Model):
             raise ValidationError('Invalid domain filter: %s' % exc) from exc
         if not isinstance(domain, (list, tuple)):
             raise ValidationError('The domain filter must be a valid Odoo domain list.')
-        target = self.env[self.model_name].search(domain)
-        attachment_domain = [('res_model', '=', self.model_name), ('res_id', 'in', target.ids)]
-        if self.mime_type:
-            attachment_domain.append(('mimetype', '=', self.mime_type))
-        attachments = self.env['ir.attachment']
-        return target, attachments, attachment_domain
+        return list(domain)
 
-    def action_preview_attachments(self):
-        """Show exactly the attachment rows eligible for the next limited cleanup."""
+    def _get_matching_attachments(self):
+        """Return an attachment search domain and model record count.
+
+        When the selected model itself is ir.attachment, search its records
+        directly. Otherwise find attachments linked to matching model records.
+        """
+        self.ensure_one()
+        domain = self._get_filter_domain()
+        attachment_obj = self.env['ir.attachment']
+        target_obj = self.env[self.model_name]
+        target_count = target_obj.search_count(domain)
+
+        if self.model_name == 'ir.attachment':
+            attachment_domain = domain
+        else:
+            target_ids = target_obj.search(domain).ids
+            attachment_domain = [
+                ('res_model', '=', self.model_name),
+                ('res_id', 'in', target_ids),
+            ]
+        if self.mime_type:
+            attachment_domain = list(attachment_domain) + [
+                ('mimetype', '=', self.mime_type.strip())
+            ]
+        return target_count, attachment_obj, attachment_domain
+
+    def _check_preview_state(self):
         self.ensure_one()
         if self.state == 'done':
             raise ValidationError('This cleanup has already been completed.')
         if self.record_limit < 1:
             raise ValidationError('Attachment Limit must be at least 1.')
-        target, attachment_obj, domain = self._get_matching_attachments()
+
+    def _update_preview_counts(self):
+        self.ensure_one()
+        target_count, attachment_obj, domain = self._get_matching_attachments()
         matching_count = attachment_obj.search_count(domain)
         candidates = attachment_obj.search(domain, order='id asc', limit=self.record_limit)
         self.write({
-            'matching_record_count': len(target),
+            'matching_record_count': target_count,
             'matching_attachment_count': matching_count,
             'preview_attachment_count': len(candidates),
             'preview_date': fields.Datetime.now(),
         })
+        return candidates
+
+    def action_preview_records(self):
+        """Display matching records from the chosen model, regardless of MIME type."""
+        self._check_preview_state()
+        domain = self._get_filter_domain()
+        target_model = self.env[self.model_name]
+        records = target_model.search(domain, order='id asc', limit=self.record_limit)
+        self._update_preview_counts()
+        return {
+            'name': 'Matching Model Records (Preview Only)',
+            'type': 'ir.actions.act_window',
+            'res_model': self.model_name,
+            'view_mode': 'list,form',
+            'domain': [('id', 'in', records.ids)],
+            'context': {'create': False, 'edit': False, 'delete': False},
+            'target': 'current',
+        }
+
+    def action_preview_attachments(self):
+        """Open limited attachment candidates that the cleanup would unlink."""
+        self._check_preview_state()
+        candidates = self._update_preview_counts()
         return {
             'name': 'Attachments Selected for Cleanup (Preview Only)',
             'type': 'ir.actions.act_window',
@@ -111,14 +156,14 @@ class UnlinkFilestore(models.Model):
 
             if rec.record_limit < 1:
                 raise ValidationError('Attachment Limit must be at least 1.')
-            target, attachment_obj, search_domain = rec._get_matching_attachments()
+            target_count, attachment_obj, search_domain = rec._get_matching_attachments()
             total_before = attachment_obj.search_count(search_domain)
             attachments = attachment_obj.search(search_domain, order='id asc', limit=rec.record_limit)
             count = len(attachments)
             attachments.unlink()
             rec.write({
                 'state': 'done',
-                'matching_record_count': len(target),
+                'matching_record_count': target_count,
                 'matching_attachment_count': total_before,
                 'preview_attachment_count': count,
             })

@@ -24,7 +24,8 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_preview_attachments" string="Preview Affected Attachments" type="object" class="btn-secondary" invisible="state == 'done'"/>
+                    <button name="action_preview_records" string="Preview Model Records" type="object" class="btn-secondary" invisible="state == 'done'"/>
+                    <button name="action_preview_attachments" string="Preview Attachments to Delete" type="object" class="btn-secondary" invisible="state == 'done'"/>
                     <button name="confirm" string="Confirm" type="object" invisible="state not in ['draft', 'in_progress']"
                             class="oe_highlight"/>
                     <field name="state" widget="statusbar"/>
@@ -46,7 +47,7 @@
                             <field name="matching_attachment_count" readonly="1"/>
                             <field name="preview_attachment_count" readonly="1"/>
                             <field name="preview_date" readonly="1"/>
-                            <div colspan="2" class="text-muted">Preview counts are a snapshot. Preview again after changing filters; scheduled cleanup re-evaluates matches.</div>
+                            <div colspan="2" class="text-muted">Model preview uses the selected model domain. Attachment preview also applies MIME Type and the limit. When Model Name is Attachment, the attachment records are filtered directly.</div>
                         </group>
                     </group>
                 </sheet>
