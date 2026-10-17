@@ -56,6 +56,38 @@
         </field>
     </record>
 
+    <record id="unlink_attachment_manual_delete_form" model="ir.ui.view">
+        <field name="name">unlink.attachment.manual.delete.form</field>
+        <field name="model">unlink.attachment.manual.delete</field>
+        <field name="arch" type="xml">
+            <form string="Confirm Attachment Deletion">
+                <group>
+                    <div class="alert alert-danger" role="alert" colspan="2">
+                        This will permanently delete the selected attachment records.
+                        Their stored files will be cleaned up using Odoo's filestore handling.
+                        This cannot be undone.
+                    </div>
+                    <field name="cleanup_id" invisible="1"/>
+                    <field name="selected_count" readonly="1"/>
+                    <field name="attachment_ids" widget="many2many_tags" readonly="1"/>
+                </group>
+                <footer>
+                    <button name="action_confirm_delete" string="Delete Selected Attachments" type="object" class="btn-danger"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="server_action_manual_delete_from_preview" model="ir.actions.server">
+        <field name="name">Delete Selected Attachments (Cleanup Preview)</field>
+        <field name="model_id" ref="base.model_ir_attachment"/>
+        <field name="binding_model_id" ref="base.model_ir_attachment"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = env['unlink.filestore'].action_open_manual_delete_wizard(records)</field>
+    </record>
+
     <record id="unlink_filestore_action" model="ir.actions.act_window">
         <field name="name">Unlink Attachment-Filestore</field>
         <field name="type">ir.actions.act_window</field>

@@ -26,6 +26,10 @@ class UnlinkFilestore(models.Model):
     matching_attachment_count = fields.Integer(string='Matching Attachments', readonly=True, copy=False)
     preview_attachment_count = fields.Integer(string='Attachments Within Limit', readonly=True, copy=False)
     preview_date = fields.Datetime(string='Last Preview', readonly=True, copy=False)
+    preview_attachment_ids = fields.Many2many(
+        'ir.attachment', 'unlink_filestore_preview_attachment_rel',
+        'cleanup_id', 'attachment_id', string='Preview Snapshot', copy=False)
+
 
     @api.constrains('record_limit')
     def _check_record_limit(self):
@@ -88,6 +92,7 @@ class UnlinkFilestore(models.Model):
             'matching_attachment_count': matching_count,
             'preview_attachment_count': len(candidates),
             'preview_date': fields.Datetime.now(),
+            'preview_attachment_ids': [(6, 0, candidates.ids)],
         })
         return candidates
 
@@ -118,8 +123,37 @@ class UnlinkFilestore(models.Model):
             'res_model': 'ir.attachment',
             'view_mode': 'list,form',
             'domain': [('id', 'in', candidates.ids)],
-            'context': {'create': False, 'edit': False, 'delete': False},
+            'context': {
+                'create': False, 'edit': False, 'delete': False,
+                'cleanup_preview_job_id': self.id,
+            },
             'target': 'current',
+        }
+
+    @api.model
+    def action_open_manual_delete_wizard(self, attachments):
+        """Called by the ir.attachment Action menu with selected list rows."""
+        if not self.env.user.has_group('base.group_system'):
+            raise ValidationError('Only Settings administrators can manually delete attachments.')
+        job_id = self.env.context.get('cleanup_preview_job_id')
+        job = self.browse(job_id).exists() if isinstance(job_id, int) else self.browse()
+        if not job or job.state == 'done':
+            raise ValidationError('Open the attachment list using Preview Attachments to Delete first.')
+        if not attachments or len(attachments) > job.record_limit:
+            raise ValidationError('Select between 1 and %s attachment(s).' % job.record_limit)
+        if not set(attachments.ids).issubset(set(job.preview_attachment_ids.ids)):
+            raise ValidationError('Some selected attachments are not in the latest preview. Preview again.')
+        wizard = self.env['unlink.attachment.manual.delete'].create({
+            'cleanup_id': job.id,
+            'attachment_ids': [(6, 0, attachments.ids)],
+        })
+        return {
+            'name': 'Confirm Manual Attachment Deletion',
+            'type': 'ir.actions.act_window',
+            'res_model': 'unlink.attachment.manual.delete',
+            'res_id': wizard.id,
+            'view_mode': 'form',
+            'target': 'new',
         }
 
     mime_type = fields.Char(string="Mime Type", help="Set file format.")
@@ -170,3 +204,48 @@ class UnlinkFilestore(models.Model):
             rec.message_post(body=(
                 f'Attachment cleanup completed. {count} matching attachment(s) removed '
                 f'(configured limit: {rec.record_limit}).'))
+
+
+class UnlinkAttachmentManualDelete(models.TransientModel):
+    _name = 'unlink.attachment.manual.delete'
+    _description = 'Confirm Selected Attachment Deletion'
+
+    cleanup_id = fields.Many2one('unlink.filestore', required=True, readonly=True)
+    attachment_ids = fields.Many2many('ir.attachment', string='Selected Attachments', readonly=True)
+    selected_count = fields.Integer(compute='_compute_selected_count')
+
+    @api.depends('attachment_ids')
+    def _compute_selected_count(self):
+        for wizard in self:
+            wizard.selected_count = len(wizard.attachment_ids)
+
+    def action_confirm_delete(self):
+        self.ensure_one()
+        if not self.env.user.has_group('base.group_system'):
+            raise ValidationError('Only Settings administrators can manually delete attachments.')
+        job = self.cleanup_id.exists()
+        if not job or job.state == 'done':
+            raise ValidationError('This cleanup configuration is no longer available.')
+        attachments = self.attachment_ids.exists()
+        if not attachments or len(attachments) > job.record_limit:
+            raise ValidationError('Selected attachments exceed the configured limit or no longer exist.')
+        if not set(attachments.ids).issubset(set(job.preview_attachment_ids.ids)):
+            raise ValidationError('Preview changed. Open a new preview and select attachments again.')
+        # Recheck against CURRENT domain, MIME type and linked model records.
+        _, attachment_obj, matching_domain = job._get_matching_attachments()
+        from odoo.osv import expression
+        still_matching = attachment_obj.search(expression.AND([
+            matching_domain, [('id', 'in', attachments.ids)]
+        ])).ids
+        if set(still_matching) != set(attachments.ids):
+            raise ValidationError('Some attachments no longer match the filter. Preview again.')
+        count = len(attachments)
+        # Administrators explicitly confirm deletion. Let Odoo handle filestore GC.
+        attachments.sudo().unlink()
+        job.message_post(body='%s attachment(s) manually deleted from the preview by %s.' % (
+            count, self.env.user.display_name))
+        job._update_preview_counts()
+        return {
+            'type': 'ir.actions.act_window', 'res_model': 'unlink.filestore',
+            'res_id': job.id, 'view_mode': 'form', 'target': 'current',
+        }
