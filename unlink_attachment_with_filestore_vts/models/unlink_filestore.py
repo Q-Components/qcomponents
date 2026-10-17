@@ -1,5 +1,4 @@
 from ast import literal_eval
-from datetime import timedelta
 
 from odoo import api, models, fields
 from odoo.exceptions import ValidationError
@@ -49,27 +48,6 @@ class UnlinkFilestore(models.Model):
         attachment_domain = [('res_model', '=', self.model_name), ('res_id', 'in', target.ids)]
         if self.mime_type:
             attachment_domain.append(('mimetype', '=', self.mime_type))
-        date_filter = self.get_date_wise_data
-        if date_filter == 'before':
-            if not self.before_date:
-                raise ValidationError('Please provide Before Date.')
-            attachment_domain.append(('create_date', '<', fields.Datetime.to_string(
-                fields.Datetime.start_of(self.before_date, 'day') + timedelta(days=1))))
-        elif date_filter == 'after':
-            if not self.after_date:
-                raise ValidationError('Please provide After Date.')
-            attachment_domain.append(('create_date', '>=', self.after_date))
-        elif date_filter == 'today':
-            selected = self.only_today_date or fields.Date.context_today(self)
-            attachment_domain.extend([('create_date', '>=', selected),
-                                      ('create_date', '<', fields.Date.to_string(selected + timedelta(days=1)))])
-        elif date_filter == 'between':
-            if not self.from_date or not self.to_date:
-                raise ValidationError('Please provide From Date and To Date.')
-            attachment_domain.extend([('create_date', '>=', self.from_date),
-                                      ('create_date', '<', fields.Date.to_string(self.to_date + timedelta(days=1)))])
-        else:
-            raise ValidationError('Please select a Date Filter.')
         attachments = self.env['ir.attachment']
         return target, attachments, attachment_domain
 
@@ -100,14 +78,6 @@ class UnlinkFilestore(models.Model):
         }
 
     mime_type = fields.Char(string="Mime Type", help="Set file format.")
-    before_date = fields.Date(string="Before Date", help="Takes the data before the entered date.")
-    after_date = fields.Date(string="After Date", help="Takes the data after the entered date.")
-    only_today_date = fields.Date(string="Only Today Date", help="Takes the data of only today's date.",
-                                  default=fields.Date.today())
-    from_date = fields.Date(string="From Date", help="Select from date.")
-    to_date = fields.Date(string="To Date", help="Select to date.")
-    get_date_wise_data = fields.Selection([('before', 'Before'), ('after', 'After'), ('today', 'Today'),
-                                           ('between', 'Between')])
     state = fields.Selection([('draft', 'Draft'), ('confirm', 'Confirm'), ('done', 'Done')], default='draft')
 
     def confirm(self):
