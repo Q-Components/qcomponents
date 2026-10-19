@@ -188,6 +188,7 @@ class OneDriveFolderRule(models.Model):
                 ("res_model", "=", rule.model_name),
                 ("res_id", ">", 0),
                 ("onedrive_synced", "=", False),
+                ("onedrive_sync_failed", "=", False),
             ], order="id",limit=120)
 
             processed = 0
@@ -214,6 +215,7 @@ class OneDriveFolderRule(models.Model):
                                 res_id=attachment.res_id,
                             )
                         else:
+                            attachment.write({"onedrive_sync_failed": True})
                             self.env["onedrive.sync.history"].create_log(
                                 operation="upload",
                                 status="failed",
@@ -226,7 +228,14 @@ class OneDriveFolderRule(models.Model):
                                 res_model=attachment.res_model,
                                 res_id=attachment.res_id,
                             )
+
+                    else:
+                        attachment.write({"onedrive_sync_failed": True})
                 except Exception as e:
+                    try:
+                        attachment.write({"onedrive_sync_failed": True})
+                    except Exception:
+                        _logger.exception("[OneDrive] Could not flag attachment %s", attachment.id)
                     _logger.exception(
                         "[OneDrive] Failed to upload existing attachment '%s' (ID %s): %s",
                         attachment.name, attachment.id, e,

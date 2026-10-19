@@ -28,6 +28,7 @@ class IrAttachment(models.Model):
     _inherit = "ir.attachment"
 
     onedrive_synced = fields.Boolean(string="Uploaded to OneDrive", default=False,copy=False, index=True )
+    onedrive_sync_failed = fields.Boolean(string="OneDrive Upload Failed", default=False, copy=False, index=True)
 
     @api.model_create_multi
     def create(self, vals_list):
