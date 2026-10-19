@@ -26,6 +26,7 @@ class UnlinkFilestore(models.Model):
     matching_attachment_count = fields.Integer(string='Matching Attachments', readonly=True, copy=False)
     preview_attachment_count = fields.Integer(string='Attachments Within Limit', readonly=True, copy=False)
     preview_date = fields.Datetime(string='Last Preview', readonly=True, copy=False)
+    cron_deleted_count = fields.Integer(string='Deleted by Cron (Total)', readonly=True, copy=False, default=0)
     preview_attachment_ids = fields.Many2many(
         'ir.attachment', 'unlink_filestore_preview_attachment_rel',
         'cleanup_id', 'attachment_id', string='Preview Snapshot', copy=False)
@@ -191,19 +192,36 @@ class UnlinkFilestore(models.Model):
             if rec.record_limit < 1:
                 raise ValidationError('Attachment Limit must be at least 1.')
             target_count, attachment_obj, search_domain = rec._get_matching_attachments()
-            total_before = attachment_obj.search_count(search_domain)
             attachments = attachment_obj.search(search_domain, order='id asc', limit=rec.record_limit)
-            count = len(attachments)
-            attachments.unlink()
+            batch_count = len(attachments)
+            if attachments:
+                attachments.unlink()
+
+            # Recount AFTER deletion. A configured limit is per cron execution,
+            # not the total number of attachments to process.
+            remaining = attachment_obj.search_count(search_domain)
+            is_complete = remaining == 0
             rec.write({
-                'state': 'done',
+                'state': 'done' if is_complete else 'confirm',
                 'matching_record_count': target_count,
-                'matching_attachment_count': total_before,
-                'preview_attachment_count': count,
+                'matching_attachment_count': remaining,
+                'preview_attachment_count': min(remaining, rec.record_limit),
+                'cron_deleted_count': rec.cron_deleted_count + batch_count,
+                # The previous preview is stale after records are deleted.
+                'preview_attachment_ids': [(5, 0, 0)],
+                'preview_date': False,
             })
-            rec.message_post(body=(
-                f'Attachment cleanup completed. {count} matching attachment(s) removed '
-                f'(configured limit: {rec.record_limit}).'))
+            if is_complete:
+                rec.message_post(body=(
+                    f'Attachment cleanup completed: {batch_count} attachment(s) deleted '
+                    f'in this batch, {rec.cron_deleted_count} deleted by cron in total; '
+                    'no matching attachments remain.'))
+            else:
+                rec.message_post(body=(
+                    f'Attachment cleanup batch processed: {batch_count} attachment(s) deleted '
+                    f'(limit: {rec.record_limit}); {remaining} matching attachment(s) '
+                    'still remain. The job will continue on the next scheduled run.'))
+
 
 
 class UnlinkAttachmentManualDelete(models.TransientModel):

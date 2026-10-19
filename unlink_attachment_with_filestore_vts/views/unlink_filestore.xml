@@ -10,6 +10,7 @@
                 <field name="mime_type"/>
                 <field name="record_limit"/>
                 <field name="matching_attachment_count"/>
+                <field name="cron_deleted_count"/>
                 <field name="state" widget="badge"
                        decoration-muted="state == 'draft'"
                        decoration-info="state == 'confirm'"
@@ -45,6 +46,7 @@
                         <group string="Last Preview / Cleanup Summary">
                             <field name="matching_record_count" readonly="1"/>
                             <field name="matching_attachment_count" readonly="1"/>
+                            <field name="cron_deleted_count" readonly="1"/>
                             <field name="preview_attachment_count" readonly="1"/>
                             <field name="preview_date" readonly="1"/>
                             <div colspan="2" class="text-muted">Model preview uses the selected model domain. Attachment preview also applies MIME Type and the limit. When Model Name is Attachment, the attachment records are filtered directly.</div>
