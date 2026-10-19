@@ -12,9 +12,9 @@ import { Component, onMounted, useState } from "@odoo/owl";
 
 // ─── Color helpers ───────────────────────────────────────────────────────────
 const STATUS_COLOR = {
-    success: "#22C55E",
-    failed:  "#EF4444",
-    skipped: "#F59E0B",
+    success: "#16A34A",
+    failed:  "#DC2626",
+    skipped: "#D97706",
 };
 const OP_ICON = {
     upload:   "fa-cloud-upload",
@@ -26,19 +26,19 @@ const OP_ICON = {
     restore:  "fa-history",
 };
 const OP_COLOR = {
-    upload:   "#0078D4",
-    download: "#10B981",
-    delete:   "#EF4444",
-    webhook:  "#8B5CF6",
-    folder:   "#F59E0B",
-    update:   "#3B82F6",
-    restore:  "#06B6D4",
+    upload:   "#2563EB",
+    download: "#15803D",
+    delete:   "#DC2626",
+    webhook:  "#7C3AED",
+    folder:   "#D97706",
+    update:   "#2563EB",
+    restore:  "#0891B2",
 };
 const QUOTA_COLOR = {
-    normal:   "#22C55E",
-    nearing:  "#F59E0B",
-    critical: "#EF4444",
-    exceeded: "#7F1D1D",
+    normal:   "#16A34A",
+    nearing:  "#D97706",
+    critical: "#DC2626",
+    exceeded: "#991B1B",
     unknown:  "#94A3B8",
 };
 

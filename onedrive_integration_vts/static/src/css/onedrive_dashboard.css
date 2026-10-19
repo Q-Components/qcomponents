@@ -1,26 +1,26 @@
 /* =============================================================================
    OneDrive Integration — Dashboard Stylesheet
-   Premium dark-accented design with glass cards, animated gradients,
+   Premium light design with accessible contrast and soft cards,
    and responsive grid. Works inside Odoo's backend shell.
    ============================================================================= */
 
 /* ── CSS custom properties (design tokens) ─────────────────────────────────── */
 .o_onedrive_dashboard {
-    --ovd-bg:          #0F172A;
-    --ovd-surface:     #2a3343;
-    --ovd-surface-2:   #263346;
-    --ovd-border:      #334155;
-    --ovd-text:        #E2E8F0;
-    --ovd-muted:       #94A3B8;
-    --ovd-accent:      #0078D4;
-    --ovd-green:       #22C55E;
-    --ovd-red:         #EF4444;
-    --ovd-amber:       #F59E0B;
-    --ovd-purple:      #8B5CF6;
-    --ovd-teal:        #14B8A6;
+    --ovd-bg:          #F5F7FB;
+    --ovd-surface:     #FFFFFF;
+    --ovd-surface-2:   #F8FAFC;
+    --ovd-border:      #E2E8F0;
+    --ovd-text:        #0F172A;
+    --ovd-muted:       #64748B;
+    --ovd-accent:      #2563EB;
+    --ovd-green:       #16A34A;
+    --ovd-red:         #DC2626;
+    --ovd-amber:       #D97706;
+    --ovd-purple:      #7C3AED;
+    --ovd-teal:        #0891B2;
     --ovd-radius:      14px;
     --ovd-radius-sm:   8px;
-    --ovd-shadow:      0 4px 24px rgba(0,0,0,.35);
+    --ovd-shadow:      0 2px 8px rgba(15,23,42,.05);
     --ovd-transition:  .22s ease;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: var(--ovd-text);
@@ -61,7 +61,8 @@
 .ovd_hero {
     display: flex; align-items: center; justify-content: space-between;
     flex-wrap: wrap; gap: 16px;
-    background: linear-gradient(135deg, #0F4C8A 0%, #0078D4 50%, #1E3A5F 100%);
+    background: linear-gradient(120deg, #EFF6FF 0%, #DBEAFE 100%);
+    border: 1px solid #BFDBFE;
     border-radius: var(--ovd-radius);
     padding: 28px 32px;
     margin-bottom: 24px;
@@ -80,13 +81,13 @@
 .ovd_hero_left { display:flex; align-items:center; gap:20px; z-index:1; }
 .ovd_hero_icon {
     width:60px; height:60px; border-radius:16px;
-    background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center;
-    font-size:1.8rem; color:#fff; flex-shrink:0;
-    box-shadow:0 0 0 1px rgba(255,255,255,.2);
+    background:#DBEAFE; display:flex; align-items:center; justify-content:center;
+    font-size:1.8rem; color:#2563EB; flex-shrink:0;
+    box-shadow:0 0 0 1px rgba(37,99,235,.08);
 }
-.ovd_hero_text h1 { margin:0; font-size:1.75rem; font-weight:700; color:#fff; line-height:1.15; }
-.ovd_hero_text h1 span { color:#7EC8FF; }
-.ovd_hero_text p  { margin:4px 0 0; color:rgba(255,255,255,.7); font-size:.9rem; }
+.ovd_hero_text h1 { margin:0; font-size:1.75rem; font-weight:700; color:#1E3A8A; line-height:1.15; }
+.ovd_hero_text h1 span { color:#0F172A; }
+.ovd_hero_text p  { margin:4px 0 0; color:#64748B; font-size:.9rem; }
 
 .ovd_hero_actions { display:flex; gap:10px; flex-wrap:wrap; z-index:1; }
 
@@ -97,22 +98,22 @@
     font-size:.875rem; font-weight:600; cursor:pointer;
     border:none; transition:transform var(--ovd-transition), box-shadow var(--ovd-transition);
 }
-.ovd_btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.3); }
-.ovd_btn_primary { background:#fff; color:#0078D4; }
+.ovd_btn:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(15,23,42,.10); }
+.ovd_btn_primary { background:#2563EB; color:#FFFFFF; }
 .ovd_btn_outline {
-    background:transparent; color:#fff;
-    border:1.5px solid rgba(255,255,255,.4);
+    background:#FFFFFF; color:#334155;
+    border:1.5px solid #CBD5E1;
 }
-.ovd_btn_outline:hover { background:rgba(255,255,255,.1); }
+.ovd_btn_outline:hover { background:#F1F5FF; }
 
 .ovd_header_btn {
-    margin-left:auto; background:rgba(255,255,255,.07);
+    margin-left:auto; background:#F1F5F9;
     color:var(--ovd-muted); border:1px solid var(--ovd-border);
     border-radius:var(--ovd-radius-sm); padding:5px 12px;
     font-size:.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:5px;
     transition:background var(--ovd-transition);
 }
-.ovd_header_btn:hover { background:rgba(255,255,255,.12); color:var(--ovd-text); }
+.ovd_header_btn:hover { background:#E2E8F0; color:var(--ovd-text); }
 
 /* ── KPI Row ────────────────────────────────────────────────────────────────── */
 .ovd_kpi_row {
@@ -223,7 +224,7 @@
 .ovd_table tbody tr:last-child { border-bottom:none; }
 .ovd_table tbody tr:hover { background:var(--ovd-surface-2); }
 .ovd_table td { padding:10px 16px; }
-.ovd_row_muted td { opacity:.45; }
+.ovd_row_muted td { opacity:.76; }
 
 .ovd_op_badge {
     display:inline-flex; align-items:center; gap:5px;
@@ -233,10 +234,10 @@
 .ovd_td_success{ color:var(--ovd-green); font-weight:600; text-align:center; }
 .ovd_td_fail   { color:var(--ovd-red);   font-weight:600; text-align:center; }
 
-.ovd_mini_bar_wrap { background:#0F172A; border-radius:4px; height:6px; width:80px; overflow:hidden; display:inline-block; vertical-align:middle; }
+.ovd_mini_bar_wrap { background:#E2E8F0; border-radius:4px; height:6px; width:80px; overflow:hidden; display:inline-block; vertical-align:middle; }
 .ovd_mini_bar      { height:100%; border-radius:4px; transition:width .6s ease; }
 .ovd_mini_pct      { font-size:.72rem; color:var(--ovd-muted); margin-left:6px; }
-.ovd_na            { color:var(--ovd-border); }
+.ovd_na            { color:#94A3B8; }
 
 /* ── Bottom Row ──────────────────────────────────────────────────────────────── */
 .ovd_bot_row {
@@ -258,7 +259,7 @@
 .ovd_config_top  { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
 .ovd_config_avatar {
     width:42px; height:42px; border-radius:10px; flex-shrink:0;
-    background:linear-gradient(135deg,#0F4C8A,#0078D4);
+    background:linear-gradient(135deg,#2563EB,#60A5FA);
     display:flex; align-items:center; justify-content:center;
     font-size:1.1rem; color:#fff;
 }
@@ -274,7 +275,7 @@
 .ovd_badge_mini {
     padding:1px 7px; border-radius:20px; font-size:.68rem; font-weight:700;
 }
-.ovd_badge_blue { background:#0078D420; color:#7EC8FF; border:1px solid #0078D445; }
+.ovd_badge_blue { background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; }
 
 .ovd_config_sync       { text-align:right; flex-shrink:0; }
 .ovd_config_sync_label { font-size:.65rem; color:var(--ovd-muted); text-transform:uppercase; }
@@ -286,7 +287,7 @@
     display:flex; justify-content:space-between; align-items:center;
     font-size:.72rem; color:var(--ovd-muted); margin-bottom:4px;
 }
-.ovd_prog_track { background:#0F172A; border-radius:4px; height:6px; overflow:hidden; }
+.ovd_prog_track { background:#E2E8F0; border-radius:4px; height:6px; overflow:hidden; }
 .ovd_prog_fill  { height:100%; border-radius:4px; transition:width .6s ease; }
 .ovd_config_pct { font-size:.68rem; color:var(--ovd-muted); text-align:right; margin-top:2px; }
 
@@ -297,7 +298,7 @@
 .ovd_quota_exceeded { color:#7F1D1D;            }
 .ovd_quota_unknown  { color:var(--ovd-muted);  }
 
-.ovd_config_footer { font-size:.68rem; color:var(--ovd-border); margin-top:8px; }
+.ovd_config_footer { font-size:.68rem; color:var(--ovd-muted); margin-top:8px; }
 
 /* ── Activity Feed ───────────────────────────────────────────────────────────── */
 .ovd_panel_feed { display:flex; flex-direction:column; overflow:hidden; }
@@ -330,3 +331,28 @@
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:10px; padding:40px; color:var(--ovd-muted); text-align:center;
 }
+
+/* Light theme finishing touches — scoped to OneDrive dashboard only. */
+.o_onedrive_dashboard .ovd_kpi_card { box-shadow: 0 2px 8px rgba(15,23,42,.04); }
+.o_onedrive_dashboard .ovd_kpi_value { color: #0F172A; }
+.o_onedrive_dashboard .ovd_kpi_label { color: #475569; }
+.o_onedrive_dashboard .ovd_kpi_sub { color: #64748B; }
+.o_onedrive_dashboard .ovd_kpi_blue .ovd_kpi_icon { background:#EFF6FF; }
+.o_onedrive_dashboard .ovd_kpi_green .ovd_kpi_icon { background:#F0FDF4; }
+.o_onedrive_dashboard .ovd_kpi_orange .ovd_kpi_icon { background:#FFFBEB; }
+.o_onedrive_dashboard .ovd_kpi_teal .ovd_kpi_icon { background:#ECFEFF; }
+.o_onedrive_dashboard .ovd_kpi_purple .ovd_kpi_icon { background:#F5F3FF; }
+.o_onedrive_dashboard .ovd_kpi_slate .ovd_kpi_icon { background:#F1F5F9; }
+.o_onedrive_dashboard .ovd_kpi_icon { width:48px; height:48px; display:flex; align-items:center; justify-content:center; border-radius:14px; }
+.o_onedrive_dashboard .ovd_panel_header { background:#F8FAFC; color:#1E293B; }
+.o_onedrive_dashboard .ovd_table { color:#334155; }
+.o_onedrive_dashboard .ovd_table thead th { color:#64748B; }
+.o_onedrive_dashboard .ovd_table tbody tr:hover { background:#F1F5FF; }
+.o_onedrive_dashboard .ovd_feed_item:hover { background:#F8FAFC; }
+.o_onedrive_dashboard .ovd_feed_file { color:#1E293B; }
+.o_onedrive_dashboard .ovd_feed_msg { color:#64748B; }
+.o_onedrive_dashboard .ovd_feed_footer { color:#64748B; }
+.o_onedrive_dashboard .ovd_hero::before { animation:none; background:none; pointer-events:none; }
+.o_onedrive_dashboard .ovd_btn_primary:hover { background:#1D4ED8; color:#FFFFFF; }
+.o_onedrive_dashboard .ovd_btn:focus-visible,
+.o_onedrive_dashboard .ovd_kpi_card:focus-visible { outline:2px solid #2563EB; outline-offset:3px; }

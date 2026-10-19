@@ -3,7 +3,7 @@
 
 <!-- =========================================================================
      OneDrive Dashboard — QWeb Template
-     Beautiful, premium, dark-accented dashboard with:
+     Beautiful, premium, light-themed dashboard with:
        • KPI stat cards (connections, docs, sync rate, storage)
        • Operation breakdown table
        • Per-config storage bars
@@ -139,11 +139,11 @@
                         <svg class="ovd_donut_svg" viewBox="0 0 120 120">
                             <!-- Background ring -->
                             <circle cx="60" cy="60" r="50"
-                                    fill="none" stroke="#1E293B" stroke-width="18"/>
+                                    fill="none" stroke="#E2E8F0" stroke-width="18"/>
                             <!-- Success arc -->
                             <circle cx="60" cy="60" r="50"
                                     fill="none"
-                                    stroke="#22C55E"
+                                    stroke="#16A34A"
                                     stroke-width="18"
                                     stroke-dasharray="314"
                                     t-attf-stroke-dashoffset="#{314 - (d.total_logs > 0 ? (d.success_logs / d.total_logs * 314) : 0)}"
@@ -153,7 +153,7 @@
                             <!-- Failed arc -->
                             <circle cx="60" cy="60" r="50"
                                     fill="none"
-                                    stroke="#EF4444"
+                                    stroke="#DC2626"
                                     stroke-width="18"
                                     t-attf-stroke-dasharray="#{d.total_logs > 0 ? (d.failed_logs / d.total_logs * 314) : 0} 314"
                                     t-attf-stroke-dashoffset="#{-(d.total_logs > 0 ? (d.success_logs / d.total_logs * 314) : 0)}"
@@ -168,15 +168,15 @@
                     </div>
                     <div class="ovd_donut_legend">
                         <div class="ovd_legend_item" t-on-click="() => this.openHistoryFiltered('success')">
-                            <span class="ovd_badge" style="background:#22C55E"/>
+                            <span class="ovd_badge" style="background:#16A34A"/>
                             Success <strong t-esc="d.success_logs"/>
                         </div>
                         <div class="ovd_legend_item" t-on-click="() => this.openHistoryFiltered('failed')">
-                            <span class="ovd_badge" style="background:#EF4444"/>
+                            <span class="ovd_badge" style="background:#DC2626"/>
                             Failed <strong t-esc="d.failed_logs"/>
                         </div>
                         <div class="ovd_legend_item" t-on-click="() => this.openHistoryFiltered('skipped')">
-                            <span class="ovd_badge" style="background:#F59E0B"/>
+                            <span class="ovd_badge" style="background:#D97706"/>
                             Skipped <strong t-esc="d.skipped_logs"/>
                         </div>
                     </div>
@@ -245,7 +245,7 @@
 
                     <t t-if="d.recent.length === 0">
                         <div class="ovd_empty">
-                            <i class="fa fa-inbox" style="font-size:2rem; color:#334155;"/>
+                            <i class="fa fa-inbox" style="font-size:2rem; color:#94A3B8;"/>
                             <p>No activity yet.</p>
                         </div>
                     </t>
