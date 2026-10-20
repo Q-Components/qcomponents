@@ -255,7 +255,7 @@ class OneDriveFolderRule(models.Model):
                         _logger.exception("[OneDrive] Could not write sync history log.")
 
                 processed += 1
-                if processed % 30 == 0:
+                if processed % 10 == 0:
                     self.env.cr.commit()
                     self.env.invalidate_all()
 
