@@ -3,7 +3,7 @@
     'name': 'SKUVAULT Integration',
     'category': 'Website',
     'author': "Vraja Technologies",
-    'version': '19.0.1.0',
+    'version': '19.0.1.1',
     'summary': """ """,
     'description': """SKUvault Integration for inventory management.""",
     'depends': ['delivery','stock'],
