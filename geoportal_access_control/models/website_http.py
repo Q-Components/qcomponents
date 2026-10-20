@@ -1,83 +1,138 @@
+import json
 import logging
 import ipaddress
-import json
-from odoo import models, fields
+import re
+
+from odoo import models
 from odoo.http import request
 from werkzeug.exceptions import Forbidden
 
 _logger = logging.getLogger(__name__)
 
+PARAM = "geoportal_access_control."
+
+# Never touched by this module at all
+SKIP_PREFIXES = ("/get_user_location", "/websocket", "/longpolling", "/static")
+# Under /web but public website content: these ARE blockable / monitorable
+PUBLIC_WEB_PREFIXES = ("/web/image", "/web/content")
+# Language prefix such as /en, /fr, /pt_BR
+LANG_RE = re.compile(r"^/[a-z]{2,3}(?:_[A-Za-z0-9]+)?(?=/|$)")
+
+
 class Http(models.AbstractModel):
     _inherit = "ir.http"
 
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
     @classmethod
-    def _dispatch(cls, endpoint):
+    def _geoportal_path_is_monitored(cls, path):
+        """True if monitoring is enabled and path matches a configured URL."""
+        icp = request.env["ir.config_parameter"].sudo()
+        if icp.get_param(PARAM + "ip_monitor_enabled") != "True":
+            return False
 
-        if not request or not request.httprequest:
-            return super()._dispatch(endpoint)
+        raw = icp.get_param(PARAM + "ip_monitor_url_patterns") or ""
+        patterns = []
+        for line in raw.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if not line.startswith("/"):
+                line = "/" + line
+            patterns.append(line)
+        if not patterns:
+            return False
 
-        path = request.httprequest.path or ""
+        candidates = [path]
+        match = LANG_RE.match(path)
+        if match:
+            candidates.append(path[match.end():] or "/")
 
-        if path.startswith("/get_user_location"):
-            return super()._dispatch(endpoint)
+        return any(c.startswith(p) for c in candidates for p in patterns)
 
-        if path.startswith(("/web", "/longpolling", "/websocket", "/static")):
-            return super()._dispatch(endpoint)
-
-        visitor_ip = request.httprequest.headers.get("X-Forwarded-For",request.httprequest.remote_addr)
-
-        if visitor_ip and "," in visitor_ip:
-            visitor_ip = visitor_ip.split(",")[0].strip()
-
-        try:
-            ip_obj = ipaddress.ip_address(visitor_ip)
-        except ValueError:
-            return super()._dispatch(endpoint)
-
-        # ---------------- COUNTRY DETECTION ----------------
+    @classmethod
+    def _geoportal_check_country(cls):
+        """Raise Forbidden if the visitor's country is blocked."""
         country_code = None
         country_name = None
         try:
             if getattr(request, "geoip", None):
                 country_code = request.geoip.country_code
                 country_name = request.geoip.country_name
-                _logger.info("Visitor country detected: %s (%s)", country_name, country_code)
         except Exception as e:
             _logger.debug("GeoIP lookup failed: %s", e)
 
-        # ---------------- COUNTRY BLOCK CHECK ----------------
-        if country_code:
-            not_allowed_country_ids = request.env['ir.config_parameter'].sudo().get_param('geoportal_access_control.not_allowed_country_ids','[]')
+        if not country_code:
+            return
 
-            blocked_ids = json.loads(not_allowed_country_ids or "[]")
+        icp = request.env["ir.config_parameter"].sudo()
+        blocked_ids = json.loads(icp.get_param(PARAM + "not_allowed_country_ids", "[]") or "[]")
+        if not blocked_ids:
+            return
 
-            if blocked_ids:
-                blocked_countries = request.env['res.country'].sudo().browse(blocked_ids)
-                blocked_codes = blocked_countries.mapped('code')
+        blocked_codes = request.env["res.country"].sudo().browse(blocked_ids).mapped("code")
+        if country_code in blocked_codes:
+            _logger.warning("Blocked country access: %s (%s)", country_name, country_code)
+            msg = icp.get_param(PARAM + "custom_msg", "Access denied from your country.")
+            raise Forbidden(msg)
 
-                if country_code in blocked_codes:
-                    _logger.warning("Blocked country access: %s (%s)", country_name, country_code)
+    @classmethod
+    def _geoportal_log_activity(cls, ip_obj, path):
+        """Store one activity row. Must never break the website."""
+        # if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local:
+        #     return
+        try:
+            if request.env.user._is_internal():
+                return
+            user_agent = (request.httprequest.headers.get("User-Agent") or "")[:255]
+            with request.env.cr.savepoint():
+                request.env["website.ip.activity"].sudo().create({
+                    "ip_address": str(ip_obj),
+                    "path": path[:255],
+                    "user_agent": user_agent,
+                })
+        except Exception:
+            _logger.exception("GeoPortal: could not log IP activity")
 
-                    msg = request.env['ir.config_parameter'].sudo().get_param('geoportal_access_control.custom_msg',"Access denied from your country.")
+    # ------------------------------------------------------------------
+    # Dispatch
+    # ------------------------------------------------------------------
+    @classmethod
+    def _dispatch(cls, endpoint):
+        if not request or not request.httprequest:
+            return super()._dispatch(endpoint)
 
-                    raise Forbidden(msg)
+        path = request.httprequest.path or ""
 
-        records = request.env['website.blocked.ip'].sudo().search([('active', '=', True)])
+        if path.startswith(SKIP_PREFIXES):
+            return super()._dispatch(endpoint)
 
-        for rec in records:
-            rule = rec.ip_address.strip()
-            try:
-                if "/" in rule:
-                    network = ipaddress.ip_network(rule, strict=False)
-                    if ip_obj in network:
-                        _logger.warning("Blocked by CIDR rule %s", rule)
-                        raise Forbidden("Access denied.")
-                else:
-                    if ip_obj == ipaddress.ip_address(rule):
-                        _logger.warning("Blocked exact IP %s", rule)
-                        raise Forbidden("Access denied.")
-            except ValueError:
-                _logger.warning("Invalid IP rule in DB: %s", rule)
-                continue
+        is_backend = (path == "/web" or path.startswith("/web/")) \
+            and not path.startswith(PUBLIC_WEB_PREFIXES)
+        monitored = cls._geoportal_path_is_monitored(path)
+
+        # Backend pages are never blocked; only log them if explicitly monitored
+        if is_backend and not monitored:
+            return super()._dispatch(endpoint)
+
+        # With proxy_mode = True in odoo.conf, remote_addr is the real client IP
+        try:
+            ip_obj = ipaddress.ip_address(request.httprequest.remote_addr)
+        except (ValueError, TypeError):
+            return super()._dispatch(endpoint)
+
+        if not is_backend:
+            cls._geoportal_check_country()
+
+        status = request.env["website.blocked.ip"].sudo()._get_ip_status(ip_obj)
+
+        if status == "blocked" and not is_backend:
+            _logger.warning("Blocked IP access: %s", ip_obj)
+            raise Forbidden("Access denied.")
+
+        # Log only IPs that are neither blocked nor explicitly unblocked
+        if status is False and monitored:
+            cls._geoportal_log_activity(ip_obj, path)
 
         return super()._dispatch(endpoint)

@@ -25,6 +25,29 @@
                        
                     </div>
                 </setting>
+
+                <setting>
+                    <div class="content-group">
+                        <h2>IP Request Monitoring (Auto Block)</h2>
+                        <div class="row mt8">
+                            <label class="col-lg-3" for="ip_monitor_enabled"/>
+                            <field name="ip_monitor_enabled"/>
+                        </div>
+                        <div class="row mt8" invisible="not ip_monitor_enabled">
+                            <label class="col-lg-3" for="ip_monitor_window_minutes"/>
+                            <field name="ip_monitor_window_minutes"/>
+                        </div>
+                        <div class="row mt8" invisible="not ip_monitor_enabled">
+                            <label class="col-lg-3" for="ip_monitor_max_requests"/>
+                            <field name="ip_monitor_max_requests"/>
+                        </div>
+                        <div class="row mt8" invisible="not ip_monitor_enabled">
+                            <label class="col-lg-3" for="ip_monitor_url_patterns"/>
+                            <field name="ip_monitor_url_patterns" widget="text"
+                                   placeholder="One URL per line, e.g.&#10;/shop&#10;/web/image/product.product"/>
+                        </div>
+                    </div>
+                </setting>
                 
             </block>
         </field>

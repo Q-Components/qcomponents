@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_website_ip_activity_list" model="ir.ui.view">
+        <field name="name">website.ip.activity.list</field>
+        <field name="model">website.ip.activity</field>
+        <field name="arch" type="xml">
+            <list string="IP Activity" create="0" edit="0">
+                <field name="request_date"/>
+                <field name="ip_address"/>
+                <field name="path"/>
+                <field name="user_agent"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_website_ip_activity_search" model="ir.ui.view">
+        <field name="name">website.ip.activity.search</field>
+        <field name="model">website.ip.activity</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="ip_address"/>
+                <field name="path"/>
+                <group>
+                    <filter name="group_ip" string="IP Address" context="{'group_by': 'ip_address'}"/>
+                    <filter name="group_path" string="Path" context="{'group_by': 'path'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_website_ip_activity" model="ir.actions.act_window">
+        <field name="name">IP Activity</field>
+        <field name="res_model">website.ip.activity</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_group_ip': 1}</field>
+    </record>
+
+    <menuitem id="menu_website_ip_activity"
+              name="IP Activity"
+              parent="website.menu_reporting"
+              action="action_website_ip_activity"
+              sequence="91"/>
+</odoo>

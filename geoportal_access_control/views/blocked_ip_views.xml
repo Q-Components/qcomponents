@@ -10,6 +10,8 @@
                 <field name="ip_address"/>
                 <field name="active"/>
                 <field name="note"/>
+                <field name="unblocked"/>
+                <field name="auto_blocked"/>
             </list>
         </field>
     </record>
@@ -25,6 +27,8 @@
                         <field name="ip_address" placeholder="e.g. 117.247.48.33" required="1"/>
                         <field name="active"/>
                         <field name="note"/>
+                        <field name="unblocked"/>
+                        <field name="auto_blocked"/>
                     </group>
                 </sheet>
             </form>

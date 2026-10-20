@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_website_blocked_ip,access.website.blocked.ip,model_website_blocked_ip,,1,1,1,1
+access_website_ip_activity,access.website.ip.activity,model_website_ip_activity,base.group_system,1,1,1,1

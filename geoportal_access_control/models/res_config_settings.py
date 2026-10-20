@@ -15,6 +15,18 @@ class ResConfigSettings(models.TransientModel):
         help="States where the website is not available."
     )
     custom_msg = fields.Char( string="Warning Msg", config_parameter ='geoportal_access_control.custom_msg')
+    ip_monitor_enabled = fields.Boolean(
+        string="Enable IP Request Monitoring",
+        config_parameter='geoportal_access_control.ip_monitor_enabled')
+    ip_monitor_window_minutes = fields.Integer(
+        string="Check Window (minutes)", default=30,
+        config_parameter='geoportal_access_control.ip_monitor_window_minutes')
+    ip_monitor_max_requests = fields.Integer(
+        string="Max Requests Before Block", default=100,
+        config_parameter='geoportal_access_control.ip_monitor_max_requests')
+    ip_monitor_url_patterns = fields.Char(
+        string="URLs To Monitor",
+        config_parameter='geoportal_access_control.ip_monitor_url_patterns')
     
     @api.model
     def get_values(self):
