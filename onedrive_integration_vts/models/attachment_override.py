@@ -66,7 +66,7 @@ class IrAttachment(models.Model):
         # Process each newly created attachment
         for attachment in attachments:
             # Only process attachments that have binary content AND a linked record
-            if not attachment.datas or not attachment.res_model or not attachment.res_id or attachment.onedrive_synced:
+            if not attachment.file_size or not attachment.res_model or not attachment.res_id or attachment.onedrive_synced:
                 continue
 
             matching_rules = rules_by_model.get(attachment.res_model, [])
@@ -206,7 +206,7 @@ class IrAttachment(models.Model):
 
         for attachment in self.sudo():
             # already uploaded, no content, or not linked to a record -> skip
-            if (attachment.onedrive_synced or not attachment.datas
+            if (attachment.onedrive_synced or not attachment.file_size
                     or not attachment.res_model or not attachment.res_id):
                 skipped += 1
                 continue

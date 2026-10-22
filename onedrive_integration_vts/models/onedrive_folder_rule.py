@@ -189,7 +189,7 @@ class OneDriveFolderRule(models.Model):
                 ("res_id", ">", 0),
                 ("onedrive_synced", "=", False),
                 ("onedrive_sync_failed", "=", False),
-            ], order="id",limit=120)
+            ], order="id",limit=200)
 
             processed = 0
             for attachment in attachments:
@@ -350,7 +350,7 @@ class OneDriveFolderRule(models.Model):
             return None
 
         # Guard: attachment must have file content
-        if not attachment.datas:
+        if not attachment.file_size:
             _logger.debug(
                 "[OneDrive Rule '%s'] Attachment '%s' has no binary content – skipping.",
                 self.name, attachment.name,

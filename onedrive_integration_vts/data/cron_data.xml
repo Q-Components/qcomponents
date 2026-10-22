@@ -75,7 +75,7 @@ for config in configs:
         <field name="model_id" ref="model_onedrive_folder_rule"/>
         <field name="state">code</field>
         <field name="code">model.upload_existing_attachments()</field>
-        <field name="interval_number">30</field>
+        <field name="interval_number">20</field>
         <field name="interval_type">minutes</field>
         <field name="active">True</field>
     </record>
