@@ -184,6 +184,7 @@ class OneDriveFolderRule(models.Model):
                 continue
 
             Model = self.env[rule.model_name]
+            rule = rule.with_context(onedrive_cache={})
             attachments = Attachment.search([
                 ("res_model", "=", rule.model_name),
                 ("res_id", ">", 0),
@@ -350,7 +351,7 @@ class OneDriveFolderRule(models.Model):
             return None
 
         # Guard: attachment must have file content
-        if not attachment.file_size:
+        if not attachment.datas:
             _logger.debug(
                 "[OneDrive Rule '%s'] Attachment '%s' has no binary content – skipping.",
                 self.name, attachment.name,
@@ -399,6 +400,9 @@ class OneDriveFolderRule(models.Model):
             token, subfolder_id, attachment.name, attachment.datas
         )
         if not onedrive_item_id:
+            cache = self.env.context.get("onedrive_cache")
+            if cache:
+                cache.clear()
             return None
 
         # 4. Create a documents.document so the file shows up in the sidebar
@@ -536,16 +540,43 @@ class OneDriveFolderRule(models.Model):
     def _ensure_onedrive_subfolder(self, access_token, parent_folder_id, subfolder_name):
         """
         Return the OneDrive ID of *subfolder_name* under *parent_folder_id*,
-        creating the folder if it does not already exist.
+        creating the folder if it does not exist.
         """
+        # Memory for this cron run only (set in upload_existing_attachments).
+        # Other callers have no cache, so they work exactly as before.
+        cache = self.env.context.get("onedrive_cache")
+        if cache is None:
+            cache = {}
+        key = (parent_folder_id, subfolder_name.lower())
+        if key in cache:
+            return cache[key]
+
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
         }
         children_url = f"{GRAPH_DRIVE_URL}/items/{parent_folder_id}/children"
 
-        # ── Step 1: look for an existing folder with this name ─────────────
-        url = children_url
+        # ── Step 1: ask OneDrive for the folder by name (one fast call) ────
+        search_children = True      # False only when OneDrive says "not found"
+        try:
+            quoted_name = urllib.parse.quote(subfolder_name, safe="")
+            resp = requests.get(
+                f"{GRAPH_DRIVE_URL}/items/{parent_folder_id}:/{quoted_name}",
+                headers=headers, timeout=30,
+            )
+            if resp.status_code == 200:
+                item = resp.json()
+                if item.get("folder") is not None and item.get("id"):
+                    cache[key] = item["id"]
+                    return item["id"]
+            elif resp.status_code == 404 and not subfolder_name.endswith("."):
+                search_children = False
+        except (requests.exceptions.RequestException, ValueError):
+            pass                    # anything unexpected -> use Step 2
+
+        # ── Step 2: old way – page through all children (only if needed) ───
+        url = children_url if search_children else None
         try:
             while url:
                 resp = requests.get(url, headers=headers, timeout=30)
@@ -557,6 +588,7 @@ class OneDriveFolderRule(models.Model):
                             child.get("folder") is not None
                             and child.get("name", "").lower() == subfolder_name.lower()
                     ):
+                        cache[key] = child["id"]
                         return child["id"]
                 url = data.get("@odata.nextLink")
         except requests.exceptions.RequestException as exc:
@@ -564,7 +596,7 @@ class OneDriveFolderRule(models.Model):
                             self.name, parent_folder_id, exc)
             return None
 
-        # ── Step 2: create the folder ───────────────────────────────────────
+        # ── Step 3: folder does not exist -> create it ──────────────────────
         payload = {
             "name": subfolder_name,
             "folder": {},
@@ -574,6 +606,7 @@ class OneDriveFolderRule(models.Model):
             resp = requests.post(children_url, json=payload, headers=headers, timeout=30)
             if resp.status_code in (200, 201):
                 folder_id = resp.json()["id"]
+                cache[key] = folder_id
                 _logger.info(
                     "[OneDrive Rule '%s'] Created subfolder '%s' (id=%s).",
                     self.name, subfolder_name, folder_id,
