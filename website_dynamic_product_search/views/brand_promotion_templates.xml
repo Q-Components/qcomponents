@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="brand_promotion_vraja" inherit_id="website.brand_promotion">
+        <xpath expr="//t[@t-call='web.brand_promotion_message']" position="after">
+            <div class="o_vraja_brand_promotion">
+                Odoo Implementation by
+                <a target="_blank" href="https://vrajatechnologies.com/">Vraja Technologies</a>
+            </div>
+        </xpath>
+    </template>
+</odoo>

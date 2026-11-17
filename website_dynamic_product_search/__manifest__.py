@@ -38,7 +38,7 @@
     'depends': ['website_sale'],
 
     # Views
-    'data': ['views/website_view.xml'],
+    'data': ['views/website_view.xml','views/brand_promotion_templates.xml'],
 
     # Odoo Store Specific
     'images': ['static/description/cover.gif'],
